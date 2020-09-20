@@ -23,9 +23,9 @@ Controls:
 -Press "clear" to exit the game
 
 REMEMBER:
-    -I am not to blame for any damage caused to your calc by the program, as it's still in its testing phases.
-    -I am not to blame for any damage caused to your corpse/body by your inattention during chemisty; play responsibly when it's safe, not when you're            handling fulminates!
-    -I don't claim to own the rights to the origianl Jetpack Joyride, this is just a bit of fun for the users and a learning experience for me.
+1.I am not to blame for any damage caused to your calc by the program, as it's still in its testing phases.
+2.I am not to blame for any damage caused to your corpse/body by your inattention during chemisty; play responsibly when it's safe, not when you're            handling fulminates!
+3. I don't claim to own the rights to the origianl Jetpack Joyride, this is just a bit of fun for the users and a learning experience for me.
 
 I hope you enjoy spreading a little madness, and remember never to trust someone with more than four bumper stickers on their car, they're clearly insane.
 
