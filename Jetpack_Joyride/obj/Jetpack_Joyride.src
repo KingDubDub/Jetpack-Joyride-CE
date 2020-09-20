@@ -1,0 +1,2125 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"SRC\JETPACK_JOYRIDE.C"
+	.assume ADL=1
+	SEGMENT DATA
+_ctx:
+	DW	0
+	DB	0
+	DW	13
+	DB	0
+	DW	26
+	DB	0
+	DW	39
+	DB	0
+	DW	52
+	DB	0
+	DW	65
+	DB	0
+	DW	78
+	DB	0
+	DW	91
+	DB	0
+	DW	104
+	DB	0
+	DW	0
+	DB	0
+	DW	13
+	DB	0
+	DW	26
+	DB	0
+	DW	39
+	DB	0
+	DW	52
+	DB	0
+	DW	65
+	DB	0
+	DW	78
+	DB	0
+	DW	91
+	DB	0
+	DW	104
+	DB	0
+	DW	0
+	DB	0
+	DW	13
+	DB	0
+	DW	26
+	DB	0
+	DW	39
+	DB	0
+	DW	52
+	DB	0
+	DW	65
+	DB	0
+	DW	78
+	DB	0
+	DW	91
+	DB	0
+	DW	104
+	DB	0
+	DW	0
+	DB	0
+	DW	26
+	DB	0
+	DW	52
+	DB	0
+	DW	65
+	DB	0
+	DW	0
+	DB	0
+	DW	26
+	DB	0
+	DW	52
+	DB	0
+	DW	78
+	DB	0
+	DW	0
+	DB	0
+	DW	13
+	DB	0
+	DW	26
+	DB	0
+	DW	52
+	DB	0
+	DW	65
+	DB	0
+	DW	0
+	DB	0
+	DW	26
+	DB	0
+	DW	52
+	DB	0
+	DW	78
+	DB	0
+	DW	0
+	DB	0
+	DW	26
+	DB	0
+	DW	52
+	DB	0
+	DW	65
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	13
+	DB	0
+	DW	75
+	DB	0
+	DW	88
+	DB	0
+	DW	153
+	DB	0
+	DW	166
+	DB	0
+	DW	0
+	DB	0
+	DW	13
+	DB	0
+	DW	39
+	DB	0
+	DW	52
+	DB	0
+	DW	75
+	DB	0
+	DW	88
+	DB	0
+	DW	114
+	DB	0
+	DW	127
+	DB	0
+	DW	153
+	DB	0
+	DW	166
+	DB	0
+	DW	192
+	DB	0
+	DW	205
+	DB	0
+	DW	39
+	DB	0
+	DW	52
+	DB	0
+	DW	114
+	DB	0
+	DW	127
+	DB	0
+	DW	192
+	DB	0
+	DW	205
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+_cty:
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	39
+	DB	39
+	DB	39
+	DB	39
+	DB	52
+	DB	52
+	DB	52
+	DB	52
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	13
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	26
+	DB	0
+	DB	0
+	DB	0
+	SEGMENT BSS
+_key:
+	DS	1
+_rotationBuffer_data:
+	DS	326
+	SEGMENT DATA
+_rotationBuffer:
+	DW24	_rotationBuffer_data
+	SEGMENT BSS
+_i:
+	DS	1
+_i_the_sequal:
+	DS	1
+_BarryX:
+	DS	2*1
+_BarryY:
+	DS	1
+_frameTime:
+	DS	1
+_holdTime:
+	DS	1
+	SEGMENT DATA
+_scrollSpeed:
+	DB	5
+	SEGMENT BSS
+_backgroundScroll:
+	DS	2*1
+_health:
+	DS	1
+_monies:
+	DS	4*1
+	SEGMENT DATA
+_zapperY:
+	DB	70
+_zapperX:
+	DW	320
+_zapperLength:
+	DB	3
+	SEGMENT BSS
+_zapper:
+	DS	9
+_coinX:
+	DS	81
+_coinY:
+	DS	27
+_coinAnimate:
+	DS	27
+_coin:
+	DS	12
+_LEGGanimate:
+	DS	1
+_LEGGS:
+	DS	6
+;    1	#include <stdbool.h>
+;    2	#include <stddef.h>
+;    3	#include <stdint.h>
+;    4	#include <tice.h>
+;    5	
+;    6	#include <math.h>
+;    7	#include <stdio.h>
+;    8	#include <stdlib.h>
+;    9	#include <string.h>
+;   10	
+;   11	#include <compression.h>
+;   12	#include <graphx.h>
+;   13	#include <keypadc.h>
+;   14	
+;   15	#include "sprites/gfx.h"
+;   16	#include "coinShapes.h"
+;   17	
+;   18	//maximum coins that can spawn, 27 is the maximum safe value currently:
+;   19	#define extern MaxCoins 27
+;   20	
+;   21	//max number of zappers:
+;   22	#define MaxZappers 1
+;   23	
+;   24	// Key variable:
+;   25	kb_key_t key;
+;   26	
+;   27	//buffer for copying and rotating zappers:
+;   28	gfx_UninitedSprite(rotationBuffer, 18, 18);
+;   29	
+;   30	//the most overused variable ever:
+;   31	uint8_t i;
+;   32	
+;   33	//just got a remake:
+;   34	uint8_t i_the_sequal;
+;   35	
+;   36	//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
+;   37	//my child if I had the desire to marry and have children.
+;   38	uint16_t BarryX;
+;   39	
+;   40	uint8_t BarryY;
+;   41	
+;   42	//time it takes to complete the game loop, used to control the FPS; if it overflows
+;   43	//then we have real problems:
+;   44	uint8_t frameTime;
+;   45	
+;   46	//variables for when jetpack is on or not for math calculations:
+;   47	int8_t holdTime;
+;   48	
+;   49	//speed of scrolling for avatar, obstacles, map, etc.
+;   50	uint8_t scrollSpeed = 5;
+;   51	
+;   52	//used for a bad background scroll function that is actually the best for this scenario:
+;   53	int16_t backgroundScroll;
+;   54	
+;   55	//stores if Barry done got wasted or not:
+;   56	uint8_t health;
+;   57	
+;   58	//max monies at $4,294,967,295:
+;   59	uint32_t monies;
+;   60	
+;   61	//2D arrays for zapper objects, first is the downwards facing one, second is the upwards one:
+;   62	uint8_t zapperY[MaxZappers] =
+;   63	{
+;   64	    70
+;   65	};
+;   66	
+;   67	uint16_t zapperX[MaxZappers] =
+;   68	{
+;   69	    320
+;   70	};
+;   71	
+;   72	//measured in beam units, 10x10 pixels:
+;   73	uint8_t zapperLength[MaxZappers] =
+;   74	{
+;   75	    3
+;   76	};
+;   77	
+;   78	gfx_sprite_t *zapper[3];
+;   79	
+;   80	uint24_t coinX[MaxCoins];
+;   81	
+;   82	uint8_t coinY[MaxCoins];
+;   83	
+;   84	//values for keeping track of coin animation sprites, all start at zero:
+;   85	uint8_t coinAnimate[MaxCoins];
+;   86	gfx_sprite_t *coin[4];
+;   87	
+;   88	uint8_t LEGGanimate;
+;   89	gfx_sprite_t *LEGGS[2];
+	SEGMENT CODE
+;   90	
+;   91	//custom rectangle function: (x and y coords, size x, size y, and color)
+;   92	//used for quick-'n-dirty drawing and debug purposes:
+;   93	void rect(int16_t x, uint8_t y, int16_t x2, uint8_t y2, uint8_t color)
+;   94	{
+_rect:
+	CALL	__frameset0
+;   95	    gfx_SetColor(color);
+	LD	C,(IX+18)
+	LD	B,0
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;   96	    gfx_FillRectangle(x, y, x2, y2);
+	LD	A,(IX+15)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	BC,(IX+12)
+	CALL	__stoi
+	PUSH	HL
+	LD	A,(IX+9)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	BC,(IX+6)
+	CALL	__stoi
+	PUSH	HL
+	CALL	_gfx_FillRectangle
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;   97	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _rect ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_FillRectangle                  IMPORT  -----   function
+;_gfx_SetColor                       IMPORT  -----   function
+;color                                IX+18      1   parameter
+;y2                                   IX+15      1   parameter
+;x2                                   IX+12      2   parameter
+;y                                     IX+9      1   parameter
+;x                                     IX+6      2   parameter
+
+
+; Stack Frame Size: 21 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;   98	
+;   99	
+;  100	bool pointCollision(int16_t x1, uint8_t y1, int16_t x2, uint8_t y2, uint16_t px, uint8_t py)
+;  101	{
+_pointCollision:
+	CALL	__frameset0
+;  102	    //this looks odd, but I feel like this runs faster, plus it puts emphasis on testing the Y first:
+;  103	    if(px < x2)
+	LD	BC,(IX+18)
+	CALL	__stoiu
+	LD	DE,HL
+	LD	BC,(IX+12)
+	CALL	__stoi
+	LD	BC,HL
+	LD	HL,DE
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_5
+;  104	    {
+;  105	        if ((x1 < px) && (y1 < py) && (py < y2))
+	LD	BC,(IX+6)
+	CALL	__stoi
+	LD	DE,HL
+	LD	BC,(IX+18)
+	CALL	__stoiu
+	LD	BC,HL
+	LD	HL,DE
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_5
+	LD	A,(IX+9)
+	CP	A,(IX+21)
+	JR	NC,L_5
+	LD	A,(IX+21)
+	CP	A,(IX+15)
+	JR	NC,L_5
+;  106	        {
+;  107	            return true;
+	LD	A,1
+	JR	L_6
+;  108	        }
+;  109	    }
+L_5:
+;  110	    return false;
+	XOR	A,A
+;  111	}
+L_6:
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _pointCollision ***************************
+;Name                         Addr/Register   Size   Type
+;py                                   IX+21      1   parameter
+;px                                   IX+18      2   parameter
+;y2                                   IX+15      1   parameter
+;x2                                   IX+12      2   parameter
+;y1                                    IX+9      1   parameter
+;x1                                    IX+6      2   parameter
+
+
+; Stack Frame Size: 24 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT BSS
+_randVar:
+	DS	1
+_randVar1:
+	DS	1
+;  112	
+;  113	//for randomization values that need to be reused:
+;  114	uint8_t randVar;
+;  115	uint8_t randVar1;
+	SEGMENT CODE
+;  116	
+;  117	//sets coin coordinates from coordinate lists:
+;  118	void spawnCoin()
+;  119	{
+_spawnCoin:
+	LD	HL,-6
+	CALL	__frameset
+;  120	    randVar = randInt(30, 160);
+	CALL	_random
+	LD	BC,131
+	CALL	__iremu
+	LD	IY,HL
+	LEA	HL,IY+30
+	LD	A,L
+	LD	(_randVar),A
+;  121	    randVar1 = randInt(0, 2);
+	CALL	_random
+	LD	BC,3
+	CALL	__iremu
+	LD	A,L
+	LD	(_randVar1),A
+;  122	
+;  123	    for(i = 0; i < MaxCoins; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_9
+L_7:
+;  124	    {
+;  125	        coinX[i] = ctx[randVar1][i] + 330;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,HL
+	LD	A,(_randVar1)
+	UEXT	HL
+	LD	L,A
+	LD	A,81
+	CALL	__imul_b
+	LD	DE,_ctx
+	ADD	HL,DE
+	LD	DE,BC
+	ADD	HL,DE
+	LD	IY,HL
+	LD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-3),IY	; spill
+	LD	(IX+-6),HL	; spill
+	LD	IY,(IX+-3)	; unspill
+	LD	HL,(IY)
+	LD	BC,330
+	ADD	HL,BC
+	LD	IY,(IX+-6)	; unspill
+	LD	(IY),HL
+;  126	        coinY[i] = cty[randVar1][i] + randVar;
+	LD	A,(_randVar1)
+	UEXT	HL
+	LD	L,A
+	LD	A,27
+	CALL	__imul_b
+	LD	BC,_cty
+	ADD	HL,BC
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	A,(IY)
+	LD	BC,(_randVar)
+	ADD	A,C
+	LD	(HL),A
+;  127	        coinAnimate[i] = 0;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinAnimate
+	ADD	HL,BC
+	LD	(HL),0
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  128	    }
+L_9:
+	LD	A,(_i)
+	CP	A,27
+	JR	C,L_7
+;  129	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _spawnCoin ***************************
+;Name                         Addr/Register   Size   Type
+;_coinAnimate                        STATIC     27   variable
+;_coinY                              STATIC     27   variable
+;_cty                                STATIC     81   variable
+;_coinX                              STATIC     81   variable
+;_ctx                                STATIC    243   variable
+;_i                                  STATIC      1   variable
+;_randVar1                           STATIC      1   variable
+;_randVar                            STATIC      1   variable
+;_random                             IMPORT  -----   function
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  130	
+;  131	//randomly generates zapper coordinates:
+;  132	void spawnZapper()
+;  133	{
+_spawnZapper:
+;  134	    randVar = randInt(2, 5);
+	CALL	_random
+	LD	A,L
+	AND	A,3
+	UEXT	HL
+	LD	L,A
+	INC	HL
+	INC	HL
+	LD	A,L
+	LD	(_randVar),A
+;  135	    randVar1 = randInt(0, 200 - (randVar*10));
+	CALL	_random
+	LD	A,(_randVar)
+	LD	DE,HL
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LD	BC,HL
+	LD	HL,200
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,HL
+	LD	HL,DE
+	INC	BC
+	CALL	__iremu
+	LD	A,L
+	LD	(_randVar1),A
+;  136	
+;  137	    for(i = 0; i < MaxZappers; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_13
+L_11:
+;  138	    {
+;  139	        zapperX[i] = 330;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	(HL),74
+	INC	HL
+	LD	(HL),1
+;  140	        zapperY[i] = randVar1;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	A,(_randVar1)
+	LD	(HL),A
+;  141	        zapperLength[i] = randVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(_randVar)
+	LD	(HL),A
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  142	    }
+L_13:
+	LD	A,(_i)
+	CP	A,1
+	JR	C,L_11
+;  143	}
+	RET	
+
+
+;**************************** _spawnZapper ***************************
+;Name                         Addr/Register   Size   Type
+;_zapperLength                       STATIC      1   variable
+;_zapperY                            STATIC      1   variable
+;_zapperX                            STATIC      2   variable
+;_i                                  STATIC      1   variable
+;_randVar1                           STATIC      1   variable
+;_randVar                            STATIC      1   variable
+;_random                             IMPORT  -----   function
+
+
+; Stack Frame Size: 6 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  144	
+;  145	
+;  146	
+;  147	void main(void)
+;  148	{
+_main:
+	LD	HL,-33
+	CALL	__frameset
+;  149	    //make background sprite variables and a quick decompression slot:
+;  150	    gfx_sprite_t *barry, *background, *beam, *decompressorVar;
+;  151	
+;  152	    barry = gfx_MallocSprite(barry_width, barry_height);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,32
+	PUSH	BC
+	LD	BC,28
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-15),HL
+;  153	    zx7_Decompress(barry, barry_compressed);
+	LD	BC,_barry_compressed
+	PUSH	BC
+	LD	BC,(IX+-15)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  154	
+;  155	    background = gfx_MallocSprite(192, 240);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,240
+	PUSH	BC
+	LD	BC,192
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-9),HL
+;  156	    zx7_Decompress(background, background_compressed);
+	LD	BC,_background_compressed
+	PUSH	BC
+	LD	BC,(IX+-9)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  157	
+;  158	    //zapper beam:
+;  159	    beam = gfx_MallocSprite(10, 10);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,10
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-12),HL
+;  160	    zx7_Decompress(beam, beam_compressed);
+	LD	BC,_beam_compressed
+	PUSH	BC
+	LD	BC,(IX+-12)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  161	
+;  162	    //decompressing MAH BOI'S LEGGS:
+;  163	    for(i = 0; i < 2; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_17
+L_15:
+;  164	    {
+;  165	        decompressorVar = gfx_MallocSprite(28, 8);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,8
+	PUSH	BC
+	LD	BC,28
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  166	        zx7_Decompress(decompressorVar, LEGGS_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_LEGGS_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  167	        LEGGS[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_LEGGS
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  168	    }
+L_17:
+	LD	A,(_i)
+	CP	A,2
+	JR	C,L_15
+;  169	
+;  170	    //decompressing coin spritesheet:
+;  171	    for(i = 0; i < 4; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_20
+L_18:
+;  172	    {
+;  173	        decompressorVar = gfx_MallocSprite(10, 10);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,10
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  174	        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinSheet_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  175	        coin[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_coin
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  176	    }
+L_20:
+	LD	A,(_i)
+	CP	A,4
+	JR	C,L_18
+;  177	
+;  178	    //zappers:
+;  179	    for(i = 0; i < 3; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_24
+L_22:
+;  180	    {
+;  181	        decompressorVar = gfx_MallocSprite(18, 18);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,18
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  182	        zx7_Decompress(decompressorVar, zapperSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperSheet_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  183	        zapper[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_zapper
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  184	    }
+L_24:
+	LD	A,(_i)
+	CP	A,3
+	JR	C,L_22
+;  185	
+;  186	    //initialize GFX libraries:
+;  187	    gfx_Begin();
+	CALL	_gfx_Begin
+;  188	    gfx_SetDrawBuffer();
+	LD	BC,1
+	PUSH	BC
+	CALL	_gfx_SetDraw
+	POP	BC
+;  189	
+;  190	    gfx_SetPalette(global_palette, sizeof_global_palette, 0);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,96
+	PUSH	BC
+	LD	BC,_global_palette
+	PUSH	BC
+	CALL	_gfx_SetPalette
+	POP	BC
+	POP	BC
+	POP	BC
+;  191	    gfx_SetTransparentColor(0);
+	LD	BC,0
+	PUSH	BC
+	CALL	_gfx_SetTransparentColor
+	POP	BC
+;  192	
+;  193	    //in case colors don't initialize correctly, use black for debugging:
+;  194	    gfx_SetColor(1);
+	LD	BC,1
+	PUSH	BC
+	CALL	_gfx_SetColor
+	POP	BC
+;  195	
+;  196	    //start up a timer for FPS monitoring, do not move:
+;  197	    timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
+	LD	HL,15859760
+	LD	(HL),3
+	INC	HL
+	LD	(HL),2
+;  198	
+;  199	    GAMESTART:
+L_27:
+;  200	    //I just couldn't resist.
+;  201	
+;  202	    //reset variables for when a game starts:
+;  203	    BarryX = 26;
+	LD	HL,_BarryX
+	LD	(HL),26
+	INC	HL
+	LD	(HL),0
+;  204	    BarryY = 185;
+	LD	A,185
+	LD	(_BarryY),A
+;  205	    holdTime = 0;
+	XOR	A,A
+	LD	(_holdTime),A
+;  206	    health = 1;
+	LD	A,1
+	LD	(_health),A
+;  207	    monies = 0;
+	LD	BC,0
+	LD	(_monies),BC
+	XOR	A,A
+	LD	(_monies+3),A
+;  208	
+;  209	    spawnZapper();
+	CALL	_spawnZapper
+;  210	
+;  211	    // Loop until clear is pressed:
+;  212	    do{
+L_80:
+;  213	
+;  214	        //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
+;  215	        gfx_Sprite(background, backgroundScroll - 192, 0);
+	LD	BC,(_backgroundScroll)
+	CALL	__stoi
+	LD	BC,0
+	PUSH	BC
+	LD	BC,16777024
+	ADD	HL,BC
+	PUSH	HL
+	LD	BC,(IX+-9)
+	PUSH	BC
+	CALL	_gfx_Sprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  216	        gfx_Sprite(background, backgroundScroll, 0);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(_backgroundScroll)
+	CALL	__stoi
+	PUSH	HL
+	LD	BC,(IX+-9)
+	PUSH	BC
+	CALL	_gfx_Sprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  217	        gfx_Sprite(background, backgroundScroll + 192, 0);
+	LD	BC,(_backgroundScroll)
+	CALL	__stoi
+	LD	BC,0
+	PUSH	BC
+	LD	BC,192
+	ADD	HL,BC
+	PUSH	HL
+	LD	BC,(IX+-9)
+	PUSH	BC
+	CALL	_gfx_Sprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  218	
+;  219	        if ((backgroundScroll - scrollSpeed) <= 0)
+	LD	BC,(_backgroundScroll)
+	CALL	__stoi
+	LD	BC,HL
+	LD	A,(_scrollSpeed)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	LD	HL,BC
+	OR	A,A
+	SBC	HL,DE
+	LD	BC,HL
+	OR	A,A
+	SBC	HL,HL
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	M,L_29
+;  220	        {
+;  221	            backgroundScroll = (192 - scrollSpeed);
+	LD	A,(_scrollSpeed)
+	LD	C,A
+	LD	B,0
+	LD.LIS	HL,192
+	OR	A,A
+	SBC.SIS	HL,BC
+	LD	BC,HL
+	LD	HL,_backgroundScroll
+	LD	(HL),C
+	INC	HL
+	LD	(HL),B
+;  222	        } else {
+	JR	L_43
+L_29:
+;  223	            backgroundScroll -= scrollSpeed;
+	LD	A,(_scrollSpeed)
+	LD	C,A
+	LD	B,0
+	LD	HL,(_backgroundScroll)
+	OR	A,A
+	SBC.SIS	HL,BC
+	LD	BC,HL
+	LD	HL,_backgroundScroll
+	LD	(HL),C
+	INC	HL
+	LD	(HL),B
+;  224	        }
+L_43:
+;  225	
+;  226	
+;  227	        //run controls until Barry gets wasted, then bounces his corpse around:
+;  228	        if (health > 0)
+	XOR	A,A
+	LD	HL,_health
+	CP	A,(HL)
+	JR	NC,L_45
+;  229	        {
+;  230	            if (kb_Data[1] & kb_2nd)
+	LD	A,(16056338)
+	AND	A,32
+	JR	Z,L_35
+;  231	            {
+;  232	                if((BarryY > 5) && (holdTime < 12))
+	LD	A,5
+	LD	HL,_BarryY
+	CP	A,(HL)
+	JR	NC,L_36
+	LD	A,(_holdTime)
+	CP	A,12
+	JP	P,L_36
+;  233	                {
+;  234	                    holdTime += 1;
+	LD	A,(_holdTime)
+	INC	A
+	LD	(_holdTime),A
+;  235	                }
+;  236	            } else {
+	JR	L_36
+L_35:
+;  237	                if((BarryY < (185)) && (holdTime > -10))
+	LD	A,(_BarryY)
+	CP	A,185
+	JR	NC,L_36
+	LD	A,246
+	LD	HL,_holdTime
+	CP	A,(HL)
+	CALL	__setflag
+	JP	P,L_36
+;  238	                {
+;  239	                    holdTime -= 1;
+	LD	A,(_holdTime)
+	DEC	A
+	LD	(_holdTime),A
+;  240	                }
+;  241	            }
+L_36:
+;  242	
+;  243	            //SAX got pretty mad about this part, turns out a linear equation can model a curve and
+;  244	            //is actually better than a cubic function:
+;  245	            BarryY -= (holdTime);
+	LD	BC,(_holdTime)
+	LD	A,(_BarryY)
+	SUB	A,C
+	LD	(_BarryY),A
+;  246	
+;  247	            //sees if Y-value rolled past zero or 198, figures out if it was going up
+;  248	            //or down, and auto-corrects accordingly:
+;  249	            if ((BarryY > (186)) || (BarryY < 5))
+	LD	A,186
+	LD	HL,_BarryY
+	CP	A,(HL)
+	JR	C,L_41
+	LD	A,(_BarryY)
+	CP	A,5
+	JR	NC,L_45
+L_41:
+;  250	            {
+;  251	                if (holdTime > 0)
+	XOR	A,A
+	LD	HL,_holdTime
+	CP	A,(HL)
+	CALL	__setflag
+	JP	P,L_39
+;  252	                {
+;  253	                    BarryY = 5;
+	LD	A,5
+	LD	(_BarryY),A
+;  254	                } else {
+	JR	L_40
+L_39:
+;  255	                    BarryY = 185;
+	LD	A,185
+	LD	(_BarryY),A
+;  256	                }
+L_40:
+;  257	                holdTime = 0;
+	XOR	A,A
+	LD	(_holdTime),A
+;  258	            }
+;  259	        }
+L_45:
+;  260	
+;  261	        //make some coins with no regard for if they exist or not:
+;  262	        if (randInt(0,200) == 0){spawnCoin();}
+	CALL	_random
+	LD	BC,201
+	CALL	__iremu
+	CALL	__icmpzero
+	JR	NZ,L_56
+	CALL	_spawnCoin
+L_56:
+;  263	
+;  264	        //bit that runs coin collision and movement:
+;  265	        for(i = 0; i < MaxCoins; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_55
+L_53:
+;  266	        {
+;  267	            if (coinX[i] < 1000)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-24),HL
+	OR	A,A
+	LD	HL,(HL)
+	LD	BC,1000
+	SBC	HL,BC
+	JR	NC,L_54
+;  268	            {
+;  269	                //collision detection:
+;  270	                if (pointCollision(BarryX-5,BarryY-5,BarryX+barry_width+5,BarryY+45,coinX[i]+5,coinY[i]+5))
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	A,(HL)
+	ADD	A,5
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	A,(_BarryY)
+	ADD	A,45
+	LD	HL,(IX+-24)
+	LD	IY,(HL)
+	LD	C,A
+	LD	A,(_BarryY)
+	LEA	DE,IY+5
+	PUSH	DE
+	LD	IY,(_BarryX)
+	SUB	A,5
+	PUSH	BC
+	LD	C,A
+	LEA	DE,IY+33
+	PUSH	DE
+	LD	IY,(_BarryX)
+	PUSH	BC
+	LEA	BC,IY+-5
+	PUSH	BC
+	CALL	_pointCollision
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	OR	A,A
+	JR	Z,L_50
+;  271	                {
+;  272	                    coinX[i] = 1020;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	BC,1020
+	LD	(HL),BC
+;  273	                    ++monies;
+	LD	A,(_monies+3)
+	LD	E,A
+	LD	A,1
+	LD	HL,(_monies)
+	CALL	__ladd_b
+	LD	(_monies),HL
+	LD	A,E
+	LD	(_monies+3),A
+;  274	                }
+L_50:
+;  275	
+;  276	                //draw coin when on screen and update animations:
+;  277	                if (coinX[i] < 330) {
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-21),HL
+	OR	A,A
+	LD	HL,(HL)
+	LD	BC,330
+	SBC	HL,BC
+	JR	NC,L_51
+;  278	
+;  279	                    gfx_TransparentSprite(coin[(coinAnimate[i]/10)], (coinX[i]-10), coinY[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinAnimate
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	BC,10
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	LD	IY,(IX+-21)
+	LD	IY,(IY)
+	ADD	HL,BC
+	LD	BC,_coin
+	ADD	HL,BC
+	LEA	BC,IY+-10
+	PUSH	BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  280	
+;  281	                    if (coinAnimate[i] < 38)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinAnimate
+	ADD	HL,BC
+	LD	(IX+-6),HL
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LD	BC,38
+	SBC	HL,BC
+	JP	P,L_48
+;  282	                    {
+;  283	                        coinAnimate[i] += 2;
+	LD	HL,(IX+-6)
+	LD	A,(HL)
+	INC	A
+	INC	A
+	LD	HL,(IX+-6)
+	LD	(HL),A
+;  284	                    } else {
+	JR	L_51
+L_48:
+;  285	                        coinAnimate[i] = 0;
+	LD	HL,(IX+-6)
+	LD	(HL),0
+;  286	                    }
+;  287	                }
+L_51:
+;  288	
+;  289	                coinX[i] -= scrollSpeed;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-27),HL
+	LD	A,(_scrollSpeed)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,(IX+-27)
+	LD	HL,(HL)
+	LD	IY,(IX+-27)
+	OR	A,A
+	SBC	HL,BC
+	LD	(IY),HL
+;  290	            }
+;  291	        }
+L_54:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_55:
+	LD	A,(_i)
+	CP	A,27
+	JR	C,L_53
+;  292	
+;  293	        //make a zapper just like we make coins, very very badly:
+;  294	        if(randInt(0,100) == 0){spawnZapper();}
+	CALL	_random
+	LD	BC,101
+	CALL	__iremu
+	CALL	__icmpzero
+	JR	NZ,L_70
+	CALL	_spawnZapper
+L_70:
+;  295	
+;  296	        //bit that calculates obstacles and zappers and stuff:
+;  297	        for (i=0; i < MaxZappers; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_69
+L_67:
+;  298	        {
+;  299	            //drawing the zapper beams:
+;  300	            if (zapperX[i] < 1000)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,1000
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_68
+;  301	            {
+;  302	                for (i_the_sequal=0;i_the_sequal < zapperLength[i];++i_the_sequal)
+	XOR	A,A
+	LD	(_i_the_sequal),A
+	JR	L_61
+L_59:
+;  303	                {
+;  304	                    gfx_TransparentSprite(beam, zapperX[i]-14, zapperY[i]+16+(i_the_sequal*10));
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LD	A,(_i_the_sequal)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LEA	BC,IY+16
+	ADD	HL,BC
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+-14
+	PUSH	BC
+	LD	BC,(IX+-12)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	A,(_i_the_sequal)
+	INC	A
+	LD	(_i_the_sequal),A
+;  305	                }
+L_61:
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(_i_the_sequal)
+	CP	A,(HL)
+	JR	C,L_59
+;  306	
+;  307	                //draw zapper pairs:
+;  308	                if (zapperX[i] < 336)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	(IX+-18),HL
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,336
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_64
+;  309	                {
+;  310	                    gfx_TransparentSprite(gfx_FlipSpriteX(zapper[0], rotationBuffer), zapperX[i]-18, zapperY[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	HL,(IX+-18)
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+-18
+	PUSH	BC
+	LD	BC,(_rotationBuffer)
+	PUSH	BC
+	LD	BC,(_zapper)
+	PUSH	BC
+	CALL	_gfx_FlipSpriteX
+	POP	BC
+	POP	BC
+	PUSH	HL
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  311	                    gfx_TransparentSprite(zapper[0], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	DE,_zapperY
+	ADD	HL,DE
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	DE,IY+14
+	LD	HL,BC
+	ADD	HL,DE
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+-18
+	PUSH	BC
+	LD	BC,(_zapper)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  312	                }
+L_64:
+;  313	
+;  314	                zapperX[i] -= scrollSpeed;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	(IX+-33),HL
+	LD	A,(_scrollSpeed)
+	LD	C,A
+	LD	HL,(IX+-33)
+	LD	HL,(HL)
+	LD	B,0
+	OR	A,A
+	SBC.SIS	HL,BC
+	LD	BC,HL
+	LD	HL,(IX+-33)
+	LD	(HL),C
+	INC	HL
+	LD	(HL),B
+;  315	
+;  316	                //collision between to zappers, will change to one hitbox in the future:
+;  317	                if (pointCollision(zapperX[i]-14-barry_width, zapperY[i]+2-barry_height, zapperX[i]-4, zapperY[i]+30+(zapperLength[i]*10), BarryX, BarryY))
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	(IX+-30),HL
+	LD	A,(_BarryY)
+	LD	C,A
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	DE,_zapperLength
+	ADD	HL,DE
+	LD	D,(HL)
+	LD	E,10
+	MLT	DE
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_BarryX)
+	PUSH	BC
+	LD	HL,(IX+-30)
+	LD	A,(HL)
+	ADD	A,30
+	LD	B,A
+	LD	A,E
+	ADD	A,B
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	HL,(IX+-33)
+	LD	IY,(HL)
+	LEA	BC,IY+-4
+	PUSH	BC
+	LD	HL,(IX+-30)
+	LD	A,(HL)
+	INC	A
+	INC	A
+	SUB	A,32
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	HL,(IX+-33)
+	LD	IY,(HL)
+	LEA	BC,IY+-42
+	PUSH	BC
+	CALL	_pointCollision
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	OR	A,A
+	JR	Z,L_68
+;  318	                {
+;  319	                    --health;
+	LD	A,(_health)
+	DEC	A
+	LD	(_health),A
+;  320	                }
+;  321	            }
+;  322	        }
+L_68:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_69:
+	LD	A,(_i)
+	CP	A,1
+	JR	C,L_67
+;  323	
+;  324	        gfx_TransparentSprite_NoClip(barry, BarryX, BarryY);
+	LD	A,(_BarryY)
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_BarryX)
+	CALL	__stoiu
+	PUSH	HL
+	LD	BC,(IX+-15)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite_NoClip
+	POP	BC
+	POP	BC
+	POP	BC
+;  325	
+;  326	
+;  327	        gfx_TransparentSprite_NoClip(LEGGS[LEGGanimate/10], BarryX, BarryY+32);
+	LD	A,(_BarryY)
+	ADD	A,32
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_BarryX)
+	CALL	__stoiu
+	PUSH	HL
+	LD	A,(_LEGGanimate)
+	UEXT	HL
+	LD	L,A
+	LD	BC,10
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_LEGGS
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite_NoClip
+	POP	BC
+	POP	BC
+	POP	BC
+;  328	
+;  329	        if (LEGGanimate < 16)
+	LD	A,(_LEGGanimate)
+	CP	A,16
+	JR	NC,L_73
+;  330	        {
+;  331	            LEGGanimate += 4;
+	LD	A,(_LEGGanimate)
+	ADD	A,4
+	LD	(_LEGGanimate),A
+;  332	        } else {
+	JR	L_75
+L_73:
+;  333	            LEGGanimate = 0;
+	XOR	A,A
+	LD	(_LEGGanimate),A
+;  334	        }
+L_75:
+;  335	
+;  336	        if (BarryY < 185)
+	LD	A,(_BarryY)
+	CP	A,185
+	JR	NC,L_76
+;  337	        {
+;  338	            LEGGanimate = 16;
+	LD	A,16
+	LD	(_LEGGanimate),A
+;  339	        }
+L_76:
+;  340	
+;  341	        //FPS counter:
+;  342	        frameTime = (32768 / timer_1_Counter);
+	LD	HL,32768
+	LD	E,0
+	LD	BC,(15859712)
+	LD	A,(15859715)
+	CALL	__ldivu
+	LD	BC,HL
+	LD	A,C
+	LD	(_frameTime),A
+;  343	
+;  344	        if (frameTime > 25)
+	LD	A,25
+	LD	HL,_frameTime
+	CP	A,(HL)
+	JR	NC,L_78
+;  345	        {
+;  346	            delay(40-(1000/frameTime));
+	LD	A,(_frameTime)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,1000
+	CALL	__idivs
+	LD	BC,HL
+	LD.LIS	HL,40
+	OR	A,A
+	SBC.SIS	HL,BC
+	PUSH	HL
+	CALL	_delay
+	POP	BC
+;  347	        }
+L_78:
+;  348	
+;  349	        timer_1_Counter = 0;
+;  350	
+;  351	        //prints the FPS without the lock (FPS will still be ~25)
+;  352	        gfx_SetTextXY(280, 10);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,280
+	PUSH	BC
+	LD	BC,0
+	LD	(15859712),BC
+	XOR	A,A
+	LD	(15859715),A
+	CALL	_gfx_SetTextXY
+	POP	BC
+	POP	BC
+;  353	        gfx_PrintInt(frameTime, 2);
+	LD	A,(_frameTime)
+	UEXT	HL
+	LD	BC,2
+	PUSH	BC
+	LD	L,A
+	PUSH	HL
+	CALL	_gfx_PrintInt
+	POP	BC
+	POP	BC
+;  354	
+;  355	        gfx_SetTextXY(10, 10);
+	LD	BC,10
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextXY
+	POP	BC
+	POP	BC
+;  356	        gfx_PrintInt(monies, 4);
+	LD	BC,4
+	PUSH	BC
+	LD	BC,(_monies)
+	PUSH	BC
+	CALL	_gfx_PrintInt
+	POP	BC
+	POP	BC
+;  357	
+;  358	        gfx_BlitBuffer();
+	LD	BC,1
+	PUSH	BC
+	CALL	_gfx_Blit
+	POP	BC
+;  359	
+;  360	    } while (!(kb_Data[6] & kb_Clear) && (health > 0));
+	LD	A,(16056348)
+	AND	A,64
+	JR	NZ,L_90
+	XOR	A,A
+	LD	HL,_health
+	CP	A,(HL)
+	JR	C,L_80
+L_90:
+;  361	
+;  362	    if (health < 1)
+	LD	A,(_health)
+	CP	A,1
+	JR	NC,L_91
+;  363	    {
+;  364	        rect(0,0,320,240,1);
+	LD	BC,1
+	PUSH	BC
+	LD	BC,240
+	PUSH	BC
+	LD	BC,320
+	PUSH	BC
+	LD	BC,0
+	PUSH	BC
+	PUSH	BC
+	CALL	_rect
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+	POP	BC
+;  365	        gfx_SetTextScale(4, 4);
+	LD	BC,4
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  366	        gfx_PrintStringXY("U is ded lol.", 15, 100);
+	LD	BC,100
+	PUSH	BC
+	LD	BC,15
+	PUSH	BC
+	LD	BC,L__41
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  367	        gfx_SetTextScale(1, 1);
+	LD	BC,1
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  368	        gfx_BlitBuffer();
+	LD	BC,1
+	PUSH	BC
+	CALL	_gfx_Blit
+	POP	BC
+;  369	
+;  370	        while (os_GetCSC());
+L_83:
+	CALL	_os_GetCSC
+	OR	A,A
+	JR	NZ,L_83
+;  371	        while (!os_GetCSC());
+L_85:
+	CALL	_os_GetCSC
+	OR	A,A
+	JR	Z,L_85
+;  372	
+;  373	        if (kb_Data[6] != kb_Clear)
+	LD	A,(16056348)
+	CP	A,64
+	JR	NZ,L_27
+;  374	        {
+;  375	            goto GAMESTART;
+;  376	        }
+;  377	    }
+L_91:
+;  378	
+;  379	    //erase the decompressed sprites, very important:
+;  380	    free(background);
+	LD	BC,(IX+-9)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  381	    free(beam);
+	LD	BC,(IX+-12)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  382	    free(barry);
+	LD	BC,(IX+-15)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  383	    free(decompressorVar);
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  384	
+;  385	    //stop libraries, not doing so causes "interesting" results
+;  386	    gfx_End();
+	CALL	_gfx_End
+;  387	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _main ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_End                            IMPORT  -----   function
+;_free                               IMPORT  -----   function
+;_os_GetCSC                          IMPORT  -----   function
+;_gfx_PrintStringXY                  IMPORT  -----   function
+;_gfx_SetTextScale                   IMPORT  -----   function
+;_gfx_Blit                           IMPORT  -----   function
+;_gfx_PrintInt                       IMPORT  -----   function
+;_gfx_SetTextXY                      IMPORT  -----   function
+;_delay                              IMPORT  -----   function
+;_frameTime                          STATIC      1   variable
+;_LEGGanimate                        STATIC      1   variable
+;_gfx_TransparentSprite_NoClip       IMPORT  -----   function
+;_rotationBuffer                     STATIC      3   variable
+;_gfx_FlipSpriteX                    IMPORT  -----   function
+;_zapperLength                       STATIC      1   variable
+;_zapperY                            STATIC      1   variable
+;_i_the_sequal                       STATIC      1   variable
+;_zapperX                            STATIC      2   variable
+;_coinAnimate                        STATIC     27   variable
+;_gfx_TransparentSprite              IMPORT  -----   function
+;_coinY                              STATIC     27   variable
+;_coinX                              STATIC     81   variable
+;_random                             IMPORT  -----   function
+;_scrollSpeed                        STATIC      1   variable
+;_backgroundScroll                   STATIC      2   variable
+;_gfx_Sprite                         IMPORT  -----   function
+;_monies                             STATIC      4   variable
+;_health                             STATIC      1   variable
+;_holdTime                           STATIC      1   variable
+;_BarryY                             STATIC      1   variable
+;_BarryX                             STATIC      2   variable
+;_gfx_SetColor                       IMPORT  -----   function
+;_gfx_SetTransparentColor            IMPORT  -----   function
+;_global_palette                     IMPORT     96   variable
+;_gfx_SetPalette                     IMPORT  -----   function
+;_gfx_SetDraw                        IMPORT  -----   function
+;_gfx_Begin                          IMPORT  -----   function
+;_zapper                             STATIC      9   variable
+;_zapperSheet_tiles_compressed       IMPORT      9   variable
+;_coin                               STATIC     12   variable
+;_coinSheet_tiles_compressed         IMPORT     12   variable
+;_LEGGS                              STATIC      6   variable
+;_LEGGS_tiles_compressed             IMPORT      6   variable
+;_i                                  STATIC      1   variable
+;_beam_compressed                    IMPORT     14   variable
+;_background_compressed              IMPORT    630   variable
+;_barry_compressed                   IMPORT    210   variable
+;_zx7_Decompress                     IMPORT  -----   function
+;_malloc                             IMPORT  -----   function
+;_gfx_AllocSprite                    IMPORT  -----   function
+;G_0                                  IX-24      3   variable
+;G_1                                  IX-21      3   variable
+;G_4                                  IX-18      3   variable
+;barry                                IX-15      3   variable
+;beam                                 IX-12      3   variable
+;background                            IX-9      3   variable
+;G_2                                   IX-6      3   variable
+;decompressorVar                       IX-3      3   variable
+
+
+; Stack Frame Size: 39 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+	SEGMENT STRSECT
+L__41:
+	DB	"U is ded lol."
+	DB	0
+	XREF _beam_compressed:ROM
+	XREF _zapperSheet_tiles_compressed:ROM
+	XREF _coinSheet_tiles_compressed:ROM
+	XREF _background_compressed:ROM
+	XREF _LEGGS_tiles_compressed:ROM
+	XREF _barry_compressed:ROM
+	XREF _global_palette:ROM
+	XREF _gfx_FlipSpriteX:ROM
+	XREF _gfx_TransparentSprite_NoClip:ROM
+	XREF _gfx_TransparentSprite:ROM
+	XREF _gfx_Sprite:ROM
+	XREF _gfx_SetTextXY:ROM
+	XREF _gfx_PrintStringXY:ROM
+	XREF _gfx_PrintInt:ROM
+	XREF _gfx_SetTextScale:ROM
+	XREF _gfx_Blit:ROM
+	XREF _gfx_SetDraw:ROM
+	XREF _gfx_FillRectangle:ROM
+	XREF _gfx_SetPalette:ROM
+	XREF _gfx_SetTransparentColor:ROM
+	XREF _gfx_SetColor:ROM
+	XREF _gfx_End:ROM
+	XREF _gfx_Begin:ROM
+	XREF _gfx_AllocSprite:ROM
+	XREF _zx7_Decompress:ROM
+	XREF _free:ROM
+	XREF _malloc:ROM
+	XREF _os_GetCSC:ROM
+	XREF _delay:ROM
+	XREF _random:ROM
+	XREF __idivs:ROM
+	XREF __ldivu:ROM
+	XREF __iremu:ROM
+	XREF __stoi:ROM
+	XREF __stoiu:ROM
+	XREF __frameset0:ROM
+	XREF __frameset:ROM
+	XREF __setflag:ROM
+	XREF __icmpzero:ROM
+	XREF __imul_b:ROM
+	XREF __ladd_b:ROM
+	XDEF _main
+	XDEF _spawnZapper
+	XDEF _spawnCoin
+	XDEF _randVar1
+	XDEF _randVar
+	XDEF _pointCollision
+	XDEF _rect
+	XDEF _LEGGS
+	XDEF _LEGGanimate
+	XDEF _coin
+	XDEF _coinAnimate
+	XDEF _coinY
+	XDEF _coinX
+	XDEF _zapper
+	XDEF _zapperLength
+	XDEF _zapperX
+	XDEF _zapperY
+	XDEF _monies
+	XDEF _health
+	XDEF _backgroundScroll
+	XDEF _scrollSpeed
+	XDEF _holdTime
+	XDEF _frameTime
+	XDEF _BarryY
+	XDEF _BarryX
+	XDEF _i_the_sequal
+	XDEF _i
+	XDEF _rotationBuffer
+	XDEF _rotationBuffer_data
+	XDEF _key
+	XDEF _cty
+	XDEF _ctx
+	END

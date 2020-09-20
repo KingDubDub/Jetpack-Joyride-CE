@@ -1,0 +1,67 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"SRC\SPRITES\BARRYLEG2.C"
+	.assume ADL=1
+	SEGMENT DATA
+_barryleg2_compressed:
+	DB	17
+	DB	38
+	DB	8
+	DB	0
+	DB	0
+	DB	45
+	DB	22
+	DB	20
+	DB	0
+	DB	22
+	DB	56
+	DB	14
+	DB	0
+	DB	1
+	DB	22
+	DB	141
+	DB	17
+	DB	11
+	DB	1
+	DB	38
+	DB	32
+	DB	32
+	DB	18
+	DB	159
+	DB	17
+	DB	15
+	DB	238
+	DB	16
+	DB	17
+	DB	44
+	DB	16
+	DB	33
+	DB	33
+	DB	138
+	DB	32
+	DB	164
+	DB	16
+	DB	1
+	DB	156
+	DB	85
+	DB	35
+	DB	253
+	DB	66
+	DB	15
+	DB	190
+	DB	86
+	DB	22
+	DB	40
+	DB	8
+	DB	38
+	DB	103
+	DB	84
+	DB	0
+	DB	0
+	DB	0
+	DB	2
+	XDEF _barryleg2_compressed
+;    1	unsigned char barryleg2_compressed[56] = 
+;    2	{ 
+	END

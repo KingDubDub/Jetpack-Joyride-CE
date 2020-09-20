@@ -1,0 +1,57 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"SRC\SPRITES\COIN4.C"
+	.assume ADL=1
+	SEGMENT DATA
+_coin4_compressed:
+	DB	10
+	DB	40
+	DB	10
+	DB	0
+	DB	0
+	DB	21
+	DB	21
+	DB	187
+	DB	5
+	DB	8
+	DB	19
+	DB	26
+	DB	26
+	DB	21
+	DB	205
+	DB	8
+	DB	10
+	DB	78
+	DB	9
+	DB	36
+	DB	9
+	DB	108
+	DB	18
+	DB	9
+	DB	28
+	DB	21
+	DB	153
+	DB	9
+	DB	28
+	DB	127
+	DB	9
+	DB	10
+	DB	6
+	DB	203
+	DB	9
+	DB	39
+	DB	243
+	DB	9
+	DB	0
+	DB	79
+	DB	60
+	DB	8
+	DB	60
+	DB	89
+	DB	0
+	DB	2
+	XDEF _coin4_compressed
+;    1	unsigned char coin4_compressed[46] = 
+;    2	{ 
+	END

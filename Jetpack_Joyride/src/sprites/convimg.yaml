@@ -1,0 +1,55 @@
+output: c
+  include-file: gfx.h
+  palettes:
+    - global_palette
+  converts:
+    - objects
+    - LEGGS
+    - backgrounds
+    - coins
+    - zappers
+    - electricStuff
+
+palette: global_palette
+  max-entries: 48
+  fixed-color: {index:0, r:255, g:0, b:128}
+  fixed-color: {index:1, r:0, g:0, b:0}
+  images: automatic
+
+convert: objects
+  palette: global_palette
+  compress: zx7
+  images:
+    - barry.png
+
+convert: LEGGS
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:28, tile-height:8}:
+    - LEGGS.png
+
+convert: backgrounds
+  palette: global_palette
+  compress: zx7
+  images:
+    - background.png
+
+convert: coins
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:10, tile-height:10}
+    -coinSheet
+
+convert: zappers
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:18, tile-height:18}
+    - zapperSheet.png
+
+convert: electricStuff
+  palette: global_palette
+  compress: zx7
+  images:
+    - beam.png
+    - electric.png
+
