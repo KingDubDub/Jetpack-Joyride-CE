@@ -8,7 +8,7 @@
 NAME        ?= JETPACK
 COMPRESSED  ?= NO
 ICON        ?= iconc.png
-DESCRIPTION ?= "Jetpack Joyride for TI-84 PCE"
+DESCRIPTION ?= "Jetpack Joyride for the TI84 PCE"
 
 # ----------------------------
 

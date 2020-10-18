@@ -8,9 +8,9 @@ _beam_compressed:
 	DB	10
 	DB	9
 	DB	10
-	DB	18
-	DB	18
-	DB	14
+	DB	15
+	DB	15
+	DB	26
 	DB	56
 	DB	0
 	DB	7

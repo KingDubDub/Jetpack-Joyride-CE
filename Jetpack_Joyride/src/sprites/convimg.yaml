@@ -3,36 +3,38 @@ output: c
   palettes:
     - global_palette
   converts:
-    - objects
-    - LEGGS
-    - backgrounds
+    - singleObjects
+    - avatar
+    - exhaust
     - coins
     - zappers
     - electricStuff
 
 palette: global_palette
-  max-entries: 48
   fixed-color: {index:0, r:255, g:0, b:128}
   fixed-color: {index:1, r:0, g:0, b:0}
+  fixed-color: {index:2, r:232, g:232, b:232}
   images: automatic
 
-convert: objects
+convert: singleObjects
   palette: global_palette
   compress: zx7
   images:
-    - barry.png
-
-convert: LEGGS
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:28, tile-height:8}:
-    - LEGGS.png
-
-convert: backgrounds
-  palette: global_palette
-  compress: zx7
-  images:
+    - beam.png
     - background.png
+    - nozzle.png
+
+convert: avatar
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:30, tile-height:40}:
+    - avatarSheet.png
+
+convert: exhaust
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:11, tile-height:20}
+    - exhaustSheet.png
 
 convert: coins
   palette: global_palette
@@ -49,7 +51,5 @@ convert: zappers
 convert: electricStuff
   palette: global_palette
   compress: zx7
-  images:
-    - beam.png
-    - electric.png
-
+  tilesets: {tile-width:32, tile-height:32}
+    - electricSheet.png

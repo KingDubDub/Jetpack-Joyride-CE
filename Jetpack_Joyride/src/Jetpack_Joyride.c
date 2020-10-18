@@ -21,11 +21,9 @@
 //max number of zappers:
 #define MaxZappers 1
 
-// Key variable:
-kb_key_t key;
-
 //buffer for copying and rotating zappers:
-gfx_UninitedSprite(rotationBuffer, 18, 18);
+gfx_UninitedSprite(zappBuffer, 18, 18);
+gfx_UninitedSprite(electricBuffer, 32, 32);
 
 //the most overused variable ever:
 uint8_t i;
@@ -35,9 +33,19 @@ uint8_t i_the_sequal;
 
 //the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
 //my child if I had the desire to marry and have children.
-uint16_t BarryX;
+uint16_t avatarX;
+uint8_t avatarY;
 
-uint8_t BarryY;
+//avatar's sprite array and values for keeping track of animation frames:
+gfx_sprite_t *avatar[4];
+int8_t avatarAnimate = 1;
+int8_t displacement = 3;
+
+//exhaust/flame sprite array for jetpack flight animations:
+gfx_sprite_t *exhaust[4];
+
+//variable used for calculating fire animations:
+uint8_t flightTime;
 
 //time it takes to complete the game loop, used to control the FPS; if it overflows
 //then we have real problems:
@@ -50,7 +58,7 @@ int8_t holdTime;
 uint8_t scrollSpeed = 5;
 
 //used for a bad background scroll function that is actually the best for this scenario:
-int16_t backgroundScroll;
+int24_t backgroundScroll;
 
 //stores if Barry done got wasted or not:
 uint8_t health;
@@ -58,35 +66,29 @@ uint8_t health;
 //max monies at $4,294,967,295:
 uint32_t monies;
 
-//2D arrays for zapper objects, first is the downwards facing one, second is the upwards one:
-uint8_t zapperY[MaxZappers] =
-{
-    70
-};
+uint32_t distance;
 
-uint16_t zapperX[MaxZappers] =
-{
-    320
-};
+//for randomization values that need to be reused:
+uint8_t randVar;
+uint8_t randVar1;
 
+//arrays for zapper coordinates:
+uint24_t zapperY[MaxZappers];
+uint16_t zapperX[MaxZappers];
 //measured in beam units, 10x10 pixels:
-uint8_t zapperLength[MaxZappers] =
-{
-    3
-};
-
+uint8_t zapperLength[MaxZappers];
+//zapper animation count, all start at zero:
+uint8_t zapperAnimate[MaxZappers];
 gfx_sprite_t *zapper[3];
 
+//sprite array for electrical flares around zapper nodes:
+gfx_sprite_t *electric[2];
+
 uint24_t coinX[MaxCoins];
-
 uint8_t coinY[MaxCoins];
-
 //values for keeping track of coin animation sprites, all start at zero:
 uint8_t coinAnimate[MaxCoins];
 gfx_sprite_t *coin[4];
-
-uint8_t LEGGanimate;
-gfx_sprite_t *LEGGS[2];
 
 //custom rectangle function: (x and y coords, size x, size y, and color)
 //used for quick-'n-dirty drawing and debug purposes:
@@ -96,29 +98,11 @@ void rect(int16_t x, uint8_t y, int16_t x2, uint8_t y2, uint8_t color)
     gfx_FillRectangle(x, y, x2, y2);
 }
 
-
-bool pointCollision(int16_t x1, uint8_t y1, int16_t x2, uint8_t y2, uint16_t px, uint8_t py)
-{
-    //this looks odd, but I feel like this runs faster, plus it puts emphasis on testing the Y first:
-    if(px < x2)
-    {
-        if ((x1 < px) && (y1 < py) && (py < y2))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-//for randomization values that need to be reused:
-uint8_t randVar;
-uint8_t randVar1;
-
 //sets coin coordinates from coordinate lists:
 void spawnCoin()
 {
     randVar = randInt(30, 160);
-    randVar1 = randInt(0, 2);
+    randVar1 = randInt(0, 4);
 
     for(i = 0; i < MaxCoins; ++i)
     {
@@ -142,29 +126,36 @@ void spawnZapper()
     }
 }
 
-
-
 void main(void)
 {
     //make background sprite variables and a quick decompression slot:
-    gfx_sprite_t *barry, *background, *beam, *decompressorVar;
-
-    barry = gfx_MallocSprite(barry_width, barry_height);
-    zx7_Decompress(barry, barry_compressed);
+    gfx_sprite_t *background, *nozzle, *beam, *decompressorVar;
 
     background = gfx_MallocSprite(192, 240);
     zx7_Decompress(background, background_compressed);
+
+    //jetpack nozzle that glows when releasing exhaust:
+    nozzle = gfx_MallocSprite(nozzle_width, nozzle_height);
+    zx7_Decompress(nozzle, nozzle_compressed);
 
     //zapper beam:
     beam = gfx_MallocSprite(10, 10);
     zx7_Decompress(beam, beam_compressed);
 
-    //decompressing MAH BOI'S LEGGS:
-    for(i = 0; i < 2; ++i)
+    //decompressing avatar spritesheet:
+    for(i = 0; i < 4; ++i)
     {
-        decompressorVar = gfx_MallocSprite(28, 8);
-        zx7_Decompress(decompressorVar, LEGGS_tiles_compressed[i]);
-        LEGGS[i] = decompressorVar;
+        decompressorVar = gfx_MallocSprite(30, 40);
+        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
+        avatar[i] = decompressorVar;
+    }
+
+    //jetpack exhaust:
+    for(i = 0; i < 3; ++i)
+    {
+        decompressorVar = gfx_MallocSprite(11, 20);
+        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
+        exhaust[i] = decompressorVar;
     }
 
     //decompressing coin spritesheet:
@@ -183,6 +174,14 @@ void main(void)
         zapper[i] = decompressorVar;
     }
 
+    //zapper lightning:
+    for(i = 0; i < 2; ++i)
+    {
+        decompressorVar = gfx_MallocSprite(32, 32);
+        zx7_Decompress(decompressorVar, electricSheet_tiles_compressed[i]);
+        electric[i] = decompressorVar;
+    }
+
     //initialize GFX libraries:
     gfx_Begin();
     gfx_SetDrawBuffer();
@@ -196,20 +195,25 @@ void main(void)
     //start up a timer for FPS monitoring, do not move:
     timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
 
+    //all text printed is gray:
+    gfx_SetTextFGColor(2);
+
     GAMESTART:
     //I just couldn't resist.
 
     //reset variables for when a game starts:
-    BarryX = 26;
-    BarryY = 185;
-    holdTime = 0;
+    avatarX = 24;
+    avatarY = 185;
     health = 1;
-    monies = 0;
+    holdTime, distance, monies = 0;
 
+    spawnCoin();
     spawnZapper();
 
     // Loop until clear is pressed:
     do{
+        //update keys, not actually necessary and causes lag but fixes bugs with update errors:
+        kb_Scan();
 
         //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
         gfx_Sprite(background, backgroundScroll - 192, 0);
@@ -218,7 +222,7 @@ void main(void)
 
         if ((backgroundScroll - scrollSpeed) <= 0)
         {
-            backgroundScroll = (192 - scrollSpeed);
+            backgroundScroll += (192 - scrollSpeed);
         } else {
             backgroundScroll -= scrollSpeed;
         }
@@ -229,30 +233,39 @@ void main(void)
         {
             if (kb_Data[1] & kb_2nd)
             {
-                if((BarryY > 5) && (holdTime < 12))
+                if((avatarY > 20) && (holdTime < 12))
                 {
                     holdTime += 1;
                 }
+
+                if (flightTime < 11)
+                {
+                    ++flightTime;
+                }
+
             } else {
-                if((BarryY < (185)) && (holdTime > -10))
+
+                if((avatarY < (185)) && (holdTime > -10))
                 {
                     holdTime -= 1;
                 }
+
+                flightTime = 0;
             }
 
             //SAX got pretty mad about this part, turns out a linear equation can model a curve and
             //is actually better than a cubic function:
-            BarryY -= (holdTime);
+            avatarY -= (holdTime);
 
             //sees if Y-value rolled past zero or 198, figures out if it was going up
             //or down, and auto-corrects accordingly:
-            if ((BarryY > (186)) || (BarryY < 5))
+            if ((avatarY > (186)) || (avatarY < 20))
             {
                 if (holdTime > 0)
                 {
-                    BarryY = 5;
+                    avatarY = 20;
                 } else {
-                    BarryY = 185;
+                    avatarY = 185;
                 }
                 holdTime = 0;
             }
@@ -267,7 +280,7 @@ void main(void)
             if (coinX[i] < 1000)
             {
                 //collision detection:
-                if (pointCollision(BarryX-5,BarryY-5,BarryX+barry_width+5,BarryY+45,coinX[i]+5,coinY[i]+5))
+                if (gfx_CheckRectangleHotspot(avatarX,avatarY,24,40,coinX[i]-9,coinY[i]+1,8,8))
                 {
                     coinX[i] = 1020;
                     ++monies;
@@ -290,7 +303,7 @@ void main(void)
             }
         }
 
-        //make a zapper just like we make coins, very very badly:
+        //make a zapper just like we make coins, very VERY badly:
         if(randInt(0,100) == 0){spawnZapper();}
 
         //bit that calculates obstacles and zappers and stuff:
@@ -304,38 +317,68 @@ void main(void)
                     gfx_TransparentSprite(beam, zapperX[i]-14, zapperY[i]+16+(i_the_sequal*10));
                 }
 
-                //draw zapper pairs:
+                //draw zapper pairs with distance of zapperLength between them:
                 if (zapperX[i] < 336)
                 {
-                    gfx_TransparentSprite(gfx_FlipSpriteX(zapper[0], rotationBuffer), zapperX[i]-18, zapperY[i]);
-                    gfx_TransparentSprite(zapper[0], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
+                    randVar = randInt(0,1);
+
+                    if (randInt(0,1) == 1)
+                    {
+                        gfx_TransparentSprite(gfx_FlipSpriteX(electric[randVar], electricBuffer), zapperX[i]-25, zapperY[i]-7);
+                        gfx_TransparentSprite(gfx_FlipSpriteY(electric[randVar], electricBuffer), zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
+                    } else {
+                        gfx_TransparentSprite(gfx_RotateSpriteHalf(electric[randVar], electricBuffer), zapperX[i]-25, zapperY[i]-7);
+                        gfx_TransparentSprite(electric[randVar], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
+                    }
+
+                    gfx_TransparentSprite(gfx_FlipSpriteX(zapper[zapperAnimate[i]/10], zappBuffer), zapperX[i]-18, zapperY[i]);
+                    gfx_TransparentSprite(zapper[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
+
+                    if (zapperAnimate[i] < 28)
+                    {
+                        zapperAnimate[i] += 2;
+                    } else {
+                        zapperAnimate[i] = 0;
+                    }
                 }
 
                 zapperX[i] -= scrollSpeed;
 
-                //collision between to zappers, will change to one hitbox in the future:
-                if (pointCollision(zapperX[i]-14-barry_width, zapperY[i]+2-barry_height, zapperX[i]-4, zapperY[i]+30+(zapperLength[i]*10), BarryX, BarryY))
+                //collision between to zappers:
+                if (gfx_CheckRectangleHotspot(avatarX, zapperY[i]+2, 30, (zapperLength[i]*10)+30, zapperX[i]-14, avatarY, 10, 50))
                 {
                     --health;
                 }
             }
         }
 
-        gfx_TransparentSprite_NoClip(barry, BarryX, BarryY);
+        //draws the avatar after a few hundred lines of code:
+        gfx_TransparentSprite_NoClip(avatar[displacement/3], avatarX, avatarY-abs((displacement/3)-1));
 
-
-        gfx_TransparentSprite_NoClip(LEGGS[LEGGanimate/10], BarryX, BarryY+32);
-
-        if (LEGGanimate < 16)
+        //bit that runs avatar animations:
+        if (avatarY < 185)
         {
-            LEGGanimate += 4;
+            displacement = 9;
         } else {
-            LEGGanimate = 0;
+
+            if (displacement == 9)
+            {
+                displacement = 3;
+            }
+
+            if((displacement < 1) || (displacement > 7))
+            {
+                avatarAnimate *= -1;
+            }
+
+            displacement += avatarAnimate;
         }
 
-        if (BarryY < 185)
+        //bit that draws exhaust when in flight:
+        if (kb_Data[1] & kb_2nd)
         {
-            LEGGanimate = 16;
+            gfx_TransparentSprite_NoClip(exhaust[flightTime/4], avatarX+randInt(1,3), avatarY+31);
+            gfx_TransparentSprite_NoClip(nozzle, avatarX+4, avatarY+31);
         }
 
         //FPS counter:
@@ -343,19 +386,24 @@ void main(void)
 
         if (frameTime > 25)
         {
-            delay(40-(1000/frameTime));
+            delay(40 - (1000/frameTime));
         }
 
         timer_1_Counter = 0;
 
-        //prints the FPS without the lock (FPS will still be ~25)
+        gfx_SetTextScale(1, 1);
         gfx_SetTextXY(280, 10);
         gfx_PrintInt(frameTime, 2);
 
-        gfx_SetTextXY(10, 10);
+        gfx_SetTextXY(10, 30);
         gfx_PrintInt(monies, 4);
 
-        gfx_BlitBuffer();
+        gfx_SetTextScale(2,2);
+        gfx_SetTextXY(10, 10);
+        gfx_PrintInt((distance += scrollSpeed)/15, 4);
+
+        //gfx_BlitBuffer();
+        gfx_SwapDraw();
 
     } while (!(kb_Data[6] & kb_Clear) && (health > 0));
 
@@ -364,8 +412,7 @@ void main(void)
         rect(0,0,320,240,1);
         gfx_SetTextScale(4, 4);
         gfx_PrintStringXY("U is ded lol.", 15, 100);
-        gfx_SetTextScale(1, 1);
-        gfx_BlitBuffer();
+        gfx_SwapDraw();
 
         while (os_GetCSC());
         while (!os_GetCSC());
@@ -378,8 +425,8 @@ void main(void)
 
     //erase the decompressed sprites, very important:
     free(background);
+    free(nozzle);
     free(beam);
-    free(barry);
     free(decompressorVar);
 
     //stop libraries, not doing so causes "interesting" results

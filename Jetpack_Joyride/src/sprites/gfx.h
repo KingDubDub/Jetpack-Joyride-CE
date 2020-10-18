@@ -6,13 +6,14 @@ extern "C" {
 #endif
 
 #include "global_palette.h"
-#include "barry.h"
-#include "LEGGS.h"
+#include "beam.h"
 #include "background.h"
+#include "nozzle.h"
+#include "avatarSheet.h"
+#include "exhaustSheet.h"
 #include "coinSheet.h"
 #include "zapperSheet.h"
-#include "beam.h"
-#include "electric.h"
+#include "electricSheet.h"
 
 #ifdef __cplusplus
 }
