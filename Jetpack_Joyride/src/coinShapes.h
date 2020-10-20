@@ -1,7 +1,18 @@
 #define MaxCoins 27
 
+//the max number of coins in each shape, used so the coin-calculation runs through the minimum
+//number of coins:
+const uint8_t abbreviatedMax[5] =
+{
+    27,
+    21,
+    24,
+    26,
+    17,
+};
+
 //coin formation type arrays:
-uint24_t ctx[5][MaxCoins] =
+const uint24_t ctx[5][MaxCoins] =
 {{
     0, 13, 26, 39, 52, 65, 78, 91, 104,
     0, 13, 26, 39, 52, 65, 78, 91, 104,
@@ -22,8 +33,7 @@ uint24_t ctx[5][MaxCoins] =
     0, 13, 26, 39, 52, 65, 78, 91, 104, 117,
     0, 13, 26, 39, 52, 65, 78, 91, 104, 117,
                                91, 104,
-                               91,
-    2000
+                               91
 },{
            26,
        13, 26, 39, 52,
@@ -32,11 +42,9 @@ uint24_t ctx[5][MaxCoins] =
            26,     52,
     0, 13, 26, 39,
            26,
-
-    2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
 }};
 
-uint8_t cty[5][MaxCoins] =
+const uint8_t cty[5][MaxCoins] =
 {{
     0,  0,  0,  0,  0,  0,  0,  0,  0,
     13, 13, 13, 13, 13, 13, 13, 13, 13,

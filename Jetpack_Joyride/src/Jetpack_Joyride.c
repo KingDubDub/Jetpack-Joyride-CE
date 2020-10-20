@@ -13,7 +13,7 @@
 #include <keypadc.h>
 
 #include "sprites/gfx.h"
-#include "coinShapes.h"
+#include "coinShapes.c"
 
 //maximum coins that can spawn, 27 is the maximum safe value currently:
 #define extern MaxCoins 27
@@ -66,7 +66,11 @@ uint8_t health;
 //max monies at $4,294,967,295:
 uint32_t monies;
 
+//there's a limit to the distance you can fly in the original game, not sure I'll keep that or not...
 uint32_t distance;
+
+//coin formation variable to keep track of coin lists:
+uint8_t coinFormation;
 
 //for randomization values that need to be reused:
 uint8_t randVar;
@@ -79,10 +83,10 @@ uint16_t zapperX[MaxZappers];
 uint8_t zapperLength[MaxZappers];
 //zapper animation count, all start at zero:
 uint8_t zapperAnimate[MaxZappers];
-gfx_sprite_t *zapper[3];
+gfx_sprite_t *zapper[6];
 
 //sprite array for electrical flares around zapper nodes:
-gfx_sprite_t *electric[2];
+gfx_sprite_t *electric[8];
 
 uint24_t coinX[MaxCoins];
 uint8_t coinY[MaxCoins];
@@ -102,12 +106,12 @@ void rect(int16_t x, uint8_t y, int16_t x2, uint8_t y2, uint8_t color)
 void spawnCoin()
 {
     randVar = randInt(30, 160);
-    randVar1 = randInt(0, 4);
+    coinFormation = randInt(0, 4);
 
     for(i = 0; i < MaxCoins; ++i)
     {
-        coinX[i] = ctx[randVar1][i] + 330;
-        coinY[i] = cty[randVar1][i] + randVar;
+        coinX[i] = ctx[coinFormation][i] + 330;
+        coinY[i] = cty[coinFormation][i] + randVar;
         coinAnimate[i] = 0;
     }
 }
@@ -174,12 +178,18 @@ void main(void)
         zapper[i] = decompressorVar;
     }
 
+
+    for(i=0; i < 8; ++i)
+    {
+        electric[i] = gfx_MallocSprite(32, 32);
+    }
     //zapper lightning:
     for(i = 0; i < 2; ++i)
     {
-        decompressorVar = gfx_MallocSprite(32, 32);
-        zx7_Decompress(decompressorVar, electricSheet_tiles_compressed[i]);
-        electric[i] = decompressorVar;
+        zx7_Decompress(electric[i], electricSheet_tiles_compressed[i]);
+        gfx_FlipSpriteX(electric[i], electric[i+2]);
+        gfx_FlipSpriteY(electric[i], electric[i+4]);
+        gfx_RotateSpriteHalf(electric[i], electric[i+6]);
     }
 
     //initialize GFX libraries:
@@ -195,11 +205,15 @@ void main(void)
     //start up a timer for FPS monitoring, do not move:
     timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
 
+    kb_SetMode(MODE_3_CONTINUOUS);
+
     //all text printed is gray:
     gfx_SetTextFGColor(2);
 
+    //when I first started using C, I asked some friends if there were GOTO statements.
+    //They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
     GAMESTART:
-    //I just couldn't resist.
+    //But this is still sometimes okay.
 
     //reset variables for when a game starts:
     avatarX = 24;
@@ -215,11 +229,6 @@ void main(void)
         //update keys, not actually necessary and causes lag but fixes bugs with update errors:
         kb_Scan();
 
-        //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
-        gfx_Sprite(background, backgroundScroll - 192, 0);
-        gfx_Sprite(background, backgroundScroll, 0);
-        gfx_Sprite(background, backgroundScroll + 192, 0);
-
         if ((backgroundScroll - scrollSpeed) <= 0)
         {
             backgroundScroll += (192 - scrollSpeed);
@@ -227,6 +236,11 @@ void main(void)
             backgroundScroll -= scrollSpeed;
         }
 
+        //make some coins with no regard for if they exist or not:
+        if (randInt(0,200) == 0){spawnCoin();}
+
+        //make a zapper just like we make coins, very VERY badly:
+        if(randInt(0,100) == 0){spawnZapper();}
 
         //run controls until Barry gets wasted, then bounces his corpse around:
         if (health > 0)
@@ -271,11 +285,32 @@ void main(void)
             }
         }
 
-        //make some coins with no regard for if they exist or not:
-        if (randInt(0,200) == 0){spawnCoin();}
+        //bit that runs avatar animations:
+        if (avatarY < 185)
+        {
+            displacement = 9;
+        } else {
+
+            if (displacement == 9)
+            {
+                displacement = 3;
+            }
+
+            if((displacement < 1) || (displacement > 7))
+            {
+                avatarAnimate *= -1;
+            }
+
+            displacement += avatarAnimate;
+        }
+
+        //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
+        gfx_Sprite(background, backgroundScroll - 192, 0);
+        gfx_Sprite(background, backgroundScroll, 0);
+        gfx_Sprite(background, backgroundScroll + 192, 0);
 
         //bit that runs coin collision and movement:
-        for(i = 0; i < MaxCoins; ++i)
+        for(i = 0; i < abbreviatedMax[coinFormation]; ++i)
         {
             if (coinX[i] < 1000)
             {
@@ -303,9 +338,6 @@ void main(void)
             }
         }
 
-        //make a zapper just like we make coins, very VERY badly:
-        if(randInt(0,100) == 0){spawnZapper();}
-
         //bit that calculates obstacles and zappers and stuff:
         for (i=0; i < MaxZappers; ++i)
         {
@@ -321,15 +353,10 @@ void main(void)
                 if (zapperX[i] < 336)
                 {
                     randVar = randInt(0,1);
+                    randVar1 = randInt(0,1);
 
-                    if (randInt(0,1) == 1)
-                    {
-                        gfx_TransparentSprite(gfx_FlipSpriteX(electric[randVar], electricBuffer), zapperX[i]-25, zapperY[i]-7);
-                        gfx_TransparentSprite(gfx_FlipSpriteY(electric[randVar], electricBuffer), zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
-                    } else {
-                        gfx_TransparentSprite(gfx_RotateSpriteHalf(electric[randVar], electricBuffer), zapperX[i]-25, zapperY[i]-7);
-                        gfx_TransparentSprite(electric[randVar], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
-                    }
+                    gfx_TransparentSprite(electric[randVar+2+(randVar1*4)], zapperX[i]-25, zapperY[i]-7);
+                    gfx_TransparentSprite(electric[randVar+(randVar1*4)], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
 
                     gfx_TransparentSprite(gfx_FlipSpriteX(zapper[zapperAnimate[i]/10], zappBuffer), zapperX[i]-18, zapperY[i]);
                     gfx_TransparentSprite(zapper[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
@@ -354,25 +381,6 @@ void main(void)
 
         //draws the avatar after a few hundred lines of code:
         gfx_TransparentSprite_NoClip(avatar[displacement/3], avatarX, avatarY-abs((displacement/3)-1));
-
-        //bit that runs avatar animations:
-        if (avatarY < 185)
-        {
-            displacement = 9;
-        } else {
-
-            if (displacement == 9)
-            {
-                displacement = 3;
-            }
-
-            if((displacement < 1) || (displacement > 7))
-            {
-                avatarAnimate *= -1;
-            }
-
-            displacement += avatarAnimate;
-        }
 
         //bit that draws exhaust when in flight:
         if (kb_Data[1] & kb_2nd)
