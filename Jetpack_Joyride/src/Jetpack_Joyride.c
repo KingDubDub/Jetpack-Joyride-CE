@@ -15,21 +15,14 @@
 #include "sprites/gfx.h"
 #include "coinShapes.c"
 
-//maximum coins that can spawn, 27 is the maximum safe value currently:
-#define extern MaxCoins 27
-
 //max number of zappers:
-#define MaxZappers 1
+#define MaxZappers 3
 
-//buffer for copying and rotating zappers:
-gfx_UninitedSprite(zappBuffer, 18, 18);
-gfx_UninitedSprite(electricBuffer, 32, 32);
+//mas number of missiles, will probably be replaced with a non-static value later:
+#define MaxMissiles 1
 
 //the most overused variable ever:
 uint8_t i;
-
-//just got a remake:
-uint8_t i_the_sequal;
 
 //the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
 //my child if I had the desire to marry and have children.
@@ -42,10 +35,10 @@ int8_t avatarAnimate = 1;
 int8_t displacement = 3;
 
 //exhaust/flame sprite array for jetpack flight animations:
-gfx_sprite_t *exhaust[4];
+gfx_sprite_t *exhaust[6];
 
 //variable used for calculating fire animations:
-uint8_t flightTime;
+uint8_t flightTime = 18;
 
 //time it takes to complete the game loop, used to control the FPS; if it overflows
 //then we have real problems:
@@ -56,6 +49,9 @@ int8_t holdTime;
 
 //speed of scrolling for avatar, obstacles, map, etc.
 uint8_t scrollSpeed = 5;
+
+//measures timings for delays between spawning coins, obstacles, etc.:
+int24_t spawnDelay = 100;
 
 //used for a bad background scroll function that is actually the best for this scenario:
 int24_t backgroundScroll;
@@ -69,18 +65,19 @@ uint32_t monies;
 //there's a limit to the distance you can fly in the original game, not sure I'll keep that or not...
 uint32_t distance;
 
-//coin formation variable to keep track of coin lists:
-uint8_t coinFormation;
-
 //for randomization values that need to be reused:
 uint8_t randVar;
 uint8_t randVar1;
 
+uint8_t randObject;
+
 //arrays for zapper coordinates:
 uint24_t zapperY[MaxZappers];
-uint16_t zapperX[MaxZappers];
+uint16_t zapperX[MaxZappers] = {330, 460};
 //measured in beam units, 10x10 pixels:
 uint8_t zapperLength[MaxZappers];
+//used to draw zapper beam segments:
+uint8_t beamCount;
 //zapper animation count, all start at zero:
 uint8_t zapperAnimate[MaxZappers];
 gfx_sprite_t *zapper[6];
@@ -90,53 +87,60 @@ gfx_sprite_t *electric[8];
 
 uint24_t coinX[MaxCoins];
 uint8_t coinY[MaxCoins];
+//coin formation variable to keep track of coin lists:
+uint8_t coinFormation;
 //values for keeping track of coin animation sprites, all start at zero:
 uint8_t coinAnimate[MaxCoins];
 gfx_sprite_t *coin[4];
 
-//custom rectangle function: (x and y coords, size x, size y, and color)
-//used for quick-'n-dirty drawing and debug purposes:
-void rect(int16_t x, uint8_t y, int16_t x2, uint8_t y2, uint8_t color)
-{
-    gfx_SetColor(color);
-    gfx_FillRectangle(x, y, x2, y2);
-}
+uint16_t missileX[MaxMissiles];
+uint8_t missileY[MaxMissiles];
+//missile warning sprite array (the red exclamation marks):
+gfx_sprite_t *warning[3];
+//missile incoming sprite array (exclamation marks with emphasis):
+gfx_sprite_t *incoming[2];
+//keep track of animations for missiles:
+uint8_t missileAnimate;
+int8_t MAvalue = -1;
 
-//sets coin coordinates from coordinate lists:
-void spawnCoin()
-{
-    randVar = randInt(30, 160);
-    coinFormation = randInt(0, 4);
 
-    for(i = 0; i < MaxCoins; ++i)
+
+//clears all objects from gameplay:
+void delObjects()
+{
+    for (i = 0; i < abbreviatedMax[coinFormation]; ++i)
     {
-        coinX[i] = ctx[coinFormation][i] + 330;
-        coinY[i] = cty[coinFormation][i] + randVar;
-        coinAnimate[i] = 0;
+        coinX[i] = 2000;
+        coinY[i] = 0;
+    }
+
+    for (i = 0; i < MaxZappers; ++i)
+    {
+        zapperLength[i] = 0;
+        zapperX[i] = 2000;
+        zapperY[i] = 0;
+    }
+
+    for (i = 0; i < MaxMissiles; ++i)
+    {
+        missileX[i] = 6001;
+        missileY[i] = 0;
     }
 }
 
-//randomly generates zapper coordinates:
-void spawnZapper()
-{
-    randVar = randInt(2, 5);
-    randVar1 = randInt(0, 200 - (randVar*10));
 
-    for(i = 0; i < MaxZappers; ++i)
-    {
-        zapperX[i] = 330;
-        zapperY[i] = randVar1;
-        zapperLength[i] = randVar;
-    }
-}
 
 void main(void)
 {
     //make background sprite variables and a quick decompression slot:
-    gfx_sprite_t *background, *nozzle, *beam, *decompressorVar;
+    gfx_sprite_t *background, *sparkle, *nozzle, *beam, *missile, *decompressorVar;
 
     background = gfx_MallocSprite(192, 240);
     zx7_Decompress(background, background_compressed);
+
+    //sparkle effect left by picked up coins:
+    sparkle = gfx_MallocSprite(16, 15);
+    zx7_Decompress(sparkle, sparkle_compressed);
 
     //jetpack nozzle that glows when releasing exhaust:
     nozzle = gfx_MallocSprite(nozzle_width, nozzle_height);
@@ -146,50 +150,69 @@ void main(void)
     beam = gfx_MallocSprite(10, 10);
     zx7_Decompress(beam, beam_compressed);
 
-    //decompressing avatar spritesheet:
-    for(i = 0; i < 4; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(30, 40);
-        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
-        avatar[i] = decompressorVar;
-    }
+    //temporary missile sprite:
+    missile = gfx_MallocSprite(46, 38);
+    zx7_Decompress(missile, missile_compressed);
 
-    //jetpack exhaust:
-    for(i = 0; i < 3; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(11, 20);
-        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
-        exhaust[i] = decompressorVar;
-    }
-
-    //decompressing coin spritesheet:
-    for(i = 0; i < 4; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(10, 10);
-        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
-        coin[i] = decompressorVar;
-    }
-
-    //zappers:
-    for(i = 0; i < 3; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(18, 18);
-        zx7_Decompress(decompressorVar, zapperSheet_tiles_compressed[i]);
-        zapper[i] = decompressorVar;
-    }
-
+    //sprite decompression, sorted by loop time:
 
     for(i=0; i < 8; ++i)
     {
+        //mallocing full electric array:
         electric[i] = gfx_MallocSprite(32, 32);
     }
-    //zapper lightning:
+
     for(i = 0; i < 2; ++i)
     {
+        //missile incoming symbol:
+        decompressorVar = gfx_MallocSprite(31, 31);
+        zx7_Decompress(decompressorVar, missileIncoming_tiles_compressed[i]);
+        incoming[i] = decompressorVar;
+
+        //zapper lightning:
         zx7_Decompress(electric[i], electricSheet_tiles_compressed[i]);
         gfx_FlipSpriteX(electric[i], electric[i+2]);
         gfx_FlipSpriteY(electric[i], electric[i+4]);
         gfx_RotateSpriteHalf(electric[i], electric[i+6]);
+    }
+
+    for(i = 0; i < 3; ++i)
+    {
+        //missile warning symbols:
+        decompressorVar = gfx_MallocSprite(20, 21);
+        zx7_Decompress(decompressorVar, missileWarning_tiles_compressed[i]);
+        warning[i] = decompressorVar;
+
+        //zappers:
+        zapper[i] = gfx_MallocSprite(18, 18);
+        zapper[i+3] = gfx_MallocSprite(18, 18);
+        zx7_Decompress(zapper[i], zapperSheet_tiles_compressed[i]);
+        gfx_FlipSpriteX(zapper[i], zapper[i+3]);
+    }
+
+    decompressorVar = gfx_MallocSprite(18,18);
+    zx7_Decompress(decompressorVar, zapperSheet_tiles_compressed[2]);
+    zapper[2] = decompressorVar;
+
+    for(i = 0; i < 4; ++i)
+    {
+        //decompressing avatar spritesheet:
+        decompressorVar = gfx_MallocSprite(30, 40);
+        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
+        avatar[i] = decompressorVar;
+
+        //decompressing coin spritesheet:
+        decompressorVar = gfx_MallocSprite(12, 12);
+        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
+        coin[i] = decompressorVar;
+    }
+
+    //jetpack exhaust:
+    for(i = 0; i < 6; ++i)
+    {
+        decompressorVar = gfx_MallocSprite(11, 23);
+        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
+        exhaust[i] = decompressorVar;
     }
 
     //initialize GFX libraries:
@@ -199,12 +222,10 @@ void main(void)
     gfx_SetPalette(global_palette, sizeof_global_palette, 0);
     gfx_SetTransparentColor(0);
 
-    //in case colors don't initialize correctly, use black for debugging:
-    gfx_SetColor(1);
-
     //start up a timer for FPS monitoring, do not move:
     timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
 
+    //best scan mode according to Mateo:
     kb_SetMode(MODE_3_CONTINUOUS);
 
     //all text printed is gray:
@@ -213,20 +234,23 @@ void main(void)
     //when I first started using C, I asked some friends if there were GOTO statements.
     //They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
     GAMESTART:
-    //But this is still sometimes okay.
+    //But it's still sometimes okay.
 
     //reset variables for when a game starts:
     avatarX = 24;
     avatarY = 185;
+    holdTime = 0;
+    flightTime = 18;
     health = 1;
-    holdTime, distance, monies = 0;
+    spawnDelay = 100;
+    distance = 0;
+    monies = 0;
 
-    spawnCoin();
-    spawnZapper();
+    delObjects();
 
     // Loop until clear is pressed:
     do{
-        //update keys, not actually necessary and causes lag but fixes bugs with update errors:
+        //update keys, fixes bugs with update errors that can lead to softlocks:
         kb_Scan();
 
         if ((backgroundScroll - scrollSpeed) <= 0)
@@ -236,11 +260,62 @@ void main(void)
             backgroundScroll -= scrollSpeed;
         }
 
-        //make some coins with no regard for if they exist or not:
-        if (randInt(0,200) == 0){spawnCoin();}
+        //spawns stuff, SO much better than the debug methods I originally used:
+        if (spawnDelay <= 0)
+        {
+            randObject = randInt(1,10);
 
-        //make a zapper just like we make coins, very VERY badly:
-        if(randInt(0,100) == 0){spawnZapper();}
+            if (randObject == 1)
+            {
+                //sets coin coordinates from coordinate lists:
+                randVar = randInt(30, 150);
+                coinFormation = randInt(0, 5);
+                for(i = 0; i < MaxCoins; ++i)
+                {
+                    coinX[i] = ctx[coinFormation][i] + 330;
+                    coinY[i] = cty[coinFormation][i] + randVar;
+                    coinAnimate[i] = 0;
+                }
+
+                spawnDelay = 500;
+
+            } else if (randObject == 2) {
+
+                //spawns missiles (and missile swarms if I implement them):
+                for (i = 0; i < MaxMissiles; ++i)
+                {
+                    if (missileX[i] > 6000)
+                    {
+                        missileX[i] = 1466;
+                        missileY[i] = 10 * randInt(2, 18);
+
+                        i = MaxZappers;
+                    }
+                }
+
+                //missiles have their own "delay" and don't need to reset spawnDelay.
+
+            } else if (randObject <= 10) {
+
+                //randomly generates zapper coordinates and lengths:
+                for (i = 0; i < MaxZappers; ++i)
+                {
+                    if (zapperX[i] > 330)
+                    {
+                        zapperX[i] = 330;
+
+                        zapperLength[i] = randInt(2, 4);
+                        zapperY[i] = 10 * randInt(2, 19 - zapperLength[i]);
+
+                        i = MaxZappers;
+                    }
+                }
+
+                spawnDelay = 200;
+            }
+        } else {
+            spawnDelay -= scrollSpeed;
+        }
 
         //run controls until Barry gets wasted, then bounces his corpse around:
         if (health > 0)
@@ -252,7 +327,12 @@ void main(void)
                     holdTime += 1;
                 }
 
-                if (flightTime < 11)
+                if (flightTime > 7)
+                {
+                    flightTime = 0;
+                }
+
+                if (flightTime < 7)
                 {
                     ++flightTime;
                 }
@@ -264,7 +344,18 @@ void main(void)
                     holdTime -= 1;
                 }
 
-                flightTime = 0;
+                if (flightTime < 7)
+                {
+                    flightTime = 8;
+
+                } else if (flightTime < 11) {
+
+                    ++flightTime;
+
+                } else {
+
+                    flightTime = 18;
+                }
             }
 
             //SAX got pretty mad about this part, turns out a linear equation can model a curve and
@@ -314,23 +405,24 @@ void main(void)
         {
             if (coinX[i] < 1000)
             {
-                //collision detection:
-                if (gfx_CheckRectangleHotspot(avatarX,avatarY,24,40,coinX[i]-9,coinY[i]+1,8,8))
+                //collision detection and appropriate sprite drawing:
+                if (coinX[i] < 330)
                 {
-                    coinX[i] = 1020;
-                    ++monies;
-                }
-
-                //draw coin when on screen and update animations:
-                if (coinX[i] < 330) {
-
-                    gfx_TransparentSprite(coin[(coinAnimate[i]/10)], (coinX[i]-10), coinY[i]);
-
-                    if (coinAnimate[i] < 38)
+                    if (gfx_CheckRectangleHotspot(avatarX+6,avatarY,18,40,coinX[i]-11,coinY[i]+1,10,10))
                     {
-                        coinAnimate[i] += 2;
+                        gfx_TransparentSprite(sparkle, coinX[i]-13, coinY[i]-1);
+
+                        coinX[i] = 1020;
+                        ++monies;
                     } else {
-                        coinAnimate[i] = 0;
+                        gfx_TransparentSprite(coin[(coinAnimate[i]/10)], (coinX[i]-12), coinY[i]);
+
+                        if (coinAnimate[i] < 38)
+                        {
+                            coinAnimate[i] += 2;
+                        } else {
+                            coinAnimate[i] = 0;
+                        }
                     }
                 }
 
@@ -338,18 +430,18 @@ void main(void)
             }
         }
 
-        //bit that calculates obstacles and zappers and stuff:
-        for (i=0; i < MaxZappers; ++i)
+        //bit that calculates zappers 'n stuff:
+        for (i = 0; i < MaxZappers; ++i)
         {
             //drawing the zapper beams:
             if (zapperX[i] < 1000)
             {
-                for (i_the_sequal=0;i_the_sequal < zapperLength[i];++i_the_sequal)
+                for (beamCount = 0; beamCount < zapperLength[i]; ++beamCount)
                 {
-                    gfx_TransparentSprite(beam, zapperX[i]-14, zapperY[i]+16+(i_the_sequal*10));
+                    gfx_TransparentSprite(beam, zapperX[i]-14, zapperY[i]+16+(beamCount*10));
                 }
 
-                //draw zapper pairs with distance of zapperLength between them:
+                //draw zapper pairs and beams with distance of zapperLength between them:
                 if (zapperX[i] < 336)
                 {
                     randVar = randInt(0,1);
@@ -358,7 +450,7 @@ void main(void)
                     gfx_TransparentSprite(electric[randVar+2+(randVar1*4)], zapperX[i]-25, zapperY[i]-7);
                     gfx_TransparentSprite(electric[randVar+(randVar1*4)], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
 
-                    gfx_TransparentSprite(gfx_FlipSpriteX(zapper[zapperAnimate[i]/10], zappBuffer), zapperX[i]-18, zapperY[i]);
+                    gfx_TransparentSprite(zapper[(zapperAnimate[i]/10)+3], zapperX[i]-18, zapperY[i]);
                     gfx_TransparentSprite(zapper[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
 
                     if (zapperAnimate[i] < 28)
@@ -367,15 +459,61 @@ void main(void)
                     } else {
                         zapperAnimate[i] = 0;
                     }
+
+                    //collision for zappers:
+                    if (gfx_CheckRectangleHotspot(avatarX+6, zapperY[i]+2, 18, (zapperLength[i]*10)+30, zapperX[i]-14, avatarY, 10, 50))
+                    {
+                        --health;
+                    }
                 }
 
                 zapperX[i] -= scrollSpeed;
+            }
+        }
 
-                //collision between to zappers:
-                if (gfx_CheckRectangleHotspot(avatarX, zapperY[i]+2, 30, (zapperLength[i]*10)+30, zapperX[i]-14, avatarY, 10, 50))
+        //bit that draws and calculates the missiles 'o death:
+        for (i = 0; i < MaxMissiles; ++i)
+        {
+            if (missileX[i] < 6001)
+            {
+                if (missileX[i] < 366)
                 {
-                    --health;
+                    gfx_TransparentSprite(missile, missileX[i]-46, missileY[i]-19);
+
+                    if (gfx_CheckRectangleHotspot(missileX[i]-45, avatarY, 19, 40, avatarX+6, missileY[i]-5, 18, 12))
+                    {
+                        --health;
+                    }
+
+                } else if (missileX[i] < 641) {
+
+                    //AW CRAP HERE COME DAT BOI!
+                    gfx_TransparentSprite(incoming[missileAnimate/3], 281+randInt(-1,1), missileY[i]-16+randInt(-1,1));
+
+                } else if (missileX[i] < 1467) {
+
+                    //plenty of time to dodge (at the beginning at least)
+                    gfx_TransparentSprite(warning[missileAnimate/2], 293, missileY[i]-11);
+
+                    //tracking on avatar
+                    if (missileY[i] < (avatarY + 20))
+                    {
+                        missileY[i] += 2;
+                    } else if (missileY[i] > (avatarY + 21)) {
+                        missileY[i] -= 2;
+                    }
                 }
+
+                //make missileAnimate go up and down between 0 and 5 by toggling MAvalue:
+                if ((missileAnimate < 1) || (missileAnimate > 4))
+                {
+                    MAvalue *= -1;
+                }
+                missileAnimate += MAvalue;
+
+                //missiles travel by 6 pixels each frame. It was surprisingly tedious to figure that out
+                //from frame-by-frame reviewing of missiles.
+                missileX[i] -= scrollSpeed + 8;
             }
         }
 
@@ -383,9 +521,9 @@ void main(void)
         gfx_TransparentSprite_NoClip(avatar[displacement/3], avatarX, avatarY-abs((displacement/3)-1));
 
         //bit that draws exhaust when in flight:
-        if (kb_Data[1] & kb_2nd)
+        if (flightTime < 18)
         {
-            gfx_TransparentSprite_NoClip(exhaust[flightTime/4], avatarX+randInt(1,3), avatarY+31);
+            gfx_TransparentSprite_NoClip(exhaust[flightTime/2], avatarX+randInt(1,3), avatarY+31);
             gfx_TransparentSprite_NoClip(nozzle, avatarX+4, avatarY+31);
         }
 
@@ -417,13 +555,13 @@ void main(void)
 
     if (health < 1)
     {
-        rect(0,0,320,240,1);
+        gfx_FillScreen(1);
         gfx_SetTextScale(4, 4);
         gfx_PrintStringXY("U is ded lol.", 15, 100);
         gfx_SwapDraw();
 
-        while (os_GetCSC());
-        while (!os_GetCSC());
+        while (kb_AnyKey());
+        while (!kb_AnyKey());
 
         if (kb_Data[6] != kb_Clear)
         {
@@ -435,6 +573,7 @@ void main(void)
     free(background);
     free(nozzle);
     free(beam);
+    free(missile);
     free(decompressorVar);
 
     //stop libraries, not doing so causes "interesting" results

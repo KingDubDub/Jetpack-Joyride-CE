@@ -7,8 +7,8 @@ extern "C" {
 
 #define background_width 192
 #define background_height 240
-#define background_size 670
-extern unsigned char background_compressed[670];
+#define background_size 655
+extern unsigned char background_compressed[655];
 
 #ifdef __cplusplus
 }

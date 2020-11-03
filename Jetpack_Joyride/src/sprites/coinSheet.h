@@ -5,10 +5,10 @@
 extern "C" {
 #endif
 
-extern unsigned char coinSheet_tile_0_compressed[47];
-extern unsigned char coinSheet_tile_1_compressed[47];
-extern unsigned char coinSheet_tile_2_compressed[27];
-extern unsigned char coinSheet_tile_3_compressed[46];
+extern unsigned char coinSheet_tile_0_compressed[132];
+extern unsigned char coinSheet_tile_1_compressed[117];
+extern unsigned char coinSheet_tile_2_compressed[48];
+extern unsigned char coinSheet_tile_3_compressed[108];
 #define coinSheet_num_tiles 4
 extern unsigned char *coinSheet_tiles_compressed[4];
 

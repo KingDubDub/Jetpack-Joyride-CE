@@ -9,8 +9,12 @@ output: c
     - coins
     - zappers
     - electricStuff
+    - missileWarning
+    - missileIncoming
+    - missile
 
 palette: global_palette
+  max-entries: 255
   fixed-color: {index:0, r:255, g:0, b:128}
   fixed-color: {index:1, r:0, g:0, b:0}
   fixed-color: {index:2, r:232, g:232, b:232}
@@ -20,6 +24,7 @@ convert: singleObjects
   palette: global_palette
   compress: zx7
   images:
+    - sparkle.png
     - beam.png
     - background.png
     - nozzle.png
@@ -33,14 +38,14 @@ convert: avatar
 convert: exhaust
   palette: global_palette
   compress: zx7
-  tilesets: {tile-width:11, tile-height:20}
+  tilesets: {tile-width:11, tile-height:23}
     - exhaustSheet.png
 
 convert: coins
   palette: global_palette
   compress: zx7
-  tilesets: {tile-width:10, tile-height:10}
-    -coinSheet
+  tilesets: {tile-width:12, tile-height:12}
+    - coinSheet.png
 
 convert: zappers
   palette: global_palette
@@ -53,3 +58,21 @@ convert: electricStuff
   compress: zx7
   tilesets: {tile-width:32, tile-height:32}
     - electricSheet.png
+
+convert: missileWarning
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:20, tile-height:21}
+    - missileWarning.png
+
+convert: missileIncoming
+  palette: global_palette
+  compress: zx7
+  tilesets: {tile-width:31, tile-height:31}
+    - missileIncoming.png
+
+convert: missile
+  palette: global_palette
+  compress: zx7
+  images:
+    - missile.png

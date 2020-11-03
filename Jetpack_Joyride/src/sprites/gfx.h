@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "global_palette.h"
+#include "sparkle.h"
 #include "beam.h"
 #include "background.h"
 #include "nozzle.h"
@@ -14,6 +15,9 @@ extern "C" {
 #include "coinSheet.h"
 #include "zapperSheet.h"
 #include "electricSheet.h"
+#include "missileWarning.h"
+#include "missileIncoming.h"
+#include "missile.h"
 
 #ifdef __cplusplus
 }
