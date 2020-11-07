@@ -22,6 +22,9 @@ Controls:
 -Hold "2nd" to rise, release to fall
 -Press "clear" to exit the game
 
+NOTES FOR PEOPLE WHO WANT TO BUILD FROM SOURCE:
+-The convimg.yaml is written for Mateo's convimg utility version 8.3 and up, it will give an output error if you use a lower version.
+
 REMEMBER:
 1. I am not to blame for any damage caused to your calc by the program, as it's still in its testing phases.
 2. I am not to blame for any damage caused to your corpse/body by your inattention during chemisty; play responsibly when it's safe, not when you're     handling fulminates!
