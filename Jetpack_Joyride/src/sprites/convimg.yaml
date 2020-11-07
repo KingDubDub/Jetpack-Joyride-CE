@@ -1,78 +1,109 @@
-output: c
-  include-file: gfx.h
-  palettes:
-    - global_palette
-  converts:
-    - singleObjects
-    - avatar
-    - exhaust
-    - coins
-    - zappers
-    - electricStuff
-    - missileWarning
-    - missileIncoming
-    - missile
+palettes:
+  - name: global_palette
+    images: automatic
+    fixed-entries:
+      - color: {index: 0, r: 255, g: 0, b: 128}
+      - color: {index: 1, r: 255, g: 255, b: 255}
+      - color: {index: 2, r: 232, g: 232, b: 232}
 
-palette: global_palette
-  max-entries: 255
-  fixed-color: {index:0, r:255, g:0, b:128}
-  fixed-color: {index:1, r:0, g:0, b:0}
-  fixed-color: {index:2, r:232, g:232, b:232}
-  images: automatic
+converts:
+  - name: singleObjects
+    palette: global_palette
+    compress: zx7
+    images:
+      - background.png
+      - nozzle.png
+      - sparkle.png
+      - beam.png
 
-convert: singleObjects
-  palette: global_palette
-  compress: zx7
-  images:
-    - sparkle.png
-    - beam.png
-    - background.png
-    - nozzle.png
+converts:
+  - name: avatar
+    palette: global_palette
+    compress: zx7
+    tilesets: 
+      tile-width: 30
+      tile-height: 40
+      images:
+        - avatarSheet.png
 
-convert: avatar
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:30, tile-height:40}:
-    - avatarSheet.png
+converts:
+  - name: exhaust
+    palette: global_palette
+    compress: zx7
+    tilesets:
+      tile-width: 11
+      tile-height: 23
+      images:
+        - exhaustSheet.png
 
-convert: exhaust
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:11, tile-height:23}
-    - exhaustSheet.png
+converts:
+  - name: coins
+    palette: global_palette
+    compress: zx7
+    tilesets:
+      tile-width: 12
+      tile-height: 12
+      images:
+        - coinSheet.png
 
-convert: coins
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:12, tile-height:12}
-    - coinSheet.png
+converts:
+  - name: zappers
+    palette: global_palette
+    compress: zx7
+    tilesets:
+      tile-width: 18
+      tile-height: 18
+      images:
+        - zapperSheet.png
 
-convert: zappers
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:18, tile-height:18}
-    - zapperSheet.png
+converts:
+  - name: electricStuff
+    palette: global_palette
+    compress: zx7
+    tilesets:
+      tile-width: 32
+      tile-height: 32
+      images:
+        - electricSheet.png
 
-convert: electricStuff
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:32, tile-height:32}
-    - electricSheet.png
+converts:
+  - name: missileWarning
+    palette: global_palette
+    compress: zx7
+    tilesets:
+      tile-width: 20
+      tile-height: 21
+      images:
+        - missileWarning.png
 
-convert: missileWarning
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:20, tile-height:21}
-    - missileWarning.png
+converts: 
+  - name: missileIncoming
+    palette: global_palette
+    compress: zx7
+    tilesets:
+      tile-width: 31
+      tile-height: 31
+      images:
+        - missileIncoming.png
 
-convert: missileIncoming
-  palette: global_palette
-  compress: zx7
-  tilesets: {tile-width:31, tile-height:31}
-    - missileIncoming.png
+converts:
+  - name: missile
+    palette: global_palette
+    compress: zx7
+    images:
+      - missile.png
 
-convert: missile
-  palette: global_palette
-  compress: zx7
-  images:
-    - missile.png
+outputs:
+  - type: c
+    palettes:
+      - global_palette
+    converts:
+      - singleObjects
+      - avatar
+      - exhaust
+      - coins
+      - zappers
+      - electricStuff
+      - missileWarning
+      - missileIncoming
+      - missile
