@@ -1,0 +1,3806 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"SRC\JETPACK_JOYRIDE.C"
+	.assume ADL=1
+	SEGMENT TEXT
+_abbreviatedMax:
+	DB	30
+	DB	21
+	DB	24
+	DB	26
+	DB	17
+	DB	30
+_ctx:
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	108
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	108
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	108
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	72
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	72
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	144
+	DB	0
+	DW	156
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	108
+	DB	0
+	DW	120
+	DB	0
+	DW	144
+	DB	0
+	DW	156
+	DB	0
+	DW	180
+	DB	0
+	DW	192
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	108
+	DB	0
+	DW	120
+	DB	0
+	DW	180
+	DB	0
+	DW	192
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	84
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	108
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	60
+	DB	0
+	DW	72
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	108
+	DB	0
+	DW	84
+	DB	0
+	DW	96
+	DB	0
+	DW	84
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	48
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	0
+	DB	0
+	DW	12
+	DB	0
+	DW	24
+	DB	0
+	DW	36
+	DB	0
+	DW	24
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	72
+	DB	0
+	DW	96
+	DB	0
+	DW	12
+	DB	0
+	DW	36
+	DB	0
+	DW	60
+	DB	0
+	DW	84
+	DB	0
+	DW	108
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	72
+	DB	0
+	DW	96
+	DB	0
+	DW	12
+	DB	0
+	DW	36
+	DB	0
+	DW	60
+	DB	0
+	DW	84
+	DB	0
+	DW	108
+	DB	0
+	DW	0
+	DB	0
+	DW	24
+	DB	0
+	DW	48
+	DB	0
+	DW	72
+	DB	0
+	DW	96
+	DB	0
+	DW	12
+	DB	0
+	DW	36
+	DB	0
+	DW	60
+	DB	0
+	DW	84
+	DB	0
+	DW	108
+	DB	0
+_cty:
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	48
+	DB	48
+	DB	48
+	DB	48
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	12
+	DB	12
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	48
+	DB	48
+	DB	60
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	24
+	DB	24
+	DB	36
+	DB	36
+	DB	36
+	DB	48
+	DB	48
+	DB	60
+	DB	60
+	DB	60
+	DB	60
+	DB	72
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	12
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	24
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	36
+	DB	48
+	DB	48
+	DB	48
+	DB	48
+	DB	48
+	DB	60
+	DB	60
+	DB	60
+	DB	60
+	DB	60
+	SEGMENT BSS
+_i:
+	DS	1
+_avatarX:
+	DS	2*1
+_avatarY:
+	DS	1
+_avatar:
+	DS	12
+	SEGMENT DATA
+_avatarAnimate:
+	DB	1
+_displacement:
+	DB	3
+	SEGMENT BSS
+_exhaust:
+	DS	18
+	SEGMENT DATA
+_flightTime:
+	DB	18
+	SEGMENT BSS
+_frameTime:
+	DS	1
+_holdTime:
+	DS	1
+_scrollSpeed:
+	DS	1
+	SEGMENT DATA
+_spawnDelay:
+	DW	100
+	DB	0
+	SEGMENT BSS
+_backgroundScroll:
+	DS	3
+_health:
+	DS	1
+_monies:
+	DS	4*1
+_distance:
+	DS	4*1
+_randVar:
+	DS	1
+_randVar1:
+	DS	1
+_randObject:
+	DS	1
+_zapperY:
+	DS	9
+_zapperX:
+	DS	6
+_zapperLength:
+	DS	3
+_beamCount:
+	DS	1
+_zapperAnimate:
+	DS	3
+_zapper:
+	DS	18
+_electric:
+	DS	24
+_coinX:
+	DS	90
+_coinY:
+	DS	30
+_coinFormation:
+	DS	1
+_coinAnimate:
+	DS	30
+_coin:
+	DS	12
+_missileX:
+	DS	2
+_missileY:
+	DS	1
+_warning:
+	DS	9
+_incoming:
+	DS	6
+_missileAnimate:
+	DS	1
+	SEGMENT DATA
+_MAvalue:
+	DB	255
+;    1	#include <stdbool.h>
+;    2	#include <stddef.h>
+;    3	#include <stdint.h>
+;    4	#include <tice.h>
+;    5	
+;    6	#include <math.h>
+;    7	#include <stdio.h>
+;    8	#include <stdlib.h>
+;    9	#include <string.h>
+;   10	
+;   11	#include <compression.h>
+;   12	#include <graphx.h>
+;   13	#include <keypadc.h>
+;   14	
+;   15	#include "sprites/gfx.h"
+;   16	#include "coinShapes.c"
+;   17	
+;   18	//max number of zappers:
+;   19	#define MaxZappers 3
+;   20	
+;   21	//mas number of missiles, will probably be replaced with a non-static value later:
+;   22	#define MaxMissiles 1
+;   23	
+;   24	//the most overused variable ever:
+;   25	uint8_t i;
+;   26	
+;   27	//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
+;   28	//my child if I had the desire to marry and have children.
+;   29	uint16_t avatarX;
+;   30	uint8_t avatarY;
+;   31	
+;   32	//avatar's sprite array and values for keeping track of animation frames:
+;   33	gfx_sprite_t *avatar[4];
+;   34	int8_t avatarAnimate = 1;
+;   35	int8_t displacement = 3;
+;   36	
+;   37	//exhaust/flame sprite array for jetpack flight animations:
+;   38	gfx_sprite_t *exhaust[6];
+;   39	
+;   40	//variable used for calculating fire animations:
+;   41	uint8_t flightTime = 18;
+;   42	
+;   43	//time it takes to complete the game loop, used to control the FPS; if it overflows
+;   44	//then we have real problems:
+;   45	uint8_t frameTime;
+;   46	
+;   47	//variables for when jetpack is on or not for math calculations:
+;   48	int8_t holdTime;
+;   49	
+;   50	//speed of scrolling for avatar, obstacles, map, etc.
+;   51	uint8_t scrollSpeed;
+;   52	
+;   53	//measures timings for delays between spawning coins, obstacles, etc.:
+;   54	int24_t spawnDelay = 100;
+;   55	
+;   56	//used for a bad background scroll function that is actually the best for this scenario:
+;   57	int24_t backgroundScroll;
+;   58	
+;   59	//stores if Barry done got wasted or not:
+;   60	uint8_t health;
+;   61	
+;   62	//max monies at $4,294,967,295:
+;   63	uint32_t monies;
+;   64	
+;   65	//there's a limit to the distance you can fly in the original game, not sure I'll keep that or not...
+;   66	uint32_t distance;
+;   67	
+;   68	//for randomization values that need to be reused:
+;   69	uint8_t randVar;
+;   70	uint8_t randVar1;
+;   71	
+;   72	uint8_t randObject;
+;   73	
+;   74	//arrays for zapper coordinates:
+;   75	uint24_t zapperY[MaxZappers];
+;   76	uint16_t zapperX[MaxZappers];
+;   77	//measured in beam units, 10x10 pixels:
+;   78	uint8_t zapperLength[MaxZappers];
+;   79	//used to draw zapper beam segments:
+;   80	uint8_t beamCount;
+;   81	//zapper animation count, all start at zero:
+;   82	uint8_t zapperAnimate[MaxZappers];
+;   83	gfx_sprite_t *zapper[6];
+;   84	
+;   85	//sprite array for electrical flares around zapper nodes:
+;   86	gfx_sprite_t *electric[8];
+;   87	
+;   88	uint24_t coinX[MaxCoins];
+;   89	uint8_t coinY[MaxCoins];
+;   90	//coin formation variable to keep track of coin lists:
+;   91	uint8_t coinFormation;
+;   92	//values for keeping track of coin animation sprites, all start at zero:
+;   93	uint8_t coinAnimate[MaxCoins];
+;   94	gfx_sprite_t *coin[4];
+;   95	
+;   96	uint16_t missileX[MaxMissiles];
+;   97	uint8_t missileY[MaxMissiles];
+;   98	//missile warning sprite array (the red exclamation marks):
+;   99	gfx_sprite_t *warning[3];
+;  100	//missile incoming sprite array (exclamation marks with emphasis):
+;  101	gfx_sprite_t *incoming[2];
+;  102	//keep track of animations for missiles:
+;  103	uint8_t missileAnimate;
+;  104	int8_t MAvalue = -1;
+	SEGMENT CODE
+;  105	
+;  106	
+;  107	
+;  108	//clears all objects from gameplay:
+;  109	void delObjects()
+;  110	{
+_delObjects:
+	LD	HL,-6
+	CALL	__frameset
+;  111	    for (i = 0; i < abbreviatedMax[coinFormation]; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_2
+L_0:
+;  112	    {
+;  113	        coinX[i] = 2000;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,2000
+	LD	(IX+-6),BC	; spill
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	BC,(IX+-6)	; unspill
+	LD	(HL),BC
+;  114	        coinY[i] = 0;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	(HL),0
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  115	    }
+L_2:
+	LD	A,(_coinFormation)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_abbreviatedMax
+	ADD	HL,BC
+	LD	A,(_i)
+	CP	A,(HL)
+	JR	C,L_0
+;  116	
+;  117	    for (i = 0; i < MaxZappers; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_5
+L_3:
+;  118	    {
+;  119	        zapperLength[i] = 0;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	(HL),0
+;  120	        zapperX[i] = 2000;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	(HL),208
+	INC	HL
+	LD	(HL),7
+;  121	        zapperY[i] = 0;
+	LD	A,(_i)
+	UEXT	HL
+	LD	DE,0
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	(HL),DE
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  122	    }
+L_5:
+	LD	A,(_i)
+	CP	A,3
+	JR	C,L_3
+;  123	
+;  124	    for (i = 0; i < MaxMissiles; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_9
+L_7:
+;  125	    {
+;  126	        missileX[i] = 6001;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_missileX
+	ADD	HL,BC
+	LD	(HL),113
+	INC	HL
+	LD	(HL),23
+;  127	        missileY[i] = 0;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_missileY
+	ADD	HL,BC
+	LD	(HL),0
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  128	    }
+L_9:
+	LD	A,(_i)
+	CP	A,1
+	JR	C,L_7
+;  129	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _delObjects ***************************
+;Name                         Addr/Register   Size   Type
+;_missileY                           STATIC      1   variable
+;_missileX                           STATIC      2   variable
+;_zapperY                            STATIC      9   variable
+;_zapperX                            STATIC      6   variable
+;_zapperLength                       STATIC      3   variable
+;_coinFormation                      STATIC      1   variable
+;_abbreviatedMax                     IMPORT      6   variable
+;_coinY                              STATIC     30   variable
+;_coinX                              STATIC     90   variable
+;_i                                  STATIC      1   variable
+
+
+; Stack Frame Size: 12 (bytes)
+;       Spill Code: 0 (instruction)
+
+
+;  130	
+;  131	
+;  132	
+;  133	void main(void)
+;  134	{
+_main:
+	LD	HL,-91
+	CALL	__frameset
+;  135	    //make background sprite variables and a quick decompression slot:
+;  136	    gfx_sprite_t *background, *nozzle, *sparkle, *beam, *missile, *decompressorVar;
+;  137	
+;  138	    background = gfx_MallocSprite(192, 240);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,240
+	PUSH	BC
+	LD	BC,192
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-21),HL
+;  139	    zx7_Decompress(background, background_compressed);
+	LD	BC,_background_compressed
+	PUSH	BC
+	LD	BC,(IX+-21)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  140	
+;  141	    //sparkle effect left by picked up coins:
+;  142	    sparkle = gfx_MallocSprite(16, 15);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,15
+	PUSH	BC
+	LD	BC,16
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-33),HL
+;  143	    zx7_Decompress(sparkle, sparkle_compressed);
+	LD	BC,_sparkle_compressed
+	PUSH	BC
+	LD	BC,(IX+-33)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  144	
+;  145	    //jetpack nozzle that glows when releasing exhaust:
+;  146	    nozzle = gfx_MallocSprite(nozzle_width, nozzle_height);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,2
+	PUSH	BC
+	LD	BC,7
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-30),HL
+;  147	    zx7_Decompress(nozzle, nozzle_compressed);
+	LD	BC,_nozzle_compressed
+	PUSH	BC
+	LD	BC,(IX+-30)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  148	
+;  149	    //zapper beam:
+;  150	    beam = gfx_MallocSprite(10, 10);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,10
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-36),HL
+;  151	    zx7_Decompress(beam, beam_compressed);
+	LD	BC,_beam_compressed
+	PUSH	BC
+	LD	BC,(IX+-36)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  152	
+;  153	    //temporary missile sprite:
+;  154	    missile = gfx_MallocSprite(46, 38);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,38
+	PUSH	BC
+	LD	BC,46
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-39),HL
+;  155	    zx7_Decompress(missile, missile_compressed);
+	LD	BC,_missile_compressed
+	PUSH	BC
+	LD	BC,(IX+-39)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  156	
+;  157	    for(i = 0; i < 4; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_14
+L_12:
+;  158	    {
+;  159	        //decompressing avatar spritesheet:
+;  160	        decompressorVar = gfx_MallocSprite(30, 40);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,40
+	PUSH	BC
+	LD	BC,30
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  161	        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_avatarSheet_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  162	        avatar[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_avatar
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  163	    }
+L_14:
+	LD	A,(_i)
+	CP	A,4
+	JR	C,L_12
+;  164	
+;  165	    //jetpack exhaust:
+;  166	    for(i = 0; i < 6; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_17
+L_15:
+;  167	    {
+;  168	        decompressorVar = gfx_MallocSprite(11, 23);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,23
+	PUSH	BC
+	LD	BC,11
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  169	        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_exhaustSheet_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  170	        exhaust[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_exhaust
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  171	    }
+L_17:
+	LD	A,(_i)
+	CP	A,6
+	JR	C,L_15
+;  172	
+;  173	    for(i = 0; i < 4; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_21
+L_19:
+;  174	    {
+;  175	        //decompressing coin spritesheet:
+;  176	        decompressorVar = gfx_MallocSprite(12, 12);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,12
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  177	        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinSheet_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  178	        coin[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_coin
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  179	    }
+L_21:
+	LD	A,(_i)
+	CP	A,4
+	JR	C,L_19
+;  180	
+;  181	    for(i = 0; i < 3; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_25
+L_23:
+;  182	    {
+;  183	        //zappers:
+;  184	        zapper[i] = gfx_MallocSprite(18, 18);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,18
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  185	        zapper[i+3] = gfx_MallocSprite(18, 18);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,18
+	PUSH	BC
+	PUSH	BC
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_zapper
+	ADD	HL,DE
+	LD	(HL),BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	HL,IY+3
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_zapper
+	ADD	HL,DE
+	LD	(HL),BC
+;  186	        zx7_Decompress(zapper[i], zapperSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,HL
+	LD	HL,BC
+	LD	DE,_zapperSheet_tiles_compressed
+	ADD	HL,DE
+	LD	DE,(HL)
+	PUSH	DE
+	LD	HL,BC
+	LD	BC,_zapper
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  187	        gfx_FlipSpriteX(zapper[i], zapper[i+3]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	HL,IY+3
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapper
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapper
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_FlipSpriteX
+	POP	BC
+	POP	BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  188	    }
+L_25:
+	LD	A,(_i)
+	CP	A,3
+	JR	C,L_23
+;  189	
+;  190	    for(i=0; i < 8; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_29
+L_27:
+;  191	    {
+;  192	        //mallocing full electric array:
+;  193	        electric[i] = gfx_MallocSprite(32, 32);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,32
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_electric
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  194	    }
+L_29:
+	LD	A,(_i)
+	CP	A,8
+	JR	C,L_27
+;  195	
+;  196	    for(i = 0; i < 2; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_33
+L_31:
+;  197	    {
+;  198	        //zapper lightning:
+;  199	        zx7_Decompress(electric[i], electricSheet_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,HL
+	LD	HL,BC
+	LD	DE,_electricSheet_tiles_compressed
+	ADD	HL,DE
+	LD	DE,(HL)
+	PUSH	DE
+	LD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  200	        gfx_FlipSpriteX(electric[i], electric[i+2]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	INC	HL
+	INC	HL
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_FlipSpriteX
+	POP	BC
+	POP	BC
+;  201	        gfx_FlipSpriteY(electric[i], electric[i+4]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	HL,IY+4
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_FlipSpriteY
+	POP	BC
+	POP	BC
+;  202	        gfx_RotateSpriteHalf(electric[i], electric[i+6]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	HL,IY+6
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_RotateSpriteHalf
+	POP	BC
+	POP	BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  203	    }
+L_33:
+	LD	A,(_i)
+	CP	A,2
+	JR	C,L_31
+;  204	
+;  205	    for(i = 0; i < 2; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_37
+L_35:
+;  206	    {
+;  207	        //missile incoming symbol:
+;  208	        decompressorVar = gfx_MallocSprite(31, 31);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,31
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  209	        zx7_Decompress(decompressorVar, missileIncoming_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_missileIncoming_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  210	        incoming[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_incoming
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  211	    }
+L_37:
+	LD	A,(_i)
+	CP	A,2
+	JR	C,L_35
+;  212	
+;  213	    for(i = 0; i < 3; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_41
+L_39:
+;  214	    {
+;  215	        //missile warning symbols:
+;  216	        decompressorVar = gfx_MallocSprite(20, 21);
+	LD	BC,_malloc
+	PUSH	BC
+	LD	BC,21
+	PUSH	BC
+	LD	BC,20
+	PUSH	BC
+	CALL	_gfx_AllocSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	(IX+-3),HL
+;  217	        zx7_Decompress(decompressorVar, missileWarning_tiles_compressed[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_missileWarning_tiles_compressed
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_zx7_Decompress
+	POP	BC
+	POP	BC
+;  218	        warning[i] = decompressorVar;
+	LD	A,(_i)
+	UEXT	HL
+	LD	BC,(IX+-3)
+	LD	L,A
+	LD	DE,HL
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_warning
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  219	    }
+L_41:
+	LD	A,(_i)
+	CP	A,3
+	JR	C,L_39
+;  220	
+;  221	    //initialize GFX libraries:
+;  222	    gfx_Begin();
+	CALL	_gfx_Begin
+;  223	    gfx_SetDrawBuffer();
+	LD	BC,1
+	PUSH	BC
+	CALL	_gfx_SetDraw
+	POP	BC
+;  224	
+;  225	    gfx_SetPalette(global_palette, sizeof_global_palette, 0);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,512
+	PUSH	BC
+	LD	BC,_global_palette
+	PUSH	BC
+	CALL	_gfx_SetPalette
+	POP	BC
+	POP	BC
+	POP	BC
+;  226	    gfx_SetTransparentColor(0);
+	LD	BC,0
+	PUSH	BC
+	CALL	_gfx_SetTransparentColor
+	POP	BC
+;  227	
+;  228	    //start up a timer for FPS monitoring, do not move:
+;  229	    timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
+	LD	HL,15859760
+	LD	(HL),3
+	INC	HL
+;  230	
+;  231	    //best scan mode according to Mateo:
+;  232	    kb_SetMode(MODE_3_CONTINUOUS);
+;  233	
+;  234	    //all text printed is gray:
+;  235	    gfx_SetTextFGColor(2);
+	LD	BC,2
+	PUSH	BC
+	LD	(HL),2
+	LD	A,(16056320)
+	AND	A,252
+	OR	A,3
+	LD	(16056320),A
+	CALL	_gfx_SetTextFGColor
+	POP	BC
+;  236	
+;  237	    //when I first started using C, I asked some friends if there were GOTO statements.
+;  238	    //They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
+;  239	    GAMESTART:
+L_44:
+;  240	    //But it's still sometimes okay.
+;  241	
+;  242	    //reset variables for when a game starts:
+;  243	    scrollSpeed = 6;
+	LD	A,6
+	LD	(_scrollSpeed),A
+;  244	    avatarX = 24;
+	LD	HL,_avatarX
+	LD	(HL),24
+	INC	HL
+	LD	(HL),0
+;  245	    avatarY = 185;
+	LD	A,185
+	LD	(_avatarY),A
+;  246	    holdTime = 0;
+	XOR	A,A
+	LD	(_holdTime),A
+;  247	    flightTime = 18;
+	LD	A,18
+	LD	(_flightTime),A
+;  248	    health = 1;
+	LD	A,1
+	LD	(_health),A
+;  249	    spawnDelay = 100;
+	LD	BC,100
+	LD	(_spawnDelay),BC
+;  250	    distance = 0;
+	LD	BC,0
+	LD	(_distance),BC
+	XOR	A,A
+	LD	(_distance+3),A
+;  251	    monies = 0;
+	LD	(_monies),BC
+	XOR	A,A
+	LD	(_monies+3),A
+;  252	
+;  253	    delObjects();
+	CALL	_delObjects
+;  254	
+;  255	    // Loop until clear is pressed:
+;  256	    do{
+L_158:
+;  257	        //update keys, fixes bugs with update errors that can lead to softlocks:
+;  258	        kb_Scan();
+	CALL	_kb_Scan
+;  259	
+;  260	        if ((backgroundScroll - scrollSpeed) <= 0)
+	LD	A,(_scrollSpeed)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,(_backgroundScroll)
+	OR	A,A
+	SBC	HL,BC
+	LD	(IX+-63),HL
+	LD	BC,HL
+	OR	A,A
+	SBC	HL,HL
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	M,L_46
+;  261	        {
+;  262	            backgroundScroll += (192 - scrollSpeed);
+	LD	A,(_scrollSpeed)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,192
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,(_backgroundScroll)
+	ADD	HL,BC
+	LD	(_backgroundScroll),HL
+;  263	        } else {
+	JR	L_67
+L_46:
+;  264	            backgroundScroll -= scrollSpeed;
+	LD	BC,(IX+-63)
+	LD	(_backgroundScroll),BC
+;  265	        }
+L_67:
+;  266	
+;  267	        //spawns stuff, SO much better than the debug methods I originally used:
+;  268	        if (spawnDelay <= 0)
+	LD	BC,(_spawnDelay)
+	OR	A,A
+	SBC	HL,HL
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	M,L_66
+;  269	        {
+;  270	            randObject = randInt(1,10);
+	CALL	_random
+	LD	BC,10
+	CALL	__iremu
+	INC	HL
+	LD	A,L
+;  271	
+;  272	            if (randObject == 1)
+	CP	A,1
+	LD	(_randObject),A
+	JR	NZ,L_64
+;  273	            {
+;  274	                //sets coin coordinates from coordinate lists:
+;  275	                randVar = randInt(30, 150);
+	CALL	_random
+	LD	BC,121
+	CALL	__iremu
+	LD	IY,HL
+	LEA	HL,IY+30
+	LD	A,L
+	LD	(_randVar),A
+;  276	                coinFormation = randInt(0, 5);
+	CALL	_random
+	LD	BC,6
+	CALL	__iremu
+	LD	A,L
+	LD	(_coinFormation),A
+;  277	                for(i = 0; i < MaxCoins; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_49
+L_47:
+;  278	                {
+;  279	                    coinX[i] = ctx[coinFormation][i] + 330;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,HL
+	LD	A,(_coinFormation)
+	UEXT	HL
+	LD	L,A
+	LD	A,90
+	CALL	__imul_b
+	LD	DE,_ctx
+	ADD	HL,DE
+	LD	DE,BC
+	ADD	HL,DE
+	LD	IY,HL
+	LD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-81),IY	; spill
+	LD	(IX+-84),HL	; spill
+	LD	IY,(IX+-81)	; unspill
+	LD	HL,(IY)
+	LD	BC,330
+	ADD	HL,BC
+	LD	IY,(IX+-84)	; unspill
+	LD	(IY),HL
+;  280	                    coinY[i] = cty[coinFormation][i] + randVar;
+	LD	A,(_coinFormation)
+	UEXT	HL
+	LD	L,A
+	LD	A,30
+	CALL	__imul_b
+	LD	BC,_cty
+	ADD	HL,BC
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,BC
+	LD	IY,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	A,(IY)
+	LD	BC,(_randVar)
+	ADD	A,C
+	LD	(HL),A
+;  281	                    coinAnimate[i] = 0;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinAnimate
+	ADD	HL,BC
+	LD	(HL),0
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+;  282	                }
+L_49:
+	LD	A,(_i)
+	CP	A,30
+	JR	C,L_47
+;  283	
+;  284	                spawnDelay = 500;
+	LD	BC,500
+	LD	(_spawnDelay),BC
+;  285	
+;  286	            } else if (randObject == 2) {
+	JR	L_90
+L_64:
+	LD	A,(_randObject)
+	CP	A,2
+	JR	NZ,L_62
+;  287	
+;  288	                //spawns missiles (and missile swarms if I implement them):
+;  289	                for (i = 0; i < MaxMissiles; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_54
+L_52:
+;  290	                {
+;  291	                    if (missileX[i] > 6000)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_missileX
+	ADD	HL,BC
+	LD	(IX+-51),HL
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	BC,HL
+	LD	HL,6000
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_53
+;  292	                    {
+;  293	                        missileX[i] = 1466;
+	LD	HL,(IX+-51)
+	LD	(HL),186
+	INC	HL
+	LD	(HL),5
+;  294	                        missileY[i] = 10 * randInt(2, 18);
+	CALL	_random
+	LD	BC,17
+	CALL	__iremu
+	INC	HL
+	INC	HL
+	LD	B,L
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	C,10
+	LD	DE,_missileY
+	ADD	HL,DE
+	MLT	BC
+	LD	(HL),C
+;  295	
+;  296	                        i = MaxZappers;
+	LD	A,3
+	LD	(_i),A
+;  297	                    }
+;  298	                }
+L_53:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_54:
+	LD	A,(_i)
+	CP	A,1
+	JR	C,L_52
+	JR	L_90
+;  299	
+;  300	                //missiles have their own "delay" and don't need to reset spawnDelay.
+;  301	
+;  302	            } else if (randObject <= 10) {
+L_62:
+	LD	A,10
+	LD	HL,_randObject
+	CP	A,(HL)
+	JR	C,L_90
+;  303	
+;  304	                //randomly generates zapper coordinates and lengths:
+;  305	                for (i = 0; i < MaxZappers; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_58
+L_56:
+;  306	                {
+;  307	                    if (zapperX[i] > 330)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	(IX+-60),HL
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	BC,HL
+	LD	HL,330
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_57
+;  308	                    {
+;  309	                        zapperX[i] = 330;
+	LD	HL,(IX+-60)
+	LD	(HL),74
+	INC	HL
+	LD	(HL),1
+;  310	
+;  311	                        zapperLength[i] = randInt(2, 4);
+	CALL	_random
+	LD	A,(_i)
+	LD	BC,3
+	CALL	__iremu
+	INC	HL
+	INC	HL
+	LD	B,L
+	UEXT	HL
+	LD	L,A
+	LD	DE,_zapperLength
+	ADD	HL,DE
+	LD	(HL),B
+;  312	                        zapperY[i] = 10 * randInt(2, 19 - zapperLength[i]);
+	CALL	_random
+	LD	DE,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	LD	BC,HL
+	LD	HL,19
+	OR	A,A
+	SBC	HL,BC
+	LD	BC,HL
+	LD	HL,DE
+	DEC	BC
+	CALL	__iremu
+	INC	HL
+	INC	HL
+	CALL	__imul_b
+	LD	BC,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	DE,HL
+;  313	
+;  314	                        i = MaxZappers;
+	LD	A,3
+	ADD	HL,HL
+	ADD	HL,DE
+	LD	DE,_zapperY
+	ADD	HL,DE
+	LD	(HL),BC
+	LD	(_i),A
+;  315	                    }
+;  316	                }
+L_57:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_58:
+	LD	A,(_i)
+	CP	A,3
+	JR	C,L_56
+;  317	
+;  318	                spawnDelay = 200;
+	LD	BC,200
+	LD	(_spawnDelay),BC
+;  319	            }
+;  320	        } else {
+	JR	L_90
+L_66:
+;  321	            spawnDelay -= scrollSpeed;
+	LD	A,(_scrollSpeed)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,(_spawnDelay)
+	OR	A,A
+	SBC	HL,BC
+	LD	(_spawnDelay),HL
+;  322	        }
+L_90:
+;  323	
+;  324	        //run controls until Barry gets wasted, then bounces his corpse around:
+;  325	        if (health > 0)
+	XOR	A,A
+	LD	HL,_health
+	CP	A,(HL)
+	JR	NC,L_98
+;  326	        {
+;  327	            if (kb_Data[1] & kb_2nd)
+	LD	A,(16056338)
+	AND	A,32
+	JR	Z,L_82
+;  328	            {
+;  329	                if((avatarY > 20) && (holdTime < 12))
+	LD	A,20
+	LD	HL,_avatarY
+	CP	A,(HL)
+	JR	NC,L_71
+	LD	A,(_holdTime)
+	CP	A,12
+	JP	P,L_71
+;  330	                {
+;  331	                    holdTime += 1;
+	LD	A,(_holdTime)
+	INC	A
+	LD	(_holdTime),A
+;  332	                }
+L_71:
+;  333	
+;  334	                if (flightTime > 7)
+	LD	A,7
+	LD	HL,_flightTime
+	CP	A,(HL)
+	JR	NC,L_73
+;  335	                {
+;  336	                    flightTime = 0;
+	XOR	A,A
+	LD	(_flightTime),A
+;  337	                }
+L_73:
+;  338	
+;  339	                if (flightTime < 7)
+	LD	A,(_flightTime)
+	CP	A,7
+	JR	NC,L_83
+;  340	                {
+;  341	                    ++flightTime;
+	LD	A,(_flightTime)
+	INC	A
+	LD	(_flightTime),A
+;  342	                }
+;  343	
+;  344	            } else {
+	JR	L_83
+L_82:
+;  345	
+;  346	                if((avatarY < (185)) && (holdTime > -10))
+	LD	A,(_avatarY)
+	CP	A,185
+	JR	NC,L_80
+	LD	A,246
+	LD	HL,_holdTime
+	CP	A,(HL)
+	CALL	__setflag
+	JP	P,L_80
+;  347	                {
+;  348	                    holdTime -= 1;
+	LD	A,(_holdTime)
+	DEC	A
+	LD	(_holdTime),A
+;  349	                }
+L_80:
+;  350	
+;  351	                if (flightTime < 7)
+	LD	A,(_flightTime)
+	CP	A,7
+	JR	NC,L_79
+;  352	                {
+;  353	                    flightTime = 8;
+	LD	A,8
+	LD	(_flightTime),A
+;  354	
+;  355	                } else if (flightTime < 11) {
+	JR	L_83
+L_79:
+	LD	A,(_flightTime)
+	CP	A,11
+	JR	NC,L_77
+;  356	
+;  357	                    ++flightTime;
+	LD	A,(_flightTime)
+	INC	A
+	LD	(_flightTime),A
+;  358	
+;  359	                } else {
+	JR	L_83
+L_77:
+;  360	
+;  361	                    flightTime = 18;
+	LD	A,18
+	LD	(_flightTime),A
+;  362	                }
+;  363	            }
+L_83:
+;  364	
+;  365	            //SAX got pretty mad about this part, turns out a linear equation can model a curve and
+;  366	            //is actually better than a cubic function:
+;  367	            avatarY -= (holdTime);
+	LD	BC,(_holdTime)
+	LD	A,(_avatarY)
+	SUB	A,C
+	LD	(_avatarY),A
+;  368	
+;  369	            //sees if Y-value rolled past zero or 198, figures out if it was going up
+;  370	            //or down, and auto-corrects accordingly:
+;  371	            if ((avatarY > (186)) || (avatarY < 20))
+	LD	A,186
+	LD	HL,_avatarY
+	CP	A,(HL)
+	JR	C,L_88
+	LD	A,(_avatarY)
+	CP	A,20
+	JR	NC,L_98
+L_88:
+;  372	            {
+;  373	                if (holdTime > 0)
+	XOR	A,A
+	LD	HL,_holdTime
+	CP	A,(HL)
+	CALL	__setflag
+	JP	P,L_86
+;  374	                {
+;  375	                    avatarY = 20;
+	LD	A,20
+	LD	(_avatarY),A
+;  376	                } else {
+	JR	L_87
+L_86:
+;  377	                    avatarY = 185;
+	LD	A,185
+	LD	(_avatarY),A
+;  378	                }
+L_87:
+;  379	                holdTime = 0;
+	XOR	A,A
+	LD	(_holdTime),A
+;  380	            }
+;  381	        }
+L_98:
+;  382	
+;  383	        //bit that runs avatar animations:
+;  384	        if (avatarY < 185)
+	LD	A,(_avatarY)
+	CP	A,185
+	JR	NC,L_97
+;  385	        {
+;  386	            displacement = 9;
+	LD	A,9
+	LD	(_displacement),A
+;  387	        } else {
+	JR	L_99
+L_97:
+;  388	
+;  389	            if (displacement == 9)
+	LD	A,(_displacement)
+	CP	A,9
+	JR	NZ,L_94
+;  390	            {
+;  391	                displacement = 3;
+	LD	A,3
+	LD	(_displacement),A
+;  392	            }
+L_94:
+;  393	
+;  394	            if((displacement < 1) || (displacement > 7))
+	LD	A,(_displacement)
+	CP	A,1
+	CALL	__setflag
+	JP	M,L_93
+	LD	A,7
+	LD	HL,_displacement
+	CP	A,(HL)
+	CALL	__setflag
+	JP	P,L_95
+L_93:
+;  395	            {
+;  396	                avatarAnimate *= -1;
+	LD	A,(_avatarAnimate)
+	NEG	
+	LD	(_avatarAnimate),A
+;  397	            }
+L_95:
+;  398	
+;  399	            displacement += avatarAnimate;
+	LD	BC,(_avatarAnimate)
+	LD	A,(_displacement)
+	ADD	A,C
+	LD	(_displacement),A
+;  400	        }
+L_99:
+;  401	
+;  402	        //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
+;  403	        gfx_Sprite(background, backgroundScroll - 192, 0);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,16777024
+	LD	HL,(_backgroundScroll)
+	ADD	HL,BC
+	PUSH	HL
+	LD	BC,(IX+-21)
+	PUSH	BC
+	CALL	_gfx_Sprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  404	        gfx_Sprite(background, backgroundScroll, 0);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,(_backgroundScroll)
+	PUSH	BC
+	LD	BC,(IX+-21)
+	PUSH	BC
+	CALL	_gfx_Sprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  405	        gfx_Sprite(background, backgroundScroll + 192, 0);
+	LD	BC,0
+	PUSH	BC
+	LD	BC,192
+	LD	HL,(_backgroundScroll)
+	ADD	HL,BC
+	PUSH	HL
+	LD	BC,(IX+-21)
+	PUSH	BC
+	CALL	_gfx_Sprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  406	
+;  407	        //bit that runs coin collision and movement:
+;  408	        for(i = 0; i < abbreviatedMax[coinFormation]; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_112
+L_110:
+;  409	        {
+;  410	            if (coinX[i] < 1000)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-9),HL
+	OR	A,A
+	LD	HL,(HL)
+	LD	BC,1000
+	SBC	HL,BC
+	JR	NC,L_111
+;  411	            {
+;  412	                //collision detection and appropriate sprite drawing:
+;  413	                if (coinX[i] < 330)
+	LD	HL,(IX+-9)
+	LD	HL,(HL)
+	LD	BC,330
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_108
+;  414	                {
+;  415	                    if (gfx_CheckRectangleHotspot(avatarX+6,avatarY,18,40,coinX[i]-11,coinY[i]+1,10,10))
+	LD	BC,(IX+-9)
+	LD	(IX+-42),BC
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+24
+	OR	A,A
+	LD	HL,(IX+-9)
+	LD	IY,(HL)
+	LEA	HL,IY+-11
+	SBC	HL,BC
+	JR	NC,L_106
+	LD	BC,(IX+-9)
+	LD	(IX+-42),BC
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	HL,IY+6
+	LD	IY,(IX+-9)
+	LD	BC,(IY)
+	DEC	BC
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_106
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	(IX+-24),HL
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	INC	BC
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	DE,IY+40
+	LD	HL,BC
+	OR	A,A
+	SBC	HL,DE
+	CALL	__setflag
+	JP	P,L_106
+	LD	HL,(IX+-24)
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LEA	BC,IY+11
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_106
+;  416	                    {
+;  417	                        gfx_TransparentSprite(sparkle, coinX[i]-13, coinY[i]-1);
+	LD	HL,(IX+-24)
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	DEC	HL
+	PUSH	HL
+	LD	HL,(IX+-9)
+	LD	IY,(HL)
+	LEA	BC,IY+-13
+	PUSH	BC
+	LD	BC,(IX+-33)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  418	
+;  419	                        coinX[i] = 1020;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	BC,1020
+	LD	(HL),BC
+;  420	                        ++monies;
+	LD	A,(_monies+3)
+	LD	E,A
+	LD	A,1
+	LD	HL,(_monies)
+	CALL	__ladd_b
+	LD	(_monies),HL
+	LD	A,E
+	LD	(_monies+3),A
+;  421	                    } else {
+	JR	L_108
+L_106:
+;  422	                        gfx_TransparentSprite(coin[(coinAnimate[i]/10)], (coinX[i]-12), coinY[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinAnimate
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	BC,10
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	LD	IY,(IX+-42)
+	LD	IY,(IY)
+	ADD	HL,BC
+	LD	BC,_coin
+	ADD	HL,BC
+	LEA	BC,IY+-12
+	PUSH	BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  423	
+;  424	                        if (coinAnimate[i] < 38)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_coinAnimate
+	ADD	HL,BC
+	LD	(IX+-18),HL
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LD	BC,38
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_104
+;  425	                        {
+;  426	                            coinAnimate[i] += 2;
+	LD	HL,(IX+-18)
+	LD	A,(HL)
+	INC	A
+	INC	A
+	LD	HL,(IX+-18)
+	LD	(HL),A
+;  427	                        } else {
+	JR	L_108
+L_104:
+;  428	                            coinAnimate[i] = 0;
+	LD	HL,(IX+-18)
+	LD	(HL),0
+;  429	                        }
+;  430	                    }
+;  431	                }
+L_108:
+;  432	
+;  433	                coinX[i] -= scrollSpeed;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_coinX
+	ADD	HL,BC
+	LD	(IX+-66),HL
+	LD	A,(_scrollSpeed)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,(IX+-66)
+	LD	HL,(HL)
+	LD	IY,(IX+-66)
+	OR	A,A
+	SBC	HL,BC
+	LD	(IY),HL
+;  434	            }
+;  435	        }
+L_111:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_112:
+	LD	A,(_coinFormation)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_abbreviatedMax
+	ADD	HL,BC
+	LD	A,(_i)
+	CP	A,(HL)
+	JR	C,L_110
+;  436	
+;  437	        //bit that calculates zappers 'n stuff:
+;  438	        for (i = 0; i < MaxZappers; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_129
+L_127:
+;  439	        {
+;  440	            //drawing the zapper beams:
+;  441	            if (zapperX[i] < 1000)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,1000
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_128
+;  442	            {
+;  443	                for (beamCount = 0; beamCount < zapperLength[i]; ++beamCount)
+	XOR	A,A
+	LD	(_beamCount),A
+	JR	L_115
+L_113:
+;  444	                {
+;  445	                    gfx_TransparentSprite(beam, zapperX[i]-14, zapperY[i]+16+(beamCount*10));
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	IY,(HL)
+	LD	A,(_beamCount)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LEA	BC,IY+16
+	ADD	HL,BC
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+-14
+	PUSH	BC
+	LD	BC,(IX+-36)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+	LD	A,(_beamCount)
+	INC	A
+	LD	(_beamCount),A
+;  446	                }
+L_115:
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(_beamCount)
+	CP	A,(HL)
+	JR	C,L_113
+;  447	
+;  448	                //draw zapper pairs and beams with distance of zapperLength between them:
+;  449	                if (zapperX[i] < 336)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	(IX+-27),HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,336
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_125
+;  450	                {
+;  451	                    randVar = randInt(0,1);
+	CALL	_random
+	LD	A,L
+	AND	A,1
+	LD	(_randVar),A
+;  452	                    randVar1 = randInt(0,1);
+	CALL	_random
+	LD	A,L
+	AND	A,1
+	LD	(_randVar1),A
+;  453	
+;  454	                    gfx_TransparentSprite(electric[randVar+2+(randVar1*4)], zapperX[i]-25, zapperY[i]-7);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	IY,(HL)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LEA	BC,IY+-7
+	PUSH	BC
+	LD	IY,HL
+	LD	A,(_randVar1)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	ADD	HL,HL
+	LD	DE,HL
+	LD	A,(_randVar)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	INC	BC
+	INC	BC
+	LD	HL,DE
+	ADD	HL,BC
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LEA	BC,IY+-25
+	PUSH	BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  455	                    gfx_TransparentSprite(electric[randVar+(randVar1*4)], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	IY,(HL)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LEA	BC,IY+7
+	ADD	HL,BC
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LD	A,(_randVar1)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	ADD	HL,HL
+	LD	BC,HL
+	LD	A,(_randVar)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,BC
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_electric
+	ADD	HL,BC
+	LEA	BC,IY+-25
+	PUSH	BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  456	
+;  457	                    gfx_TransparentSprite(zapper[(zapperAnimate[i]/10)+3], zapperX[i]-18, zapperY[i]);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperAnimate
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	BC,10
+	CALL	__idivs
+	LEA	BC,IY+-18
+	PUSH	BC
+	LD	IY,HL
+	LEA	HL,IY+3
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapper
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  458	                    gfx_TransparentSprite(zapper[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	IY,(HL)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LEA	BC,IY+14
+	ADD	HL,BC
+	PUSH	HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperAnimate
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	BC,10
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapper
+	ADD	HL,BC
+	LEA	BC,IY+-18
+	PUSH	BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  459	
+;  460	                    if (zapperAnimate[i] < 28)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperAnimate
+	ADD	HL,BC
+	LD	(IX+-15),HL
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LD	BC,28
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_117
+;  461	                    {
+;  462	                        zapperAnimate[i] += 2;
+	LD	HL,(IX+-15)
+	LD	A,(HL)
+	INC	A
+	INC	A
+	LD	HL,(IX+-15)
+	LD	(HL),A
+;  463	                    } else {
+	JR	L_122
+L_117:
+;  464	                        zapperAnimate[i] = 0;
+	LD	HL,(IX+-15)
+	LD	(HL),0
+;  465	                    }
+L_122:
+;  466	
+;  467	                    //collision for zappers:
+;  468	                    if (gfx_CheckRectangleHotspot(avatarX+6, zapperY[i]+2, 18, (zapperLength[i]*10)+30, zapperX[i]-14, avatarY, 10, 50))
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	(IX+-27),HL
+	LD	BC,_zapperX
+	ADD	HL,BC
+	LD	(IX+-45),HL
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,(IX+-45)
+	LD	BC,(IY)
+	LD	IY,HL
+	LEA	DE,IY+24
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	HL,IY+-14
+	OR	A,A
+	SBC	HL,DE
+	CALL	__setflag
+	JP	P,L_125
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,(IX+-45)
+	LD	BC,(IY)
+	LD	IY,HL
+	CALL	__stoiu
+	LEA	DE,IY+6
+	LD	BC,HL
+	DEC	BC
+	DEC	BC
+	DEC	BC
+	DEC	BC
+	OR	A,A
+	LD	HL,DE
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_125
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_zapperY
+	ADD	HL,BC
+	LD	IY,(HL)
+	LEA	BC,IY+2
+	LD	(IX+-48),BC
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_zapperLength
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	A,10
+	CALL	__imul_b
+	LD	IY,HL
+	LEA	HL,IY+30
+	LD	BC,(IX+-48)
+	ADD	HL,BC
+	LD	BC,HL
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_125
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	BC,IY+50
+	LD	HL,(IX+-48)
+	OR	A,A
+	SBC	HL,BC
+	JR	NC,L_125
+;  469	                    {
+;  470	                        --health;
+	LD	A,(_health)
+	DEC	A
+	LD	(_health),A
+;  471	                    }
+;  472	                }
+L_125:
+;  473	
+;  474	                zapperX[i] -= scrollSpeed;
+	LD	BC,(IX+-27)
+	LD	HL,_zapperX
+	ADD	HL,BC
+	LD	(IX+-69),HL
+	LD	HL,(HL)
+	LD	A,(_scrollSpeed)
+	OR	A,A
+	LD	C,A
+	LD	B,0
+	SBC.SIS	HL,BC
+	LD	BC,HL
+	LD	HL,(IX+-69)
+	LD	(HL),C
+	INC	HL
+	LD	(HL),B
+;  475	            }
+;  476	        }
+L_128:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_129:
+	LD	A,(_i)
+	CP	A,3
+	JR	C,L_127
+;  477	
+;  478	        //bit that draws and calculates the missiles 'o death:
+;  479	        for (i = 0; i < MaxMissiles; ++i)
+	XOR	A,A
+	LD	(_i),A
+	JR	L_150
+L_148:
+;  480	        {
+;  481	            if (missileX[i] < 6001)
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_missileX
+	ADD	HL,BC
+	LD	(IX+-12),HL
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,6001
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_149
+;  482	            {
+;  483	                if (missileX[i] < 366)
+	LD	HL,(IX+-12)
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,366
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_142
+;  484	                {
+;  485	                    gfx_TransparentSprite(missile, missileX[i]-46, missileY[i]-18);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_missileY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	BC,IY+-18
+	PUSH	BC
+	LD	HL,(IX+-12)
+	LD	BC,(HL)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+-46
+	PUSH	BC
+	LD	BC,(IX+-39)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  486	
+;  487	                    if (gfx_CheckRectangleHotspot(missileX[i]-45, avatarY, 19, 40, avatarX+6, missileY[i]-5, 18, 12))
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_missileX
+	ADD	HL,BC
+	LD	(IX+-54),HL
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,(IX+-54)
+	LD	BC,(IY)
+	LD	IY,HL
+	LEA	DE,IY+6
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+-26
+	LD	HL,DE
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_145
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,(IX+-54)
+	LD	BC,(IY)
+	LD	IY,HL
+	CALL	__stoiu
+	LEA	BC,IY+24
+	LD	IY,HL
+	LEA	HL,IY+-45
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_145
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_missileY
+	ADD	HL,BC
+	LD	(IX+-57),HL
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	LEA	BC,IY+-5
+	LD	IY,HL
+	LEA	DE,IY+40
+	LD	HL,BC
+	OR	A,A
+	SBC	HL,DE
+	CALL	__setflag
+	JP	P,L_145
+	LD	HL,(IX+-57)
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LEA	BC,IY+7
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_145
+;  488	                    {
+;  489	                        --health;
+	LD	A,(_health)
+	DEC	A
+	LD	(_health),A
+;  490	                    }
+;  491	
+;  492	                } else if (missileX[i] < 641) {
+	JR	L_145
+L_142:
+	LD	HL,(IX+-12)
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,641
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_140
+;  493	
+;  494	                    //AW CRAP HERE COME DAT BOI!
+;  495	                    gfx_TransparentSprite(incoming[missileAnimate/3], 281+randInt(-1,1), missileY[i]-16+randInt(-1,1));
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_missileY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LEA	BC,IY+-16
+	LD	(IX+-78),BC	; spill
+	CALL	_random
+	LD	BC,3
+	CALL	__iremu
+	LD	BC,HL
+	DEC	BC
+	LD	(IX+-75),BC	; spill
+	LD	HL,(IX+-78)
+	LD	BC,(IX+-75)	; unspill
+	ADD	HL,BC
+	PUSH	HL
+	CALL	_random
+	LD	BC,3
+	CALL	__iremu
+	LD	BC,280
+	ADD	HL,BC
+	PUSH	HL
+	LD	A,(_missileAnimate)
+	UEXT	HL
+	LD	L,A
+	LD	BC,3
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_incoming
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  496	
+;  497	                } else if (missileX[i] < 1467) {
+	JR	L_145
+L_140:
+	LD	HL,(IX+-12)
+	LD	BC,(HL)
+	CALL	__stoiu
+	OR	A,A
+	LD	BC,1467
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_145
+;  498	
+;  499	                    //plenty of time to dodge (at the beginning at least)
+;  500	                    gfx_TransparentSprite(warning[missileAnimate/2], 293, missileY[i]-11);
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_missileY
+	ADD	HL,BC
+	LD	A,(HL)
+	UEXT	HL
+	LD	L,A
+	LD	IY,HL
+	LD	A,(_missileAnimate)
+	UEXT	HL
+	LD	L,A
+	LD	BC,2
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LEA	BC,IY+-11
+	PUSH	BC
+	LD	BC,_warning
+	ADD	HL,BC
+	LD	BC,293
+	PUSH	BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite
+	POP	BC
+	POP	BC
+	POP	BC
+;  501	
+;  502	                    //tracking on avatar
+;  503	                    if (missileY[i] < (avatarY + 20))
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	LD	BC,_missileY
+	ADD	HL,BC
+	LD	(IX+-6),HL
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	LD	IY,(IX+-6)
+	LD	A,(IY)
+	LD	IY,HL
+	UEXT	HL
+	LD	L,A
+	OR	A,A
+	LEA	BC,IY+20
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_137
+;  504	                    {
+;  505	                        missileY[i] += 2;
+	LD	HL,(IX+-6)
+	LD	A,(HL)
+	INC	A
+	INC	A
+	LD	HL,(IX+-6)
+	LD	(HL),A
+;  506	                    } else if (missileY[i] > (avatarY + 21)) {
+	JR	L_145
+L_137:
+	LD	A,(_avatarY)
+	UEXT	HL
+	LD	L,A
+	LD	IY,(IX+-6)
+	LD	A,(IY)
+	LD	IY,HL
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LEA	HL,IY+21
+	OR	A,A
+	SBC	HL,BC
+	CALL	__setflag
+	JP	P,L_145
+;  507	                        missileY[i] -= 2;
+	LD	HL,(IX+-6)
+	LD	A,(HL)
+	DEC	A
+	DEC	A
+	LD	HL,(IX+-6)
+	LD	(HL),A
+;  508	                    }
+;  509	                }
+L_145:
+;  510	
+;  511	                //make missileAnimate go up and down between 0 and 5 by toggling MAvalue:
+;  512	                if ((missileAnimate < 1) || (missileAnimate > 4))
+	LD	A,(_missileAnimate)
+	CP	A,1
+	JR	C,L_144
+	LD	A,4
+	LD	HL,_missileAnimate
+	CP	A,(HL)
+	JR	NC,L_146
+L_144:
+;  513	                {
+;  514	                    MAvalue *= -1;
+	LD	A,(_MAvalue)
+	NEG	
+	LD	(_MAvalue),A
+;  515	                }
+L_146:
+;  516	                missileAnimate += MAvalue;
+	LD	BC,(_missileAnimate)
+	LD	A,(_MAvalue)
+	ADD	A,C
+	LD	(_missileAnimate),A
+;  517	
+;  518	                //missiles travel by 6 pixels each frame. It was surprisingly tedious to figure that out
+;  519	                //from frame-by-frame reviewing of missiles.
+;  520	                missileX[i] -= scrollSpeed + 8;
+	LD	A,(_i)
+	UEXT	HL
+	LD	L,A
+	ADD	HL,HL
+	LD	BC,_missileX
+	ADD	HL,BC
+	LD	(IX+-72),HL
+	LD	A,(_scrollSpeed)
+	LD	C,A
+	LD	B,0
+	LD	IY,BC
+	LD	HL,(IX+-72)
+	LD	HL,(HL)
+	LEA	BC,IY+8
+	OR	A,A
+	SBC.SIS	HL,BC
+	LD	BC,HL
+	LD	HL,(IX+-72)
+	LD	(HL),C
+	INC	HL
+	LD	(HL),B
+;  521	            }
+;  522	        }
+L_149:
+	LD	A,(_i)
+	INC	A
+	LD	(_i),A
+L_150:
+	LD	A,(_i)
+	CP	A,1
+	JR	C,L_148
+;  523	
+;  524	        //draws the avatar after a few hundred lines of code:
+;  525	        gfx_TransparentSprite_NoClip(avatar[displacement/3], avatarX, avatarY-abs((displacement/3)-1));
+	LD	A,(_displacement)
+	LD	B,A
+	SEXT	HL
+	LD	L,B
+	LD	BC,3
+	CALL	__idivs
+	DEC	HL
+	PUSH	HL
+	CALL	_abs
+	POP	BC
+	LD	A,(_avatarY)
+	SUB	A,L
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_avatarX)
+	LD	A,(_displacement)
+	LD	D,A
+	CALL	__stoiu
+	PUSH	HL
+	SEXT	HL
+	LD	L,D
+	LD	BC,3
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_avatar
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite_NoClip
+	POP	BC
+	POP	BC
+	POP	BC
+;  526	
+;  527	        //bit that draws exhaust when in flight:
+;  528	        if (flightTime < 18)
+	LD	A,(_flightTime)
+	CP	A,18
+	JR	NC,L_154
+;  529	        {
+;  530	            gfx_TransparentSprite_NoClip(exhaust[flightTime/2], avatarX+randInt(1,3), avatarY+31);
+	LD	A,(_avatarY)
+	ADD	A,31
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	CALL	_random
+	LD	BC,3
+	CALL	__iremu
+	LD	DE,HL
+	INC	DE
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	ADD	HL,DE
+	PUSH	HL
+	LD	A,(_flightTime)
+	UEXT	HL
+	LD	L,A
+	LD	BC,2
+	CALL	__idivs
+	LD	BC,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	LD	BC,_exhaust
+	ADD	HL,BC
+	LD	BC,(HL)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite_NoClip
+	POP	BC
+	POP	BC
+	POP	BC
+;  531	            gfx_TransparentSprite_NoClip(nozzle, avatarX+4, avatarY+31);
+	LD	A,(_avatarY)
+	ADD	A,31
+	LD	C,A
+	LD	B,0
+	PUSH	BC
+	LD	BC,(_avatarX)
+	CALL	__stoiu
+	LD	IY,HL
+	LEA	BC,IY+4
+	PUSH	BC
+	LD	BC,(IX+-30)
+	PUSH	BC
+	CALL	_gfx_TransparentSprite_NoClip
+	POP	BC
+	POP	BC
+	POP	BC
+;  532	        }
+L_154:
+;  533	
+;  534	        //FPS counter:
+;  535	        frameTime = (32768 / timer_1_Counter);
+	LD	HL,32768
+	LD	E,0
+	LD	BC,(15859712)
+	LD	A,(15859715)
+	CALL	__ldivu
+	LD	BC,HL
+	LD	A,C
+	LD	(_frameTime),A
+;  536	
+;  537	        if (frameTime > 25)
+	LD	A,25
+	LD	HL,_frameTime
+	CP	A,(HL)
+	JR	NC,L_156
+;  538	        {
+;  539	            delay(40 - (1000/frameTime));
+	LD	A,(_frameTime)
+	UEXT	HL
+	LD	L,A
+	LD	BC,HL
+	LD	HL,1000
+	CALL	__idivs
+	LD	BC,HL
+	LD.LIS	HL,40
+	OR	A,A
+	SBC.SIS	HL,BC
+	PUSH	HL
+	CALL	_delay
+	POP	BC
+;  540	        }
+L_156:
+;  541	
+;  542	        timer_1_Counter = 0;
+;  543	
+;  544	        gfx_SetTextScale(1, 1);
+	LD	BC,1
+	PUSH	BC
+	PUSH	BC
+	LD	BC,0
+	LD	(15859712),BC
+	XOR	A,A
+	LD	(15859715),A
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  545	        gfx_SetTextXY(280, 10);
+	LD	BC,10
+	PUSH	BC
+	LD	BC,280
+	PUSH	BC
+	CALL	_gfx_SetTextXY
+	POP	BC
+	POP	BC
+;  546	        gfx_PrintInt(frameTime, 2);
+	LD	A,(_frameTime)
+	UEXT	HL
+	LD	BC,2
+	PUSH	BC
+	LD	L,A
+	PUSH	HL
+	LD	(IX+-91),A
+	CALL	_gfx_PrintInt
+	LD	A,(IX+-91)
+	POP	BC
+	POP	BC
+;  547	
+;  548	        gfx_SetTextXY(10, 30);
+	LD	BC,30
+	PUSH	BC
+	LD	BC,10
+	PUSH	BC
+	LD	(IX+-91),A
+	CALL	_gfx_SetTextXY
+	LD	A,(IX+-91)
+	POP	BC
+	POP	BC
+;  549	        gfx_PrintInt(monies, 4);
+	LD	BC,4
+	PUSH	BC
+	LD	BC,(_monies)
+	PUSH	BC
+	LD	(IX+-91),A
+	CALL	_gfx_PrintInt
+	LD	A,(IX+-91)
+	POP	BC
+	POP	BC
+;  550	
+;  551	        gfx_SetTextScale(2,2);
+	LD	BC,2
+	PUSH	BC
+	PUSH	BC
+	LD	(IX+-91),A
+	CALL	_gfx_SetTextScale
+	LD	A,(IX+-91)
+	POP	BC
+	POP	BC
+;  552	        gfx_SetTextXY(10, 10);
+	LD	BC,10
+	PUSH	BC
+	PUSH	BC
+	LD	(IX+-91),A
+	CALL	_gfx_SetTextXY
+	LD	A,(IX+-91)
+	POP	BC
+	POP	BC
+;  553	        gfx_PrintInt((distance += scrollSpeed)/15, 4);
+	UEXT	HL
+	LD	A,(_scrollSpeed)
+	LD	L,A
+	LD	A,(_distance+3)
+	LD	E,A
+	LD	BC,HL
+	LD	A,H
+	LD	HL,(_distance)
+	CALL	__ladd
+	LD	(_distance),HL
+	LD	A,E
+	LD	(_distance+3),A
+	LD	E,A
+	XOR	A,A
+	LD	BC,15
+	LD	(IX+-87),HL	; spill
+	LD	HL,4
+	LD	(IX+-90),HL	; spill
+	LD	HL,(IX+-87)	; unspill
+	LD	(IX+-87),HL	; spill
+	LD	HL,(IX+-90)	; unspill
+	PUSH	HL
+	LD	HL,(IX+-87)	; unspill
+	CALL	__ldivu
+	PUSH	HL
+	CALL	_gfx_PrintInt
+	POP	BC
+	POP	BC
+;  554	
+;  555	        //gfx_BlitBuffer();
+;  556	        gfx_SwapDraw();
+	CALL	_gfx_SwapDraw
+;  557	
+;  558	    } while (!(kb_Data[6] & kb_Clear) && (health > 0));
+	LD	A,(16056348)
+	AND	A,64
+	JR	NZ,L_168
+	XOR	A,A
+	LD	HL,_health
+	CP	A,(HL)
+	JR	C,L_158
+L_168:
+;  559	
+;  560	    if (health < 1)
+	LD	A,(_health)
+	CP	A,1
+	JR	NC,L_169
+;  561	    {
+;  562	        gfx_FillScreen(1);
+	LD	BC,1
+	PUSH	BC
+	CALL	_gfx_FillScreen
+	POP	BC
+;  563	        gfx_SetTextScale(4, 4);
+	LD	BC,4
+	PUSH	BC
+	PUSH	BC
+	CALL	_gfx_SetTextScale
+	POP	BC
+	POP	BC
+;  564	        gfx_PrintStringXY("U is ded lol.", 15, 100);
+	LD	BC,100
+	PUSH	BC
+	LD	BC,15
+	PUSH	BC
+	LD	BC,L__74
+	PUSH	BC
+	CALL	_gfx_PrintStringXY
+	POP	BC
+	POP	BC
+	POP	BC
+;  565	        gfx_SwapDraw();
+	CALL	_gfx_SwapDraw
+;  566	
+;  567	        while (kb_AnyKey());
+L_161:
+	CALL	_kb_AnyKey
+	OR	A,A
+	JR	NZ,L_161
+;  568	        while (!kb_AnyKey());
+L_163:
+	CALL	_kb_AnyKey
+	OR	A,A
+	JR	Z,L_163
+;  569	
+;  570	        if (kb_Data[6] != kb_Clear)
+	LD	A,(16056348)
+	CP	A,64
+	JR	NZ,L_44
+;  571	        {
+;  572	            goto GAMESTART;
+;  573	        }
+;  574	    }
+L_169:
+;  575	
+;  576	    //erase the decompressed sprites, very important:
+;  577	    free(background);
+	LD	BC,(IX+-21)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  578	    free(nozzle);
+	LD	BC,(IX+-30)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  579	    free(sparkle);
+	LD	BC,(IX+-33)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  580	    free(beam);
+	LD	BC,(IX+-36)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  581	    free(missile);
+	LD	BC,(IX+-39)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  582	    free(decompressorVar);
+	LD	BC,(IX+-3)
+	PUSH	BC
+	CALL	_free
+	POP	BC
+;  583	
+;  584	    //stop libraries, not doing so causes "interesting" results
+;  585	    gfx_End();
+	CALL	_gfx_End
+;  586	}
+	LD	SP,IX
+	POP	IX
+	RET	
+
+
+;**************************** _main ***************************
+;Name                         Addr/Register   Size   Type
+;_gfx_End                            IMPORT  -----   function
+;_free                               IMPORT  -----   function
+;_kb_AnyKey                          IMPORT  -----   function
+;_gfx_PrintStringXY                  IMPORT  -----   function
+;_gfx_FillScreen                     IMPORT  -----   function
+;_gfx_SwapDraw                       IMPORT  -----   function
+;_gfx_PrintInt                       IMPORT  -----   function
+;_gfx_SetTextXY                      IMPORT  -----   function
+;_gfx_SetTextScale                   IMPORT  -----   function
+;_delay                              IMPORT  -----   function
+;_frameTime                          STATIC      1   variable
+;_abs                                IMPORT  -----   function
+;_gfx_TransparentSprite_NoClip       IMPORT  -----   function
+;_MAvalue                            STATIC      1   variable
+;_missileAnimate                     STATIC      1   variable
+;_zapperAnimate                      STATIC      3   variable
+;_randVar1                           STATIC      1   variable
+;_beamCount                          STATIC      1   variable
+;_abbreviatedMax                     IMPORT      6   variable
+;_gfx_TransparentSprite              IMPORT  -----   function
+;_gfx_Sprite                         IMPORT  -----   function
+;_avatarAnimate                      STATIC      1   variable
+;_displacement                       STATIC      1   variable
+;_zapperY                            STATIC      9   variable
+;_zapperLength                       STATIC      3   variable
+;_zapperX                            STATIC      6   variable
+;_missileY                           STATIC      1   variable
+;_missileX                           STATIC      2   variable
+;_coinAnimate                        STATIC     30   variable
+;_coinY                              STATIC     30   variable
+;_cty                                IMPORT    180   variable
+;_coinX                              STATIC     90   variable
+;_ctx                                IMPORT    540   variable
+;_coinFormation                      STATIC      1   variable
+;_randVar                            STATIC      1   variable
+;_randObject                         STATIC      1   variable
+;_random                             IMPORT  -----   function
+;_backgroundScroll                   STATIC      3   variable
+;_kb_Scan                            IMPORT  -----   function
+;_monies                             STATIC      4   variable
+;_distance                           STATIC      4   variable
+;_spawnDelay                         STATIC      3   variable
+;_health                             STATIC      1   variable
+;_flightTime                         STATIC      1   variable
+;_holdTime                           STATIC      1   variable
+;_avatarY                            STATIC      1   variable
+;_avatarX                            STATIC      2   variable
+;_scrollSpeed                        STATIC      1   variable
+;_gfx_SetTextFGColor                 IMPORT  -----   function
+;_gfx_SetTransparentColor            IMPORT  -----   function
+;_global_palette                     IMPORT    512   variable
+;_gfx_SetPalette                     IMPORT  -----   function
+;_gfx_SetDraw                        IMPORT  -----   function
+;_gfx_Begin                          IMPORT  -----   function
+;_warning                            STATIC      9   variable
+;_missileWarning_tiles_compressed      IMPORT      9   variable
+;_incoming                           STATIC      6   variable
+;_missileIncoming_tiles_compressed      IMPORT      6   variable
+;_gfx_RotateSpriteHalf               IMPORT  -----   function
+;_gfx_FlipSpriteY                    IMPORT  -----   function
+;_electricSheet_tiles_compressed      IMPORT      6   variable
+;_electric                           STATIC     24   variable
+;_gfx_FlipSpriteX                    IMPORT  -----   function
+;_zapperSheet_tiles_compressed       IMPORT      9   variable
+;_zapper                             STATIC     18   variable
+;_coin                               STATIC     12   variable
+;_coinSheet_tiles_compressed         IMPORT     12   variable
+;_exhaust                            STATIC     18   variable
+;_exhaustSheet_tiles_compressed      IMPORT     18   variable
+;_avatar                             STATIC     12   variable
+;_avatarSheet_tiles_compressed       IMPORT     12   variable
+;_i                                  STATIC      1   variable
+;_missile_compressed                 IMPORT    369   variable
+;_beam_compressed                    IMPORT     14   variable
+;_nozzle_compressed                  IMPORT     15   variable
+;_sparkle_compressed                 IMPORT     67   variable
+;_background_compressed              IMPORT    649   variable
+;_zx7_Decompress                     IMPORT  -----   function
+;_malloc                             IMPORT  -----   function
+;_gfx_AllocSprite                    IMPORT  -----   function
+;G_0                                  IX-63      3   variable
+;G_2                                  IX-60      3   variable
+;G_20                                 IX-57      3   variable
+;G_19                                 IX-54      3   variable
+;G_1                                  IX-51      3   variable
+;G_15                                 IX-48      3   variable
+;G_14                                 IX-45      3   variable
+;G_9                                  IX-42      3   variable
+;missile                              IX-39      3   variable
+;beam                                 IX-36      3   variable
+;sparkle                              IX-33      3   variable
+;nozzle                               IX-30      3   variable
+;G_16                                 IX-27      3   variable
+;G_6                                  IX-24      3   variable
+;background                           IX-21      3   variable
+;G_10                                 IX-18      3   variable
+;G_12                                 IX-15      3   variable
+;G_17                                 IX-12      3   variable
+;G_3                                   IX-9      3   variable
+;G_23                                  IX-6      3   variable
+;decompressorVar                       IX-3      3   variable
+
+
+; Stack Frame Size: 97 (bytes)
+;       Spill Code: -1 (instruction)
+
+
+	SEGMENT STRSECT
+L__74:
+	DB	"U is ded lol."
+	DB	0
+	XREF _missile_compressed:ROM
+	XREF _missileIncoming_tiles_compressed:ROM
+	XREF _missileWarning_tiles_compressed:ROM
+	XREF _electricSheet_tiles_compressed:ROM
+	XREF _zapperSheet_tiles_compressed:ROM
+	XREF _coinSheet_tiles_compressed:ROM
+	XREF _exhaustSheet_tiles_compressed:ROM
+	XREF _avatarSheet_tiles_compressed:ROM
+	XREF _beam_compressed:ROM
+	XREF _sparkle_compressed:ROM
+	XREF _nozzle_compressed:ROM
+	XREF _background_compressed:ROM
+	XREF _global_palette:ROM
+	XREF _kb_AnyKey:ROM
+	XREF _kb_Scan:ROM
+	XREF _gfx_RotateSpriteHalf:ROM
+	XREF _gfx_FlipSpriteY:ROM
+	XREF _gfx_FlipSpriteX:ROM
+	XREF _gfx_TransparentSprite_NoClip:ROM
+	XREF _gfx_TransparentSprite:ROM
+	XREF _gfx_Sprite:ROM
+	XREF _gfx_SetTextFGColor:ROM
+	XREF _gfx_SetTextXY:ROM
+	XREF _gfx_PrintStringXY:ROM
+	XREF _gfx_PrintInt:ROM
+	XREF _gfx_SetTextScale:ROM
+	XREF _gfx_SwapDraw:ROM
+	XREF _gfx_SetDraw:ROM
+	XREF _gfx_FillScreen:ROM
+	XREF _gfx_SetPalette:ROM
+	XREF _gfx_SetTransparentColor:ROM
+	XREF _gfx_End:ROM
+	XREF _gfx_Begin:ROM
+	XREF _gfx_AllocSprite:ROM
+	XREF _zx7_Decompress:ROM
+	XREF _abs:ROM
+	XREF _free:ROM
+	XREF _malloc:ROM
+	XREF _delay:ROM
+	XREF _random:ROM
+	XREF __ladd:ROM
+	XREF __idivs:ROM
+	XREF __ldivu:ROM
+	XREF __iremu:ROM
+	XREF __stoiu:ROM
+	XREF __frameset:ROM
+	XREF __setflag:ROM
+	XREF __imul_b:ROM
+	XREF __ladd_b:ROM
+	XDEF _main
+	XDEF _delObjects
+	XDEF _MAvalue
+	XDEF _missileAnimate
+	XDEF _incoming
+	XDEF _warning
+	XDEF _missileY
+	XDEF _missileX
+	XDEF _coin
+	XDEF _coinAnimate
+	XDEF _coinFormation
+	XDEF _coinY
+	XDEF _coinX
+	XDEF _electric
+	XDEF _zapper
+	XDEF _zapperAnimate
+	XDEF _beamCount
+	XDEF _zapperLength
+	XDEF _zapperX
+	XDEF _zapperY
+	XDEF _randObject
+	XDEF _randVar1
+	XDEF _randVar
+	XDEF _distance
+	XDEF _monies
+	XDEF _health
+	XDEF _backgroundScroll
+	XDEF _spawnDelay
+	XDEF _scrollSpeed
+	XDEF _holdTime
+	XDEF _frameTime
+	XDEF _flightTime
+	XDEF _exhaust
+	XDEF _displacement
+	XDEF _avatarAnimate
+	XDEF _avatar
+	XDEF _avatarY
+	XDEF _avatarX
+	XDEF _i
+	XDEF _cty
+	XDEF _ctx
+	XDEF _abbreviatedMax
+	END
