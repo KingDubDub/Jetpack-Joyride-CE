@@ -33,3 +33,6 @@ REMEMBER:
 I hope you enjoy spreading a little madness, and remember never to trust someone with more than four bumper stickers on their car, they're clearly insane.
 
 Have a nice mid-to-late afternoon!
+
+If you have any suggestions or questions, ask on the original Cemetech post:
+https://www.cemetech.net/forum/viewtopic.php?t=16948
