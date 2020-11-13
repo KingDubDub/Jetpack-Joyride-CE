@@ -6,10 +6,10 @@ extern "C" {
 #endif
 
 #define missile_width 46
-#define missile_height 38
-#define missile_size 1750
-#define missile_compressed_size 370
-extern unsigned char missile_compressed[370];
+#define missile_height 36
+#define missile_size 1658
+#define missile_compressed_size 369
+extern unsigned char missile_compressed[369];
 
 #ifdef __cplusplus
 }

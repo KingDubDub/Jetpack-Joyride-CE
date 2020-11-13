@@ -9,7 +9,8 @@ NAME        ?= JETPACK
 COMPRESSED  ?= YES
 ICON        ?= iconc.png
 DESCRIPTION ?= "Jetpack Joyride for the TI84 PCE"
+ARCHIVED    ?= YES
 
 # ----------------------------
 
-include C:/CEdev/include/.makefile
+include $(CEDEV)/include/.makefile

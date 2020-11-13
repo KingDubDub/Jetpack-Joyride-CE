@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-extern unsigned char missileIncoming_tile_0_compressed[151];
-extern unsigned char missileIncoming_tile_1_compressed[155];
+extern unsigned char missileIncoming_tile_0_compressed[150];
+extern unsigned char missileIncoming_tile_1_compressed[154];
 #define missileIncoming_num_tiles 2
 extern unsigned char *missileIncoming_tiles_compressed[2];
 

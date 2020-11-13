@@ -1,3 +1,13 @@
+/*Jetpack Joyride CE
+
+Jetpack Joyride for the TI-84 Plus CE calculators.
+
+Made by King Dub Dub
+
+I'm pretty sure you have the readme if you have this source code, but if you want
+to mod this or something then get ready for some over-commented trash.
+
+*/
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -48,7 +58,7 @@ uint8_t frameTime;
 int8_t holdTime;
 
 //speed of scrolling for avatar, obstacles, map, etc.
-uint8_t scrollSpeed = 5;
+uint8_t scrollSpeed;
 
 //measures timings for delays between spawning coins, obstacles, etc.:
 int24_t spawnDelay = 100;
@@ -73,7 +83,7 @@ uint8_t randObject;
 
 //arrays for zapper coordinates:
 uint24_t zapperY[MaxZappers];
-uint16_t zapperX[MaxZappers] = {330, 460};
+uint16_t zapperX[MaxZappers];
 //measured in beam units, 10x10 pixels:
 uint8_t zapperLength[MaxZappers];
 //used to draw zapper beam segments:
@@ -133,7 +143,7 @@ void delObjects()
 void main(void)
 {
     //make background sprite variables and a quick decompression slot:
-    gfx_sprite_t *background, *sparkle, *nozzle, *beam, *missile, *decompressorVar;
+    gfx_sprite_t *background, *nozzle, *sparkle, *beam, *missile, *decompressorVar;
 
     background = gfx_MallocSprite(192, 240);
     zx7_Decompress(background, background_compressed);
@@ -151,10 +161,41 @@ void main(void)
     zx7_Decompress(beam, beam_compressed);
 
     //temporary missile sprite:
-    missile = gfx_MallocSprite(46, 38);
+    missile = gfx_MallocSprite(46, 36);
     zx7_Decompress(missile, missile_compressed);
 
-    //sprite decompression, sorted by loop time:
+    for(i = 0; i < 4; ++i)
+    {
+        //decompressing avatar spritesheet:
+        decompressorVar = gfx_MallocSprite(30, 40);
+        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
+        avatar[i] = decompressorVar;
+    }
+
+    //jetpack exhaust:
+    for(i = 0; i < 6; ++i)
+    {
+        decompressorVar = gfx_MallocSprite(11, 23);
+        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
+        exhaust[i] = decompressorVar;
+    }
+
+    for(i = 0; i < 4; ++i)
+    {
+        //decompressing coin spritesheet:
+        decompressorVar = gfx_MallocSprite(12, 12);
+        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
+        coin[i] = decompressorVar;
+    }
+
+    for(i = 0; i < 3; ++i)
+    {
+        //zappers:
+        zapper[i] = gfx_MallocSprite(18, 18);
+        zapper[i+3] = gfx_MallocSprite(18, 18);
+        zx7_Decompress(zapper[i], zapperSheet_tiles_compressed[i]);
+        gfx_FlipSpriteX(zapper[i], zapper[i+3]);
+    }
 
     for(i=0; i < 8; ++i)
     {
@@ -164,16 +205,20 @@ void main(void)
 
     for(i = 0; i < 2; ++i)
     {
-        //missile incoming symbol:
-        decompressorVar = gfx_MallocSprite(31, 31);
-        zx7_Decompress(decompressorVar, missileIncoming_tiles_compressed[i]);
-        incoming[i] = decompressorVar;
-
         //zapper lightning:
         zx7_Decompress(electric[i], electricSheet_tiles_compressed[i]);
         gfx_FlipSpriteX(electric[i], electric[i+2]);
         gfx_FlipSpriteY(electric[i], electric[i+4]);
         gfx_RotateSpriteHalf(electric[i], electric[i+6]);
+    }
+
+    //DON'T TOUCH THE MISSILE BITS, SOMETHING COMPILES FUNKY HERE AND I DON'T KNOW WHAT.
+    for(i = 0; i < 2; ++i)
+    {
+        //missile incoming symbol:
+        decompressorVar = gfx_MallocSprite(31, 31);
+        zx7_Decompress(decompressorVar, missileIncoming_tiles_compressed[i]);
+        incoming[i] = decompressorVar;
     }
 
     for(i = 0; i < 3; ++i)
@@ -182,37 +227,6 @@ void main(void)
         decompressorVar = gfx_MallocSprite(20, 21);
         zx7_Decompress(decompressorVar, missileWarning_tiles_compressed[i]);
         warning[i] = decompressorVar;
-
-        //zappers:
-        zapper[i] = gfx_MallocSprite(18, 18);
-        zapper[i+3] = gfx_MallocSprite(18, 18);
-        zx7_Decompress(zapper[i], zapperSheet_tiles_compressed[i]);
-        gfx_FlipSpriteX(zapper[i], zapper[i+3]);
-    }
-
-    decompressorVar = gfx_MallocSprite(18,18);
-    zx7_Decompress(decompressorVar, zapperSheet_tiles_compressed[2]);
-    zapper[2] = decompressorVar;
-
-    for(i = 0; i < 4; ++i)
-    {
-        //decompressing avatar spritesheet:
-        decompressorVar = gfx_MallocSprite(30, 40);
-        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
-        avatar[i] = decompressorVar;
-
-        //decompressing coin spritesheet:
-        decompressorVar = gfx_MallocSprite(12, 12);
-        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
-        coin[i] = decompressorVar;
-    }
-
-    //jetpack exhaust:
-    for(i = 0; i < 6; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(11, 23);
-        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
-        exhaust[i] = decompressorVar;
     }
 
     //initialize GFX libraries:
@@ -237,6 +251,7 @@ void main(void)
     //But it's still sometimes okay.
 
     //reset variables for when a game starts:
+    scrollSpeed = 6;
     avatarX = 24;
     avatarY = 185;
     holdTime = 0;
@@ -478,7 +493,7 @@ void main(void)
             {
                 if (missileX[i] < 366)
                 {
-                    gfx_TransparentSprite(missile, missileX[i]-46, missileY[i]-19);
+                    gfx_TransparentSprite(missile, missileX[i]-46, missileY[i]-18);
 
                     if (gfx_CheckRectangleHotspot(missileX[i]-45, avatarY, 19, 40, avatarX+6, missileY[i]-5, 18, 12))
                     {
@@ -572,6 +587,7 @@ void main(void)
     //erase the decompressed sprites, very important:
     free(background);
     free(nozzle);
+    free(sparkle);
     free(beam);
     free(missile);
     free(decompressorVar);
