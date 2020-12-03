@@ -1,24 +1,33 @@
 palettes:
-  - name: global_palette
+  - name: jetpack_palette
     images: automatic
     fixed-entries:
       - color: {index: 0, r: 255, g: 0, b: 128}
       - color: {index: 1, r: 0, g: 0, b: 0}
       - color: {index: 2, r: 232, g: 232, b: 232}
+      - color: {index: 3, r: 249, g: 0, b: 0}
 
 converts:
   - name: singleObjects
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     images:
-      - background.png
+      - jetpack.png
       - nozzle.png
       - sparkle.png
       - beam.png
+      - laser.png
+
+converts:
+  - name: hallway
+    palette: jetpack_palette
+    compress: zx7
+    images:
+      - background.png
 
 converts:
   - name: avatar
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     tilesets: 
       tile-width: 30
@@ -28,7 +37,7 @@ converts:
 
 converts:
   - name: exhaust
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     tilesets:
       tile-width: 11
@@ -37,8 +46,8 @@ converts:
         - exhaustSheet.png
 
 converts:
-  - name: coins
-    palette: global_palette
+  - name: coin
+    palette: jetpack_palette
     compress: zx7
     tilesets:
       tile-width: 12
@@ -47,8 +56,8 @@ converts:
         - coinSheet.png
 
 converts:
-  - name: zappers
-    palette: global_palette
+  - name: zapper
+    palette: jetpack_palette
     compress: zx7
     tilesets:
       tile-width: 18
@@ -58,7 +67,7 @@ converts:
 
 converts:
   - name: electricStuff
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     tilesets:
       tile-width: 32
@@ -68,7 +77,7 @@ converts:
 
 converts:
   - name: missileWarning
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     tilesets:
       tile-width: 20
@@ -78,7 +87,7 @@ converts:
 
 converts: 
   - name: missileIncoming
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     tilesets:
       tile-width: 31
@@ -88,22 +97,76 @@ converts:
 
 converts:
   - name: missile
-    palette: global_palette
+    palette: jetpack_palette
     compress: zx7
     images:
       - missile.png
 
+converts:
+  - name: laser_powering
+    palette: jetpack_palette
+    compress: zx7
+    tilesets:
+      tile-width: 19
+      tile-height: 15
+      images:
+        - powering.png
+
+converts:
+  - name: laser_firing
+    palette: jetpack_palette
+    compress: zx7
+    tilesets:
+      tile-width: 30
+      tile-height: 37
+      images:
+        - firing.png
+
+converts:
+  - name: laser_shutdown
+    palette: jetpack_palette
+    compress: zx7
+    tilesets:
+      tile-width: 30
+      tile-height: 44
+      images:
+        - laserShutDown.png
+
 outputs:
-  - type: c
+  - type: appvar
+    name: JTPKPAL
+    source-format: c
+    include-file: JTPKPAL.h
     palettes:
-      - global_palette
+      - jetpack_palette
+
+  - type: appvar
+    name: JTPKGFX1
+    source-format: c
+    include-file: JTPKGFX1.h
+    converts:
+      - hallway
+
+  - type: appvar
+    name: JTPKGFX2
+    source-format: c
+    include-file: JTPKGFX2.h
     converts:
       - singleObjects
+
+  - type: appvar
+    name: JTPKGFX3
+    source-format: c
+    include-file: JTPKGFX3.h
+    converts:
       - avatar
       - exhaust
-      - coins
-      - zappers
+      - coin
+      - zapper
       - electricStuff
       - missileWarning
       - missileIncoming
       - missile
+      - laser_powering
+      - laser_firing
+      - laser_shutdown
