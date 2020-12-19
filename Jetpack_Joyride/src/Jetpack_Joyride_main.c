@@ -26,11 +26,7 @@ to mod this or something then get ready for some over-commented trash!
 #include "coinShapes.c"
 
 //all the appvar include files:
-#include "sprites/JTPKPAL.h"
-#include "sprites/JTPKGFX1.h"
-#include "sprites/JTPKGFX2.h"
-#include "sprites/JTPKGFX3.h"
-
+#include "sprites/gfx.h"
 //max number of zappers:
 #define MaxZappers 3
 
@@ -52,12 +48,8 @@ uint16_t avatarX;
 uint8_t avatarY;
 
 //avatar's sprite array and values for keeping track of animation frames:
-gfx_sprite_t *avatar[4];
 int8_t avatarAnimate = 1;
 int8_t displacement = 3;
-
-//exhaust/flame sprite array for jetpack flight animations:
-gfx_sprite_t *exhaust[6];
 
 //variable used for calculating fire animations:
 uint8_t flightTime = 18;
@@ -99,7 +91,6 @@ uint8_t coinY[MaxCoins];
 uint8_t coinFormation;
 //values for keeping track of coin animation sprites, all start at zero:
 uint8_t coinAnimate[MaxCoins];
-gfx_sprite_t *coin[4];
 
 //arrays for zapper coordinates:
 uint24_t zapperY[MaxZappers];
@@ -108,25 +99,13 @@ uint16_t zapperX[MaxZappers];
 uint8_t zapperLength[MaxZappers];
 //zapper animation count, all start at zero:
 uint8_t zapperAnimate[MaxZappers];
-//zapper node sprite array:
-gfx_sprite_t *zapper[6];
-//sprite array for electrical flares around zapper nodes:
-gfx_sprite_t *electric[8];
 
 uint16_t missileX[MaxMissiles];
 uint8_t missileY[MaxMissiles];
 //keep track of animations for missiles:
 int8_t missileAnimate;
 int8_t MAvalue = -1;
-//missile warning sprite array (the red exclamation marks):
-gfx_sprite_t *warning[3];
-//missile incoming sprite array (exclamation marks with emphasis):
-gfx_sprite_t *incoming[2];
 
-//laser sprite arrays:
-gfx_sprite_t *laser_powering[8];
-gfx_sprite_t *laser_firing[6];
-gfx_sprite_t *laser_shutdown[6];
 //all lasers have a universal X that doesn't move very far:
 int8_t laserX;
 //laser Y array:
@@ -137,6 +116,17 @@ uint24_t laserLifetime[MaxLasers];
 int8_t laserAnimate[MaxLasers];
 //keep track of how many lasers have fired already:
 uint8_t deadLasers;
+
+//flipped sprites and animations:
+gfx_sprite_t *zapper_tiles_flipped[3];
+gfx_sprite_t *electric_animation[8];
+gfx_sprite_t *powering_tiles_flipped[4];
+gfx_sprite_t *firing_tiles_flipped[3];
+gfx_sprite_t *shutdown_tiles_flipped[3];
+
+//the magic(k)al appvar decompression pointers, make sure to split data somewhat evenly:
+ti_var_t *appvar_1;
+ti_var_t *appvar_2;
 
 
 
@@ -163,136 +153,48 @@ void delObjects()
     }
 }
 
-//declare background sprite variables and a quick decompression slot:
-gfx_sprite_t *background, *nozzle, *sparkle, *beam, *laser, *missile, *decompressorVar;
-
 void main(void)
 {
-    JTPKPAL_init();
-    JTPKGFX1_init();
-    JTPKGFX2_init();
-    JTPKGFX3_init();
-
-    background = gfx_MallocSprite(background_width, background_height);
-    zx7_Decompress(background, background_compressed);
-
-    //sparkle effect left by picked up coins:
-    sparkle = gfx_MallocSprite(sparkle_width, sparkle_height);
-    zx7_Decompress(sparkle, sparkle_compressed);
-
-    //jetpack nozzle that glows when releasing exhaust:
-    nozzle = gfx_MallocSprite(nozzle_width, nozzle_height);
-    zx7_Decompress(nozzle, nozzle_compressed);
-
-    //zapper beam:
-    beam = gfx_MallocSprite(beam_width, beam_height);
-    zx7_Decompress(beam, beam_compressed);
-
-    //laser beam:
-    laser = gfx_MallocSprite(laser_width, laser_height);
-    zx7_Decompress(laser, laser_compressed);
-
-    //temporary missile sprite:
-    missile = gfx_MallocSprite(46, 36);
-    zx7_Decompress(missile, missile_compressed);
-
-    for(i = 0; i < 4; ++i)
-    {
-        //decompressing avatar spritesheet:
-        decompressorVar = gfx_MallocSprite(30, 40);
-        zx7_Decompress(decompressorVar, avatarSheet_tiles_compressed[i]);
-        avatar[i] = decompressorVar;
-    }
-
-    //jetpack exhaust:
-    for(i = 0; i < 6; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(11, 23);
-        zx7_Decompress(decompressorVar, exhaustSheet_tiles_compressed[i]);
-        exhaust[i] = decompressorVar;
-    }
-/*
-    for(i = 0; i < 4; ++i)
-    {
-        //decompressing coin spritesheet:
-        decompressorVar = gfx_MallocSprite(12, 12);
-        zx7_Decompress(decompressorVar, coinSheet_tiles_compressed[i]);
-        coin[i] = decompressorVar;
-    }
-
+    //flipped zappers:
     for(i = 0; i < 3; ++i)
     {
-        //zappers:
-        zapper[i] = gfx_MallocSprite(18, 18);
-        zapper[i+3] = gfx_MallocSprite(18, 18);
-        zx7_Decompress(zapper[i], zapperSheet_tiles_compressed[i]);
-        gfx_FlipSpriteX(zapper[i], zapper[i+3]);
+        zapper_tiles_flipped[i] = gfx_MallocSprite(18, 18);
+        gfx_FlipSpriteX(zapper_tiles[i], zapper_tiles_flipped[i]);
     }
 
     for(i=0; i < 8; ++i)
     {
-        //mallocing full electric array:
-        electric[i] = gfx_MallocSprite(32, 32);
+        //mallocing full flipped electric_animation array:
+        electric_animation[i] = gfx_MallocSprite(32, 32);
     }
 
     for(i = 0; i < 2; ++i)
     {
         //zapper lightning:
-        zx7_Decompress(electric[i], electricSheet_tiles_compressed[i]);
-        gfx_FlipSpriteX(electric[i], electric[i+2]);
-        gfx_FlipSpriteY(electric[i], electric[i+4]);
-        gfx_RotateSpriteHalf(electric[i], electric[i+6]);
-    }
-*/
-    for(i = 0; i < 2; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(31,31);
-        zx7_Decompress(decompressorVar, missileIncoming_tiles_compressed[i]);
-        incoming[i] = decompressorVar;
+        electric_animation[i] = electric_tiles[i];
+        gfx_FlipSpriteX(electric_animation[i], electric_animation[i+2]);
+        gfx_FlipSpriteY(electric_animation[i], electric_animation[i+4]);
+        gfx_RotateSpriteHalf(electric_animation[i], electric_animation[i+6]);
     }
 
-    for(i = 0; i < 3; ++i)
-    {
-        decompressorVar = gfx_MallocSprite(20, 21);
-        zx7_Decompress(decompressorVar, missileWarning_tiles_compressed[i]);
-        warning[i] = decompressorVar;
-    }
-
-    //prepare laser sprite sizes:
-    for(i = 0; i < 8; ++i)
-    {
-        laser_powering[i] = gfx_MallocSprite(19, 15);
-    }
-
-    //laser and powering up animations, also adds flipped ones:
+    //flipping laser powering up animations:
     for(i = 0; i < 4; ++i)
     {
-        zx7_Decompress(laser_powering[i], powering_tiles_compressed[i]);
-        gfx_FlipSpriteY(laser_powering[i], laser_powering[i+4]);
-    }
-/*
-    //prepare laser sprite sizes:
-    for(i = 0; i < 6; ++i)
-    {
-        laser_firing[i] = gfx_MallocSprite(30, 37);
+        powering_tiles_flipped[i] = gfx_MallocSprite(19, 15);
+        gfx_FlipSpriteY(powering_tiles[i], powering_tiles_flipped[i]);
     }
 
-    //laser and powering up animations, also adds flipped ones:
+    //flipping laser sprites:
     for(i = 0; i < 3; ++i)
     {
-        zx7_Decompress(laser_firing[i], firing_tiles_compressed[i]);
-        gfx_FlipSpriteY(laser_firing[i], laser_firing[i+3]);
-    } */
-
-    for(i = 0; i < 6; ++i)
-    {
-        laser_shutdown[i] = gfx_MallocSprite(30, 44);
+        firing_tiles_flipped[i] = gfx_MallocSprite(30, 37);
+        gfx_FlipSpriteY(firing_tiles[i], firing_tiles_flipped[i]);
     }
 
     for(i = 0; i < 3; ++i)
     {
-        zx7_Decompress(laser_shutdown[i], laserShutDown_tiles_compressed[i]);
-        gfx_FlipSpriteY(laser_shutdown[i], laser_shutdown[i+3]);
+        shutdown_tiles_flipped[i] = gfx_MallocSprite(30, 37);
+        gfx_FlipSpriteY(firing_tiles[i], shutdown_tiles_flipped[i]);
     }
 
     //initialize GFX libraries:
@@ -305,7 +207,7 @@ void main(void)
     //start up a timer for FPS monitoring, do not move:
     timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
 
-    //best scan mode according to Mateo:
+    //best scan mode according to the angry lettuce man:
     kb_SetMode(MODE_3_CONTINUOUS);
 
     //all text printed is gray:
@@ -346,7 +248,7 @@ void main(void)
         //spawns stuff, SO much better than the debug methods I originally used:
         if (spawnDelay <= 0)
         {
-            randObject = randInt(3,3);
+            randObject = randInt(0,10);
 
             if (randObject == 1)
             {
@@ -412,7 +314,7 @@ void main(void)
                 spawnDelay = 200;
             }
         } else {
-            //spawnDelay -= scrollSpeed;
+            spawnDelay -= scrollSpeed;
         }
 
         //run controls until Barry gets wasted, then bounces his corpse around:
@@ -499,12 +401,12 @@ void main(void)
         gfx_Sprite(background, backgroundScroll + 192, 0);
 
         //draws the avatar, everything is layered over it:
-        gfx_TransparentSprite_NoClip(avatar[displacement/3], avatarX, avatarY-abs((displacement/3)-1));
+        gfx_TransparentSprite_NoClip(avatar_tiles[displacement/3], avatarX, avatarY-abs((displacement/3)-1));
 
         //bit that draws exhaust when in flight:
         if (flightTime < 18)
         {
-            gfx_TransparentSprite_NoClip(exhaust[flightTime/2], avatarX+randInt(1,3), avatarY+31);
+            gfx_TransparentSprite_NoClip(exhaust_tiles[flightTime/2], avatarX+randInt(1,3), avatarY+31);
             gfx_TransparentSprite_NoClip(nozzle, avatarX+4, avatarY+31);
         }
 
@@ -523,7 +425,7 @@ void main(void)
                         coinX[i] = 1020;
                         ++monies;
                     } else {
-                        gfx_TransparentSprite(coin[(coinAnimate[i]/10)], (coinX[i]-12), coinY[i]);
+                        gfx_TransparentSprite(coin_tiles[(coinAnimate[i]/10)], (coinX[i]-12), coinY[i]);
 
                         if (coinAnimate[i] < 38)
                         {
@@ -555,11 +457,11 @@ void main(void)
                     randVar = randInt(0,1);
                     randVar1 = randInt(0,1);
 
-                    gfx_TransparentSprite(electric[randVar+2+(randVar1*4)], zapperX[i]-25, zapperY[i]-7);
-                    gfx_TransparentSprite(electric[randVar+(randVar1*4)], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
+                    gfx_TransparentSprite(electric_animation[randVar+2+(randVar1*4)], zapperX[i]-25, zapperY[i]-7);
+                    gfx_TransparentSprite(electric_animation[randVar], zapperX[i]-25,  zapperY[i]+7+(zapperLength[i]*10));
 
-                    gfx_TransparentSprite(zapper[(zapperAnimate[i]/10)+3], zapperX[i]-18, zapperY[i]);
-                    gfx_TransparentSprite(zapper[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
+                    gfx_TransparentSprite(zapper_tiles_flipped[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]);
+                    gfx_TransparentSprite(zapper_tiles[zapperAnimate[i]/10], zapperX[i]-18, zapperY[i]+14+(zapperLength[i]*10));
 
                     if (zapperAnimate[i] < 28)
                     {
@@ -596,12 +498,12 @@ void main(void)
                 } else if (missileX[i] < 641) {
 
                     //AW CRAP HERE COME DAT BOI!
-                    gfx_TransparentSprite(incoming[missileAnimate/3], 281+randInt(-1,1), missileY[i]-16+randInt(-1,1));
+                    gfx_TransparentSprite(missileIncoming_tiles[missileAnimate/3], 281+randInt(-1,1), missileY[i]-16+randInt(-1,1));
 
                 } else if (missileX[i] < 1467) {
 
                     //plenty of time to dodge (at the beginning at least)
-                    gfx_TransparentSprite(warning[missileAnimate/2], 293, missileY[i]-11);
+                    gfx_TransparentSprite(missileWarning_tiles[missileAnimate/2], 293, missileY[i]-11);
 
                     //tracking on avatar
                     if (missileY[i] < (avatarY + 20))
@@ -626,10 +528,10 @@ void main(void)
         }
 
         //move lasers into play when needed:
-        if ((laserX > 0) && (laserX < 20) && (deadLasers < MaxLasers))
+        if ((laserX < 20) && (deadLasers < MaxLasers))
         {
             ++laserX;
-        } else if(deadLasers >= MaxLasers) {
+        } else if((deadLasers >= MaxLasers) && (laserX > 0)) {
             --laserX;
         }
 
@@ -644,8 +546,8 @@ void main(void)
                     laserAnimate[i] = 0;
 
                     //draw an inactive laser:
-                    gfx_TransparentSprite(laser_powering[0], laserX-19, laserY[i]);
-                    gfx_TransparentSprite(laser_powering[0], 320 - laserX, laserY[i]);
+                    gfx_TransparentSprite(powering_tiles[0], laserX-19, laserY[i]);
+                    gfx_TransparentSprite(powering_tiles[0], 320 - laserX, laserY[i]);
 
                 } else {
                     //if they are finished, finish the animation sequence and hide them again:
@@ -663,8 +565,8 @@ void main(void)
 
                         } else if(laserLifetime[i] < 50) {
 
-                            gfx_TransparentSprite(laser_firing[laserAnimate[i]/3], 5, laserY[i]-11);
-                            gfx_TransparentSprite(laser_firing[(laserAnimate[i]/3)+3], 285, laserY[i]-11);
+                            gfx_TransparentSprite(firing_tiles[laserAnimate[i]/3], 5, laserY[i]-11);
+                            gfx_TransparentSprite(firing_tiles_flipped[laserAnimate[i]/3], 285, laserY[i]-11);
 
                             for (i_the_sequel = 0; i_the_sequel < 10; ++i_the_sequel)
                             {
@@ -684,8 +586,8 @@ void main(void)
                             gfx_Circle(308, laserY[i]+7, 9 + ((laserLifetime[i]-50)/2));
                             gfx_Circle(308, laserY[i]+7, 8 + ((laserLifetime[i]-50)/2));
 
-                            gfx_TransparentSprite(laser_powering[0], laserX-19, laserY[i]);
-                            gfx_TransparentSprite(laser_powering[0], 320 - laserX, laserY[i]);
+                            gfx_TransparentSprite(powering_tiles[0], laserX-19, laserY[i]);
+                            gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, laserY[i]);
 
                             //reset the laser animation to zero before moving to the firing bit:
                             if (laserLifetime[i] == 49) laserAnimate[i] = 0;
@@ -703,8 +605,8 @@ void main(void)
                     }
                 }
 
-                gfx_TransparentSprite(laser_powering[(laserAnimate[i]/3)+1], laserX-19, laserY[i]);
-                gfx_TransparentSprite(laser_powering[(laserAnimate[i]/3)+5], 320 - laserX, laserY[i]);
+                gfx_TransparentSprite(powering_tiles[(laserAnimate[i]/3)+1], laserX-19, laserY[i]);
+                gfx_TransparentSprite(powering_tiles_flipped[(laserAnimate[i]/3)+1], 320 - laserX, laserY[i]);
             }
         }
 
@@ -751,23 +653,11 @@ void main(void)
     }
 
     //erase the decompressed sprites, very important:
-    free(background);
-    free(nozzle);
-    free(sparkle);
-    free(beam);
-    free(laser);
-    free(missile);
-    for(i = 0; i < 4; ++i) free(avatar[i]);
-    for(i = 0; i < 6; ++i) free(exhaust[i]);
-    //for(i = 0; i < 4; ++i) free(coin[i]);
-    //for(i = 0; i < 6; ++i) free(zapper[i]);
-    //for(i = 0; i < 8; ++i) free(electric[i]);
-    for(i = 0; i < 2; ++i) free(incoming[i]);
-    for(i = 0; i < 3; ++i) free(warning[i]);
-    for(i = 0; i < 4; ++i) free(laser_powering[i]);
-    //for(i = 0; i < 6; ++i) free(laser_firing[i]);
-    for(i = 0; i < 6; ++i) free(laser_shutdown[i]);
+    free(appvar_1);
+    free(appvar_2);
 
     //stop libraries, not doing so causes "interesting" results
     gfx_End();
+
+    ti_CloseAll();
 }

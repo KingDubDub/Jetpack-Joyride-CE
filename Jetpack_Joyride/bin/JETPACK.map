@@ -1,0 +1,168 @@
+Segment  Base   Top    High   Length
+-------- ------ ------ ------ -------
+icon     D1A882 D1A882             0h
+launcher D1A882 D1A8DA            58h
+libs     D1A8DA D1A965            8Bh
+startup  D1A965 D1A9A4            3Fh
+cleanup  D1A9A4 D1A9B8            14h
+exit     D1A9B8 D1A9BE             6h
+code     D1A9BE D1C5DB          1C1Dh
+data     D1C5DB D2CAAD         104D2h
+strsect  D2CAAD D2CABB             Eh
+text     D2CABB D2CD91           2D6h
+bss      D031F6 D0330F D13FD6    119h
+header   D1A87F D1A882             3h
+
+Label                           Value
+-----------------------------   ------
+_delay                        = D1A9BE
+_os_DisableHomeTextBuffer     = D1AA07
+_os_EnableHomeTextBuffer      = D1AA19
+_random                       = D1AA2B
+__state                       = D1C5DB
+__frameset                    = D1AA82
+__imul_b                      = 000158
+__imul_b                      = 000150
+__ladd_b                      = 00019C
+__ladd_b                      = 0001A0
+__ishru_b                     = 000184
+__ishru_b                     = 000188
+__stoiu                       = 000264
+__s_sbrk                      = D1AA90
+__idivs                       = 00013C
+__iremu                       = 000170
+__icmpzero                    = 000138
+_abs                          = D1AAB0
+__setflag                     = 000218
+__ldvrmu                      = 0001B8
+__ldvrmu                      = 0001BC
+_malloc                       = D1AAED
+__alloc_base                  = D031F6
+_free                         = D1AB95
+__findlibload                 = D1A882
+__ccleanup                    = D1A9A4
+_errno                        = D008DC
+_init                         = D1A882
+_exit                         = D1A9BA
+__exit                        = D1A993
+__exitsp                      = D1A993
+__errsp                       = D1A993
+_main                         = D1AD7B
+_delObjects                   = D1AC93
+_appvar_2                     = D0330C
+_appvar_1                     = D03309
+_shutdown_tiles_flipped       = D03300
+_firing_tiles_flipped         = D032F7
+_powering_tiles_flipped       = D032EB
+_electric_animation           = D032D3
+_zapper_tiles_flipped         = D032CA
+_deadLasers                   = D032C9
+_laserAnimate                 = D032C8
+_laserLifetime                = D032C5
+_laserY                       = D032C4
+_laserX                       = D032C3
+_MAvalue                      = D1C616
+_missileAnimate               = D032C2
+_missileY                     = D032C1
+_missileX                     = D032BF
+_zapperAnimate                = D032BC
+_zapperLength                 = D032B9
+_zapperX                      = D032B3
+_zapperY                      = D032AA
+_coinAnimate                  = D0328C
+_coinFormation                = D0328B
+_coinY                        = D0326D
+_coinX                        = D03213
+_randObject                   = D03212
+_randVar1                     = D03211
+_randVar                      = D03210
+_distance                     = D0320C
+_monies                       = D03208
+_health                       = D03207
+_backgroundScroll             = D03204
+_spawnDelay                   = D1C613
+_scrollSpeed                  = D03203
+_holdTime                     = D03202
+_frameTime                    = D03201
+_flightTime                   = D1C612
+_displacement                 = D1C611
+_avatarAnimate                = D1C610
+_avatarY                      = D03200
+_avatarX                      = D031FE
+_i_the_sequel                 = D031FD
+_i                            = D031FC
+_cty                          = D2CCDD
+_ctx                          = D2CAC1
+_abbreviatedMax               = D2CABB
+_avatar_tiles_data            = D1D8DF
+_avatar_tile_3_data           = D1D42D
+_avatar_tile_2_data           = D1CF7B
+_avatar_tile_1_data           = D1CAC9
+_avatar_tile_0_data           = D1C617
+_background_data              = D1D8EB
+_beam_data                    = D28CED
+_coin_tiles_data              = D28F9B
+_coin_tile_3_data             = D28F09
+_coin_tile_2_data             = D28E77
+_coin_tile_1_data             = D28DE5
+_coin_tile_0_data             = D28D53
+_electric_tiles_data          = D297AB
+_electric_tile_1_data         = D293A9
+_electric_tile_0_data         = D28FA7
+_exhaust_tiles_data           = D29DAB
+_exhaust_tile_5_data          = D29CAC
+_exhaust_tile_4_data          = D29BAD
+_exhaust_tile_3_data          = D29AAE
+_exhaust_tile_2_data          = D299AF
+_exhaust_tile_1_data          = D298B0
+_exhaust_tile_0_data          = D297B1
+_firing_tiles_data            = D2AAC5
+_firing_tile_2_data           = D2A66D
+_firing_tile_1_data           = D2A215
+_firing_tile_0_data           = D29DBD
+_jetpack_palette              = D2AACE
+_laser_data                   = D2ACCE
+_missile_data                 = D2AE47
+_missileIncoming_tiles_data   = D2BC47
+_missileIncoming_tile_1_data  = D2B884
+_missileIncoming_tile_0_data  = D2B4C1
+_missileWarning_tiles_data    = D2C13F
+_missileWarning_tile_2_data   = D2BF99
+_missileWarning_tile_1_data   = D2BDF3
+_missileWarning_tile_0_data   = D2BC4D
+_nozzle_data                  = D2C148
+_powering_tiles_data          = D2C5D4
+_powering_tile_3_data         = D2C4B5
+_powering_tile_2_data         = D2C396
+_powering_tile_1_data         = D2C277
+_powering_tile_0_data         = D2C158
+_sparkle_data                 = D2C5E0
+_zapper_tiles_data            = D2CAA4
+_zapper_tile_2_data           = D2C95E
+_zapper_tile_1_data           = D2C818
+_zapper_tile_0_data           = D2C6D2
+_ti_CloseAll                  = D1A8EE
+_gfx_Begin                    = D1A8FB
+_gfx_End                      = D1A8FF
+_gfx_SetColor                 = D1A903
+_gfx_SetPalette               = D1A907
+_gfx_FillScreen               = D1A90B
+_gfx_SetDraw                  = D1A90F
+_gfx_SwapDraw                 = D1A913
+_gfx_PrintInt                 = D1A917
+_gfx_PrintStringXY            = D1A91B
+_gfx_SetTextXY                = D1A91F
+_gfx_SetTextFGColor           = D1A923
+_gfx_Line                     = D1A927
+_gfx_Circle                   = D1A92B
+_gfx_AllocSprite              = D1A92F
+_gfx_Sprite                   = D1A933
+_gfx_TransparentSprite        = D1A937
+_gfx_TransparentSprite_NoClip = D1A93B
+_gfx_FlipSpriteY              = D1A93F
+_gfx_FlipSpriteX              = D1A943
+_gfx_RotateSpriteHalf         = D1A947
+_gfx_SetTextScale             = D1A94B
+_gfx_SetTransparentColor      = D1A94F
+_kb_Scan                      = D1A95D
+_kb_AnyKey                    = D1A961
