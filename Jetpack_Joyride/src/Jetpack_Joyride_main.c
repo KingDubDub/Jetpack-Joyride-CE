@@ -7,6 +7,9 @@ Made by King Dub Dub
 I'm pretty sure you have the readme if you have this source code, but if you want
 to mod this or something then get ready for some over-commented trash!
 
+In case it wasn't clear, modding this should have my permission and credit to me,
+but other than that you are obliged to have as much fun as will kill you!
+
 */
 
 #include <stdbool.h>
@@ -23,18 +26,19 @@ to mod this or something then get ready for some over-commented trash!
 #include <graphx.h>
 #include <keypadc.h>
 
-#include "coinShapes.c"
+#include "headers.h"
 
-//all the appvar include files:
+//all the sprite include files:
 #include "sprites/gfx.h"
+
+//quick-fix until convimg gets patched:
+#include "sprites/RLET_laser.h"
+
 //max number of zappers:
 #define MaxZappers 3
 
 //max number of missiles, will probably be replaced with a non-static value later:
 #define MaxMissiles 1
-
-//max number of lasers, will definitely be phased out later:
-#define MaxLasers 1
 
 //the most overused variable ever:
 uint8_t i;
@@ -66,6 +70,7 @@ uint8_t scrollSpeed;
 
 //measures timings for delays between spawning coins, obstacles, etc.:
 int24_t spawnDelay = 200;
+uint8_t missileDelay;
 
 //used for a bad background scroll function that is actually the best for this scenario:
 int24_t backgroundScroll;
@@ -113,7 +118,9 @@ uint8_t laserY[MaxLasers];
 //time till firing:
 uint24_t laserLifetime[MaxLasers];
 //keep track of laser animations:
-int8_t laserAnimate[MaxLasers];
+int8_t laserAnimate;
+//which laser formation is being used:
+uint8_t laserFormation;
 //keep track of how many lasers have fired already:
 uint8_t deadLasers;
 
@@ -124,33 +131,33 @@ gfx_sprite_t *powering_tiles_flipped[4];
 gfx_sprite_t *firing_tiles_flipped[3];
 gfx_sprite_t *shutdown_tiles_flipped[3];
 
-//the magic(k)al appvar decompression pointers, make sure to split data somewhat evenly:
-ti_var_t *appvar_1;
-ti_var_t *appvar_2;
 
 
+//gfx_CheckRectangleHotspot but only the Y checks, since 4 C++ masters write better code than me:
+#define Yspot(master_y, master_height, test_y, test_height) \
+(((test_y) < ((master_y) + (master_height))) && \
+(((test_y) + (test_height)) > (master_y)))
 
-//clears all objects from gameplay:
+//clears all objects from gameplay by moving their X-coords out of bounds:
 void delObjects()
 {
-    for (i = 0; i < abbreviatedMax[coinFormation]; ++i)
+    for (i = 0; i < coin_max[coinFormation]; ++i)
     {
         coinX[i] = 2000;
-        coinY[i] = 0;
     }
 
     for (i = 0; i < MaxZappers; ++i)
     {
         zapperLength[i] = 0;
         zapperX[i] = 2000;
-        zapperY[i] = 0;
     }
 
     for (i = 0; i < MaxMissiles; ++i)
     {
         missileX[i] = 6001;
-        missileY[i] = 0;
     }
+
+    laserX = 0;
 }
 
 void main(void)
@@ -193,8 +200,8 @@ void main(void)
 
     for(i = 0; i < 3; ++i)
     {
-        shutdown_tiles_flipped[i] = gfx_MallocSprite(30, 37);
-        gfx_FlipSpriteY(firing_tiles[i], shutdown_tiles_flipped[i]);
+        shutdown_tiles_flipped[i] = gfx_MallocSprite(30, 44);
+        gfx_FlipSpriteY(shutdown_tiles[i], shutdown_tiles_flipped[i]);
     }
 
     //initialize GFX libraries:
@@ -209,9 +216,6 @@ void main(void)
 
     //best scan mode according to the angry lettuce man:
     kb_SetMode(MODE_3_CONTINUOUS);
-
-    //all text printed is gray:
-    gfx_SetTextFGColor(2);
 
     //when I first started using C, I asked some friends if there were GOTO statements.
     //They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
@@ -248,10 +252,28 @@ void main(void)
         //spawns stuff, SO much better than the debug methods I originally used:
         if (spawnDelay <= 0)
         {
-            randObject = randInt(0,10);
+            randObject = randInt(0,21);
+            //randObject = randInt(3,3);
 
-            if (randObject == 1)
+            if (randObject == 0)
             {
+                laserFormation = randInt(0, 2);
+
+                //give each laser their Y-axis:
+                for(i = 0; i < laserMax[laserFormation]; ++i)
+                {
+                    laserY[i] = lsrY[laserFormation][i];
+                    laserLifetime[i] = halfLife[laserFormation][i];
+                }
+
+                laserX = 1;
+
+                deadLasers = 0;
+
+                spawnDelay = scrollSpeed * 266;
+
+            } else if (randObject < 4) {
+
                 //sets coin coordinates from coordinate lists:
                 randVar = randInt(30, 150);
                 coinFormation = randInt(0, 5);
@@ -264,7 +286,7 @@ void main(void)
 
                 spawnDelay = 500;
 
-            } else if (randObject == 2) {
+            } else if (randObject < 7) {
 
                 //spawns missiles (and missile swarms if I implement them):
                 for (i = 0; i < MaxMissiles; ++i)
@@ -278,24 +300,11 @@ void main(void)
                     }
                 }
 
-                //missiles have their own "delay" and don't need to reset spawnDelay.
+                //missiles have their own delay that keeps things from spawning in that shouldn't,
+                //such as coins and lasers:
+                missileDelay = 1466;
 
-            } else if (randObject == 3) {
-
-                //give each laser their Y-axis:
-                for(i = 0; i < MaxLasers; ++i)
-                {
-                    laserY[i] = randInt(30, 200);
-                    laserLifetime[i] = 100;
-                }
-
-                laserX = 1;
-
-                deadLasers = 0;
-
-                spawnDelay = scrollSpeed * 150;
-
-            } else if (randObject <= 10) {
+            } else if ((randObject > 3) && (randObject <= 20)) {
 
                 //randomly generates zapper coordinates and lengths:
                 for (i = 0; i < MaxZappers; ++i)
@@ -315,6 +324,7 @@ void main(void)
             }
         } else {
             spawnDelay -= scrollSpeed;
+            missileDelay -= scrollSpeed;
         }
 
         //run controls until Barry gets wasted, then bounces his corpse around:
@@ -411,7 +421,7 @@ void main(void)
         }
 
         //bit that runs coin collision and movement:
-        for(i = 0; i < abbreviatedMax[coinFormation]; ++i)
+        for(i = 0; i < coin_max[coinFormation]; ++i)
         {
             if (coinX[i] < 1000)
             {
@@ -420,7 +430,7 @@ void main(void)
                 {
                     if (gfx_CheckRectangleHotspot(avatarX+6,avatarY,18,40,coinX[i]-11,coinY[i]+1,10,10))
                     {
-                        gfx_TransparentSprite(sparkle, coinX[i]-13, coinY[i]-1);
+                        gfx_RLETSprite(sparkle, coinX[i]-13, coinY[i]-1);
 
                         coinX[i] = 1020;
                         ++monies;
@@ -528,22 +538,22 @@ void main(void)
         }
 
         //move lasers into play when needed:
-        if ((laserX < 20) && (deadLasers < MaxLasers))
+        if ((laserX < 20) && (deadLasers < laserMax[laserFormation]))
         {
             ++laserX;
-        } else if((deadLasers >= MaxLasers) && (laserX > 0)) {
+        } else if((deadLasers >= laserMax[laserFormation]) && (laserX > 0)) {
             --laserX;
         }
 
         //bit for lasers, lots of moving parts:
-        for(i = 0; i < MaxLasers; ++i)
+        for(i = 0; i < laserMax[laserFormation]; ++i)
         {
             if (laserX > 0)
             {
                 //reset the laser animations:
-                if ((laserX < 20) && (deadLasers < MaxLasers))
+                if ((laserX < 20) && (deadLasers < laserMax[laserFormation]))
                 {
-                    laserAnimate[i] = 0;
+                    laserAnimate = 0;
 
                     //draw an inactive laser:
                     gfx_TransparentSprite(powering_tiles[0], laserX-19, laserY[i]);
@@ -551,9 +561,9 @@ void main(void)
 
                 } else {
                     //if they are finished, finish the animation sequence and hide them again:
-                    if(deadLasers >= MaxLasers)
+                    if(deadLasers >= laserMax[laserFormation])
                     {
-                        laserAnimate[i] = 0;
+                        laserAnimate = 0;
 
                     //if they aren't dead and have moved, run through their animations and attacks:
                     } else {
@@ -563,41 +573,42 @@ void main(void)
                         {
                             ++deadLasers;
 
-                        } else if(laserLifetime[i] < 50) {
+                        } else if(laserLifetime[i] < 9) {
 
-                            gfx_TransparentSprite(firing_tiles[laserAnimate[i]/3], 5, laserY[i]-11);
-                            gfx_TransparentSprite(firing_tiles_flipped[laserAnimate[i]/3], 285, laserY[i]-11);
+                            //lasers running out of juice:
+                            gfx_TransparentSprite(shutdown_tiles[laserAnimate/3], 5, laserY[i]-16);
+                            gfx_TransparentSprite(shutdown_tiles_flipped[laserAnimate/3], 285, laserY[i]-16);
 
-                            for (i_the_sequel = 0; i_the_sequel < 10; ++i_the_sequel)
+                            gfx_RLETSprite(laser_tiles[(laserAnimate/3)+1], 35, laserY[i]);
+
+                        } else if(laserLifetime[i] < 59) {
+                            //firing lasers:
+                            gfx_TransparentSprite(firing_tiles[laserAnimate/3], 5, laserY[i]-11);
+                            gfx_TransparentSprite(firing_tiles_flipped[laserAnimate/3], 285, laserY[i]-11);
+
+                            gfx_RLETSprite(laser_tiles[0], 35, laserY[i]);
+
+                            //hitbox for damage. 5 pixel leeway above and below:
+                            if((health > 0) && Yspot(avatarY, 35, laserY[i], 10))
                             {
-                                gfx_TransparentSprite(laser, 35 + (i_the_sequel * 25), laserY[i]);
+                                --health;
                             }
 
-                        } else if (laserLifetime[i] < 100) {
+                            //makes sure the animations play correctly, I don't have time to fix math today:
+                            if (laserLifetime[i] == 9) laserAnimate = 0;
 
-                            //the simplest drawing code in this hot mess:
-                            gfx_SetColor(3);
+                        } else if (laserLifetime[i] < 109) {
+
+                            //the simplest drawing code in this hot mess, for powering up:
+                            gfx_SetColor(4);
 
                             gfx_Line(20, laserY[i]+7, 300, laserY[i]+7);
 
-                            gfx_Circle(11, laserY[i]+7, 9 + ((laserLifetime[i]-50)/2));
-                            gfx_Circle(11, laserY[i]+7, 8 + ((laserLifetime[i]-50)/2));
+                            gfx_Circle(11, laserY[i]+7, 7 + ((laserLifetime[i]-50)/4));
+                            //gfx_Circle(11, laserY[i]+7, 6 + ((laserLifetime[i]-50)/4));
 
-                            gfx_Circle(308, laserY[i]+7, 9 + ((laserLifetime[i]-50)/2));
-                            gfx_Circle(308, laserY[i]+7, 8 + ((laserLifetime[i]-50)/2));
-
-                            gfx_TransparentSprite(powering_tiles[0], laserX-19, laserY[i]);
-                            gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, laserY[i]);
-
-                            //reset the laser animation to zero before moving to the firing bit:
-                            if (laserLifetime[i] == 49) laserAnimate[i] = 0;
-                        }
-
-                        if (laserAnimate[i] < 8)
-                        {
-                            ++laserAnimate[i];
-                        } else {
-                            laserAnimate[i] = 0;
+                            gfx_Circle(308, laserY[i]+7, 7 + ((laserLifetime[i]-50)/4));
+                            //gfx_Circle(308, laserY[i]+7, 8 + ((laserLifetime[i]-50)/4));
                         }
 
                         //update the laser's timer:
@@ -605,9 +616,22 @@ void main(void)
                     }
                 }
 
-                gfx_TransparentSprite(powering_tiles[(laserAnimate[i]/3)+1], laserX-19, laserY[i]);
-                gfx_TransparentSprite(powering_tiles_flipped[(laserAnimate[i]/3)+1], 320 - laserX, laserY[i]);
+                if (laserLifetime[i] < 109)
+                {
+                    gfx_TransparentSprite(powering_tiles[(laserAnimate/3)+1], laserX-19, laserY[i]);
+                    gfx_TransparentSprite(powering_tiles_flipped[(laserAnimate/3)+1], 320 - laserX, laserY[i]);
+                } else {
+                    gfx_TransparentSprite(powering_tiles[0], laserX-19, laserY[i]);
+                    gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, laserY[i]);
+                }
             }
+        }
+
+        if (laserAnimate < 8)
+        {
+            ++laserAnimate;
+        } else {
+            laserAnimate = 0;
         }
 
         //FPS counter:
@@ -620,18 +644,23 @@ void main(void)
 
         timer_1_Counter = 0;
 
-        gfx_SetTextScale(1, 1);
-        gfx_SetTextXY(280, 10);
-        gfx_PrintInt(frameTime, 2);
+        //gold coin color for money counter:
+        gfx_SetTextFGColor(3);
 
+        gfx_SetTextScale(1, 1);
         gfx_SetTextXY(10, 30);
         gfx_PrintInt(monies, 4);
+
+        //distance and FPS counter are gray:
+        gfx_SetTextFGColor(2);
+
+        gfx_SetTextXY(280, 10);
+        gfx_PrintInt(frameTime, 1);
 
         gfx_SetTextScale(2,2);
         gfx_SetTextXY(10, 10);
         gfx_PrintInt((distance += scrollSpeed)/15, 4);
 
-        //gfx_BlitBuffer();
         gfx_SwapDraw();
 
     } while (!(kb_Data[6] & kb_Clear) && (health > 0));
@@ -651,10 +680,6 @@ void main(void)
             goto GAMESTART;
         }
     }
-
-    //erase the decompressed sprites, very important:
-    free(appvar_1);
-    free(appvar_2);
 
     //stop libraries, not doing so causes "interesting" results
     gfx_End();

@@ -5,26 +5,40 @@ palettes:
       - color: {index: 0, r: 255, g: 0, b: 128}
       - color: {index: 1, r: 0, g: 0, b: 0}
       - color: {index: 2, r: 232, g: 232, b: 232}
-      - color: {index: 3, r: 249, g: 0, b: 0}
+      - color: {index: 3, r: 255, g: 243, b: 115}
+      - color: {index: 4, r: 249, g: 0, b: 0}
 
 converts:
-  - name: singleObjects
+  - name: single_sprites
     palette: jetpack_palette
     images:
       - jetpack.png
       - nozzle.png
-      - sparkle.png
       - beam.png
-      - laser.png
       - missile.png
 
-converts:
+  - name: single_rlet_sprites
+    palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
+    images:
+      - sparkle.png
+
+  - name: laser_beam
+    palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
+    tilesets:
+      tile-width: 250
+      tile-height: 15
+      images:
+        - laser.png
+
   - name: hallway
     palette: jetpack_palette
     images:
       - background.png
 
-converts:
   - name: avatar
     palette: jetpack_palette
     tilesets: 
@@ -33,7 +47,6 @@ converts:
       images:
         - avatar.png
 
-converts:
   - name: exhaust
     palette: jetpack_palette
     tilesets:
@@ -42,7 +55,6 @@ converts:
       images:
         - exhaust.png
 
-converts:
   - name: coin
     palette: jetpack_palette
     tilesets:
@@ -51,7 +63,6 @@ converts:
       images:
         - coin.png
 
-converts:
   - name: zapper
     palette: jetpack_palette
     tilesets:
@@ -60,7 +71,6 @@ converts:
       images:
         - zapper.png
 
-converts:
   - name: electricStuff
     palette: jetpack_palette
     tilesets:
@@ -69,7 +79,6 @@ converts:
       images:
         - electric.png
 
-converts:
   - name: missileWarning
     palette: jetpack_palette
     tilesets:
@@ -77,8 +86,7 @@ converts:
       tile-height: 21
       images:
         - missileWarning.png
-
-converts: 
+ 
   - name: missileIncoming
     palette: jetpack_palette
     tilesets:
@@ -87,13 +95,11 @@ converts:
       images:
         - missileIncoming.png
 
-converts:
   - name: missile
     palette: jetpack_palette
     images:
       - missile.png
 
-converts:
   - name: laser_powering
     palette: jetpack_palette
     tilesets:
@@ -102,7 +108,6 @@ converts:
       images:
         - powering.png
 
-converts:
   - name: laser_firing
     palette: jetpack_palette
     tilesets:
@@ -111,7 +116,6 @@ converts:
       images:
         - firing.png
 
-converts:
   - name: laser_shutdown
     palette: jetpack_palette
     tilesets:
@@ -127,7 +131,9 @@ outputs:
 
     converts:
       - hallway
-      - singleObjects
+      - single_sprites
+      - single_rlet_sprites
+      - laser_beam
       - avatar
       - exhaust
       - coin

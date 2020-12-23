@@ -8,13 +8,14 @@ extern "C" {
 #include "jetpack_palette.h"
 #define hallway_palette_offset 0
 #include "background.h"
-#define singleObjects_palette_offset 0
+#define single_sprites_palette_offset 0
 #include "jetpack.h"
 #include "nozzle.h"
-#include "sparkle.h"
 #include "beam.h"
-#include "laser.h"
 #include "missile.h"
+#define single_rlet_sprites_palette_offset 0
+#include "sparkle.h"
+#define laser_beam_palette_offset 0
 #define avatar_palette_offset 0
 #include "avatar.h"
 #define exhaust_palette_offset 0

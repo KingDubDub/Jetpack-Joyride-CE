@@ -1,0 +1,94 @@
+; Zilog eZ80 ANSI C Compiler Release 3.4
+; -optsize -noreduceopt -nomodsect -peephole -globalopt
+; -localcse -const=ROM 
+	FILE	"SRC\LASER_FORMATIONS.C"
+	.assume ADL=1
+	SEGMENT TEXT
+_laserMax:
+	DB	2
+	DB	4
+	DB	7
+_lsrY:
+	DB	24
+	DB	204
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	24
+	DB	54
+	DB	84
+	DB	204
+	DB	0
+	DB	0
+	DB	0
+	DB	24
+	DB	54
+	DB	84
+	DB	114
+	DB	144
+	DB	174
+	DB	204
+_halfLife:
+	DB	108
+	DB	108
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	0
+	DB	108
+	DB	108
+	DB	108
+	DB	108
+	DB	0
+	DB	0
+	DB	0
+	DB	108
+	DB	108
+	DB	216
+	DB	216
+	DB	216
+	DB	108
+	DB	108
+	XDEF _halfLife
+	XDEF _lsrY
+	XDEF _laserMax
+;    1	#include <stdint.h>
+;    2	
+;    3	//max number of lasers, used for initializing:
+;    4	#define MaxLasers 7
+;    5	
+;    6	//max number of lasers per formations, so only the ones used are updated:
+;    7	const uint8_t laserMax[3] =
+;    8	{
+;    9	    2,
+;   10	    4,
+;   11	    7
+;   12	};
+;   13	
+;   14	//Y-coords, no X's needed:
+;   15	const uint8_t lsrY[3][MaxLasers] =
+;   16	{{
+;   17	    24,
+;   18	    204
+;   19	},{
+;   20	    24,
+;   21	    54,
+;   22	    84,
+;   23	    204
+;   24	},{
+;   25	    24,
+;   26	    54,
+;   27	    84,
+;   28	    114,
+;   29	    144,
+;   30	    174,
+;   31	    204
+;   32	}};
+;   33	
+;   34	//TTL for lasers, it's the last 108 cycles that counts:
+;   35	const uint8_t halfLife[3][MaxLasers] =
+;   36	{{
+	END

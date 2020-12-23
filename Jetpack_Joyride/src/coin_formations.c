@@ -1,10 +1,11 @@
+#include <stdint.h>
 
 //global maximum coins, technically redundant but still useful for debugging:
 #define MaxCoins 30
 
 //the max number of coins in each shape, used so the coin-calculation runs through the minimum
 //number of coins:
-const uint8_t abbreviatedMax[6] =
+const uint8_t coin_max[6] =
 {
     30,
     21,
