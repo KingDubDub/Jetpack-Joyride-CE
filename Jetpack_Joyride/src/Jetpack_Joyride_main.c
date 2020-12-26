@@ -253,8 +253,8 @@ void main(void)
         //spawns stuff, SO much better than the debug methods I originally used:
         if (spawnDelay <= 0)
         {
-            //randObject = randInt(0,21);
-            randObject = randInt(2,2);
+            randObject = randInt(0,21);
+            //randObject = randInt(2,2);
 
             if (randObject == 0)
             {
