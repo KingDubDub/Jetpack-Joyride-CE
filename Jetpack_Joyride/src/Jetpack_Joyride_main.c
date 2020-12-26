@@ -31,14 +31,14 @@ but other than that you are obliged to have as much fun as will kill you!
 //all the sprite include files:
 #include "sprites/gfx.h"
 
-//quick-fix until convimg gets patched:
-#include "sprites/RLET_laser.h"
-
-//max number of zappers:
+//max number of various obstacles that are allowed to spawn:
 #define MaxZappers 3
-
-//max number of missiles, will probably be replaced with a non-static value later:
 #define MaxMissiles 1
+
+//the starting X-coords for various obstacles and things:
+#define COIN_ORIGIN 330
+#define ZAPPER_ORIGIN 330
+#define MISSILE_ORIGIN 1466
 
 //the most overused variable ever:
 uint8_t i;
@@ -108,8 +108,9 @@ uint8_t zapperAnimate[MaxZappers];
 uint16_t missileX[MaxMissiles];
 uint8_t missileY[MaxMissiles];
 //keep track of animations for missiles:
-int8_t missileAnimate;
+int8_t missile_icon_animate;
 int8_t MAvalue = -1;
+int8_t missileAnimate;
 
 //all lasers have a universal X that doesn't move very far:
 int8_t laserX;
@@ -149,12 +150,12 @@ void delObjects()
     for (i = 0; i < MaxZappers; ++i)
     {
         zapperLength[i] = 0;
-        zapperX[i] = 2000;
+        zapperX[i] = (ZAPPER_ORIGIN + 1);
     }
 
     for (i = 0; i < MaxMissiles; ++i)
     {
-        missileX[i] = 6001;
+        missileX[i] = (MISSILE_ORIGIN + 1);
     }
 
     laserX = 0;
@@ -252,12 +253,13 @@ void main(void)
         //spawns stuff, SO much better than the debug methods I originally used:
         if (spawnDelay <= 0)
         {
-            randObject = randInt(0,21);
-            //randObject = randInt(3,3);
+            //randObject = randInt(0,21);
+            randObject = randInt(2,2);
 
             if (randObject == 0)
             {
-                laserFormation = randInt(0, 2);
+                //picks a random formation from the data arrays in the laser_formations file:
+                laserFormation = randInt(0, (LASER_FORMATIONS - 1));
 
                 //give each laser their Y-axis:
                 for(i = 0; i < laserMax[laserFormation]; ++i)
@@ -272,28 +274,28 @@ void main(void)
 
                 spawnDelay = scrollSpeed * 266;
 
-            } else if (randObject < 4) {
+            } else if (randObject < 3) {
 
                 //sets coin coordinates from coordinate lists:
                 randVar = randInt(30, 150);
-                coinFormation = randInt(0, 5);
+                coinFormation = randInt(0, (COIN_FORMATIONS - 1));
                 for(i = 0; i < MaxCoins; ++i)
                 {
-                    coinX[i] = ctx[coinFormation][i] + 330;
-                    coinY[i] = cty[coinFormation][i] + randVar;
+                    coinX[i] = (COIN_ORIGIN + ctx[coinFormation][i]);
+                    coinY[i] = (randVar + cty[coinFormation][i]);
                     coinAnimate[i] = 0;
                 }
 
                 spawnDelay = 500;
 
-            } else if (randObject < 7) {
+            } else if (randObject < 6) {
 
                 //spawns missiles (and missile swarms if I implement them):
                 for (i = 0; i < MaxMissiles; ++i)
                 {
-                    if (missileX[i] > 6000)
+                    if (missileX[i] > MISSILE_ORIGIN)
                     {
-                        missileX[i] = 1466;
+                        missileX[i] = MISSILE_ORIGIN;
                         missileY[i] = 10 * randInt(2, 18);
 
                         i = MaxZappers;
@@ -301,7 +303,7 @@ void main(void)
                 }
 
                 //missiles have their own delay that keeps things from spawning in that shouldn't,
-                //such as coins and lasers:
+                //such as coins and lasers (currently doesn't work):
                 missileDelay = 1466;
 
             } else if ((randObject > 3) && (randObject <= 20)) {
@@ -309,9 +311,9 @@ void main(void)
                 //randomly generates zapper coordinates and lengths:
                 for (i = 0; i < MaxZappers; ++i)
                 {
-                    if (zapperX[i] > 330)
+                    if (zapperX[i] > ZAPPER_ORIGIN)
                     {
-                        zapperX[i] = 330;
+                        zapperX[i] = ZAPPER_ORIGIN;
 
                         zapperLength[i] = randInt(2, 4);
                         zapperY[i] = 10 * randInt(2, 19 - zapperLength[i]);
@@ -423,26 +425,26 @@ void main(void)
         //bit that runs coin collision and movement:
         for(i = 0; i < coin_max[coinFormation]; ++i)
         {
-            if (coinX[i] < 1000)
+            //do things if the coin is less than the origin plus some buffer I made up:
+            if (coinX[i] <= COIN_ORIGIN + 500)
             {
                 //collision detection and appropriate sprite drawing:
-                if (coinX[i] < 330)
+                if (gfx_CheckRectangleHotspot(avatarX+6,avatarY,18,40,coinX[i]-11,coinY[i]+1,10,10))
                 {
-                    if (gfx_CheckRectangleHotspot(avatarX+6,avatarY,18,40,coinX[i]-11,coinY[i]+1,10,10))
+                    gfx_RLETSprite(sparkle, coinX[i]-13, coinY[i]-1);
+
+                    coinX[i] = 1020;
+                    ++monies;
+
+                } else {
+
+                    gfx_RLETSprite(coin_tiles[(coinAnimate[i]/10)], (coinX[i]-12), coinY[i]);
+
+                    if ((coinAnimate[i] < 38) && (coinX[i] < COIN_ORIGIN))
                     {
-                        gfx_RLETSprite(sparkle, coinX[i]-13, coinY[i]-1);
-
-                        coinX[i] = 1020;
-                        ++monies;
+                        coinAnimate[i] += 2;
                     } else {
-                        gfx_TransparentSprite(coin_tiles[(coinAnimate[i]/10)], (coinX[i]-12), coinY[i]);
-
-                        if (coinAnimate[i] < 38)
-                        {
-                            coinAnimate[i] += 2;
-                        } else {
-                            coinAnimate[i] = 0;
-                        }
+                        coinAnimate[i] = 0;
                     }
                 }
 
@@ -454,7 +456,7 @@ void main(void)
         for (i = 0; i < MaxZappers; ++i)
         {
             //drawing the zapper beams:
-            if (zapperX[i] < 1000)
+            if (zapperX[i] <= ZAPPER_ORIGIN)
             {
                 for (i_the_sequel = 0; i_the_sequel < zapperLength[i]; ++i_the_sequel)
                 {
@@ -494,26 +496,27 @@ void main(void)
         //bit that draws and calculates the missiles 'o death:
         for (i = 0; i < MaxMissiles; ++i)
         {
-            if (missileX[i] < 6001)
+            if (missileX[i] <= MISSILE_ORIGIN)
             {
                 if (missileX[i] < 366)
                 {
-                    gfx_TransparentSprite(missile, missileX[i]-46, missileY[i]-18);
+                    gfx_TransparentSprite(missile_tiles[missileAnimate/2], missileX[i]-46, missileY[i]-18);
 
                     if ((health > 0) && (gfx_CheckRectangleHotspot(missileX[i]-45, avatarY, 19, 40, avatarX+6, missileY[i]-5, 18, 12)))
                     {
                         --health;
                     }
 
+                //using X-position as timer, meaning there's less warning as time goes on:
                 } else if (missileX[i] < 641) {
 
                     //AW CRAP HERE COME DAT BOI!
-                    gfx_TransparentSprite(missileIncoming_tiles[missileAnimate/3], 281+randInt(-1,1), missileY[i]-16+randInt(-1,1));
+                    gfx_TransparentSprite(missileIncoming_tiles[missile_icon_animate/3], 281+randInt(-1,1), missileY[i]-16+randInt(-1,1));
 
-                } else if (missileX[i] < 1467) {
+                } else if (missileX[i] < MISSILE_ORIGIN) {
 
                     //plenty of time to dodge (at the beginning at least)
-                    gfx_TransparentSprite(missileWarning_tiles[missileAnimate/2], 293, missileY[i]-11);
+                    gfx_TransparentSprite(missileWarning_tiles[missile_icon_animate/2], 293, missileY[i]-11);
 
                     //tracking on avatar
                     if (missileY[i] < (avatarY + 20))
@@ -524,25 +527,25 @@ void main(void)
                     }
                 }
 
-                //make missileAnimate go up and down between 0 and 5 by toggling MAvalue:
-                if ((missileAnimate < 1) || (missileAnimate > 4))
-                {
-                    MAvalue *= -1;
-                }
-                missileAnimate += MAvalue;
-
                 //missiles travel by 6 pixels each frame. It was surprisingly tedious to figure that out
                 //from frame-by-frame reviewing of missiles; however, it's too slow on the calc.
                 missileX[i] -= scrollSpeed + 8;
             }
         }
 
-        //move lasers into play when needed:
-        if ((laserX < 20) && (deadLasers < laserMax[laserFormation]))
+        //control missile warning and incoming animations:
+        if ((missile_icon_animate < 1) || (missile_icon_animate > 4))
         {
-            ++laserX;
-        } else if((deadLasers >= laserMax[laserFormation]) && (laserX > 0)) {
-            --laserX;
+            MAvalue *= -1;
+        }
+        missile_icon_animate += MAvalue;
+
+        //animate missile sprites:
+        if (missileAnimate < 12)
+        {
+            ++missileAnimate;
+        } else {
+            missileAnimate = 0;
         }
 
         //bit for lasers, lots of moving parts:
@@ -627,6 +630,14 @@ void main(void)
             }
         }
 
+        //move lasers into play when needed:
+        if ((laserX < 20) && (deadLasers < laserMax[laserFormation]))
+        {
+            ++laserX;
+        } else if((deadLasers >= laserMax[laserFormation]) && (laserX > 0)) {
+            --laserX;
+        }
+
         if (laserAnimate < 8)
         {
             ++laserAnimate;
@@ -662,6 +673,7 @@ void main(void)
         gfx_PrintInt((distance += scrollSpeed)/15, 4);
 
         gfx_SwapDraw();
+        //gfx_BlitBuffer();
 
     } while (!(kb_Data[6] & kb_Clear) && (health > 0));
 

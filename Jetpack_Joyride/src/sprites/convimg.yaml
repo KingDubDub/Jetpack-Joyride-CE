@@ -15,7 +15,6 @@ converts:
       - jetpack.png
       - nozzle.png
       - beam.png
-      - missile.png
 
   - name: single_rlet_sprites
     palette: jetpack_palette
@@ -57,6 +56,8 @@ converts:
 
   - name: coin
     palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
     tilesets:
       tile-width: 12
       tile-height: 12
@@ -97,8 +98,11 @@ converts:
 
   - name: missile
     palette: jetpack_palette
-    images:
-      - missile.png
+    tilesets:
+      tile-width: 55
+      tile-height: 35
+      images:
+        - missile.png
 
   - name: laser_powering
     palette: jetpack_palette
@@ -141,6 +145,7 @@ outputs:
       - electricStuff
       - missileWarning
       - missileIncoming
+      - missile
       - laser_firing
       - laser_powering
       - laser_shutdown

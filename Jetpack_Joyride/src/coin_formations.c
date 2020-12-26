@@ -3,9 +3,11 @@
 //global maximum coins, technically redundant but still useful for debugging:
 #define MaxCoins 30
 
+#define COIN_FORMATIONS 6
+
 //the max number of coins in each shape, used so the coin-calculation runs through the minimum
 //number of coins:
-const uint8_t coin_max[6] =
+const uint8_t coin_max[COIN_FORMATIONS] =
 {
     30,
     21,
@@ -16,7 +18,7 @@ const uint8_t coin_max[6] =
 };
 
 //coin formation type arrays:
-const uint24_t ctx[6][MaxCoins] =
+const uint24_t ctx[COIN_FORMATIONS][MaxCoins] =
 {{
     0, 12, 24, 36, 48, 60, 72, 84, 96, 108,
     0, 12, 24, 36, 48, 60, 72, 84, 96, 108,
@@ -55,7 +57,7 @@ const uint24_t ctx[6][MaxCoins] =
        12,     36,     60,     84,     108,
 }};
 
-const uint8_t cty[6][MaxCoins] =
+const uint8_t cty[COIN_FORMATIONS][MaxCoins] =
 {{
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
