@@ -1,9 +1,0 @@
-	section .icon
-
-	jp	___prgm_init
-	db	$02
-
-	public ___description
-___description:
-	db	"Jetpack Joyride for the TI84 PCE", 0
-___prgm_init:

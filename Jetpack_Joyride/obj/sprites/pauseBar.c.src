@@ -1,8 +1,0 @@
-	section	.text,"ax",@progbits
-	assume	adl = 1
-	section	.data,"aw",@progbits
-	public	_pauseBar_data
-_pauseBar_data:
-	db	"",002o,036o,"''",015o,015o,221o,221o,026o,026o,015o,015o,024o,024o,024o,024o,035o,035o,035o,035o,"BB      ==",015o,015o,"!!!!!!!!!!",022o,022o,022o,022o,022o,022o,022o,022o,"""""UUUUUU",026o,026o,030o,030o
-
-	ident	"clang version 12.0.0 (https://github.com/jacobly0/llvm-project a4fd568b012f0b193e341952bf10624f559064fd)"
