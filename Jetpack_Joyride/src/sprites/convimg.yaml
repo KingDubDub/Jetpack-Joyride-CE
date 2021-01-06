@@ -4,23 +4,35 @@ palettes:
     fixed-entries:
       - color: {index: 0, r: 255, g: 0, b: 128}
       - color: {index: 1, r: 0, g: 0, b: 0}
-      - color: {index: 2, r: 232, g: 232, b: 232}
-      - color: {index: 3, r: 255, g: 243, b: 115}
-      - color: {index: 4, r: 249, g: 0, b: 0}
+      - color: {index: 2, r: 255, g: 255, b: 255}
+      - color: {index: 3, r: 232, g: 232, b: 232}
+      - color: {index: 4, r: 255, g: 243, b: 115}
+      - color: {index: 5, r: 249, g: 0, b: 0}
+      - color: {index: 6, r: 51, g: 62, b: 92}
 
 converts:
+  - name: pause_button
+    palette: jetpack_palette
+    tilesets:
+      tile-width: 20
+      tile-height: 50
+      images:
+        - pauseButtonOn.png
+
+  - name: pause_button_pressed
+    palette: jetpack_palette
+    tilesets:
+      tile-width: 20
+      tile-height: 46
+      images:
+        - pauseButtonOff.png
+
   - name: single_sprites
     palette: jetpack_palette
     images:
       - jetpack.png
       - nozzle.png
       - beam.png
-
-  - name: single_rlet_sprites
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    images:
       - sparkle.png
 
   - name: laser_beam
@@ -56,8 +68,6 @@ converts:
 
   - name: coin
     palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
     tilesets:
       tile-width: 12
       tile-height: 12
@@ -134,9 +144,10 @@ outputs:
       - jetpack_palette
 
     converts:
+      - pause_button
+      - pause_button_pressed
       - hallway
       - single_sprites
-      - single_rlet_sprites
       - laser_beam
       - avatar
       - exhaust

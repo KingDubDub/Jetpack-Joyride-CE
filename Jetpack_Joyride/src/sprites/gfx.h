@@ -6,13 +6,16 @@ extern "C" {
 #endif
 
 #include "jetpack_palette.h"
+#define pause_button_palette_offset 0
+#include "pauseButtonOn.h"
+#define pause_button_pressed_palette_offset 0
+#include "pauseButtonOff.h"
 #define hallway_palette_offset 0
 #include "background.h"
 #define single_sprites_palette_offset 0
 #include "jetpack.h"
 #include "nozzle.h"
 #include "beam.h"
-#define single_rlet_sprites_palette_offset 0
 #include "sparkle.h"
 #define laser_beam_palette_offset 0
 #include "laser.h"

@@ -1,8 +1,5 @@
 # ----------------------------
-# Set NAME to the program name
-# Set ICON to the png icon file name
-# Set DESCRIPTION to display within a compatible shell
-# Set COMPRESSED to "YES" to create a compressed program
+# Makefile Options
 # ----------------------------
 
 NAME        ?= JETPACK
@@ -11,6 +8,14 @@ ICON        ?= iconc.png
 DESCRIPTION ?= "Jetpack Joyride for the TI84 PCE"
 ARCHIVED    ?= YES
 
+
+CFLAGS ?= -Wall -Wextra -Oz
+CXXFLAGS ?= -Wall -Wextra -Oz
+
 # ----------------------------
 
-include $(CEDEV)/include/.makefile
+ifndef CEDEV
+$(error CEDEV environment path variable is not set)
+endif
+
+include $(CEDEV)/meta/makefile.mk

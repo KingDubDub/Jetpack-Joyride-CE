@@ -19,8 +19,9 @@ Software Installation Instructions:
 6. Brag to your freinds that you're a "l337 h4x0r" with games on your calculator!
 
 Controls:
--Hold "2nd" to rise, release to fall
--Press "clear" to exit the game
+-Hold [2nd] to rise, release to fall.
+-Press [del] to enter the pause menu.
+-Press [clear] to exit the game.
 
 NOTES FOR PEOPLE WHO WANT TO BUILD FROM SOURCE:
 -The convimg.yaml is written for Mateo's convimg utility version 8.3 and up, it will give an output error if you use a lower version.
