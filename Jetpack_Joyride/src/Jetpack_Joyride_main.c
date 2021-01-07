@@ -94,8 +94,8 @@ int8_t menuSelect;
 
 //strings used in pause menu:
 char pauseOptions[3][7] = {"Quit", "Retry", "Resume"};
-//their Y-positions, since they don't follow a mathmatical trend:
-int8_t pauseOptionY[3] = {120, 103, 90};
+//their X-positions, since they don't follow a mathmatical trend:
+int8_t pauseOptionX[3] = {120, 103, 90};
 
 uint24_t coinX[MaxCoins];
 uint8_t coinY[MaxCoins];
@@ -164,6 +164,29 @@ void delObjects()
     }
 
     laserX = 0;
+}
+
+//a function for drawing buttons, will hopefully save on flash size and stack usage:
+void draw_button(uint8_t ButtonSelect)
+{
+    //first 20 pixels of the button:
+    gfx_Sprite(pauseButtonOn_tiles[ButtonSelect], 70, 33 + (ButtonSelect * 60));
+
+    //the middle bits are drawn 7 times:
+    for(uint8_t i = 0; i < 140; i += 20)
+    {
+        gfx_Sprite(pauseButtonOn_tile_3, 90 + i, 33 + (ButtonSelect * 60));
+    }
+
+    //and the last 20 pixels:
+    gfx_Sprite(pauseButtonOn_tile_4, 230, 33 + (ButtonSelect * 60));
+
+    //words 'n stuff:
+    gfx_SetTextFGColor(2);
+    gfx_SetTextScale(3, 3);
+
+    //pretty much all the letters are odd numbers of pixels wide or tall, so that sucks:
+    gfx_PrintStringXY(pauseOptions[ButtonSelect], pauseOptionX[ButtonSelect], 47 + (ButtonSelect * 60));
 }
 
 void main(void)
@@ -483,7 +506,7 @@ GAMESTART:
         //bit that draws exhaust when in flight:
         if (exhaustAnimate < 18)
         {
-            gfx_TransparentSprite_NoClip(exhaust_tiles[exhaustAnimate / 2], avatarX + randInt(1, 3), avatarY + 31);
+            gfx_TransparentSprite_NoClip(exhaust_tiles_optimized[exhaustAnimate / 2], avatarX + randInt(1, 3), avatarY + 31);
             gfx_TransparentSprite_NoClip(nozzle, avatarX + 4, avatarY + 31);
         }
 
@@ -504,7 +527,7 @@ GAMESTART:
                 else
                 {
 
-                    gfx_TransparentSprite(coin_tiles[(coinAnimate[i] / 10)], (coinX[i] - 12), coinY[i]);
+                    gfx_TransparentSprite(coin_tiles_optimized[(coinAnimate[i] / 10)], (coinX[i] - 12), coinY[i]);
 
                     if ((coinAnimate[i] < 38) && (coinX[i] < COIN_ORIGIN))
                     {
@@ -570,7 +593,7 @@ GAMESTART:
             {
                 if (missileX[i] < 366)
                 {
-                    gfx_TransparentSprite(missile_tiles[missileAnimate / 2], missileX[i] - 46, missileY[i] - 18);
+                    gfx_TransparentSprite(missile_tiles_optimized[missileAnimate / 2], missileX[i] - 46, missileY[i] - 18);
 
                     if ((health > 0) && (gfx_CheckRectangleHotspot(missileX[i] - 45, avatarY, 19, 40, avatarX + 6, missileY[i] - 5, 18, 12)))
                     {
@@ -617,8 +640,8 @@ GAMESTART:
                     laserAnimate = 0;
 
                     //draw an inactive laser:
-                    gfx_TransparentSprite(powering_tiles[0], laserX - 19, laserY[i]);
-                    gfx_TransparentSprite(powering_tiles[0], 320 - laserX, laserY[i]);
+                    gfx_TransparentSprite(powering_tile_0, laserX - 19, laserY[i]);
+                    gfx_TransparentSprite(powering_tile_0, 320 - laserX, laserY[i]);
                 }
                 else
                 {
@@ -652,7 +675,7 @@ GAMESTART:
                             gfx_TransparentSprite(firing_tiles[laserAnimate / 3], 5, laserY[i] - 11);
                             gfx_TransparentSprite(firing_tiles_flipped[laserAnimate / 3], 285, laserY[i] - 11);
 
-                            gfx_RLETSprite(laser_tiles[0], 35, laserY[i]);
+                            gfx_RLETSprite(laser_tile_0, 35, laserY[i]);
 
                             //hitbox for damage. 5 pixel leeway above and below:
                             if ((health > 0) && Yspot(avatarY, 35, laserY[i], 10))
@@ -691,7 +714,7 @@ GAMESTART:
                 }
                 else
                 {
-                    gfx_TransparentSprite(powering_tiles[0], laserX - 19, laserY[i]);
+                    gfx_TransparentSprite(powering_tile_0, laserX - 19, laserY[i]);
                     gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, laserY[i]);
                 }
             }
@@ -736,35 +759,10 @@ GAMESTART:
             //drawing the base color for all the menu stuff:
             gfx_FillScreen(6);
 
-            //first 20 pixels of buttons:
-            gfx_Sprite(pauseButtonOn_tiles[0], 70, 33);
-            gfx_Sprite(pauseButtonOn_tiles[1], 70, 93);
-            gfx_Sprite(pauseButtonOn_tiles[2], 70, 153);
-
-            //last 20 pixels:
-            gfx_Sprite(pauseButtonOn_tiles[4], 230, 33);
-            gfx_Sprite(pauseButtonOn_tiles[4], 230, 93);
-            gfx_Sprite(pauseButtonOn_tiles[4], 230, 153);
-
-            //and the middle bits are drawn 7 times:
-            for(uint8_t i = 0; i < 140; i += 20)
-            {
-                //one little
-                gfx_Sprite(pauseButtonOn_tiles[3], 90 + i, 33);
-                //two little
-                gfx_Sprite(pauseButtonOn_tiles[3], 90 + i, 93);
-                //three little buttons
-                gfx_Sprite(pauseButtonOn_tiles[3], 90 + i, 153);
-            }
-
-            //words 'n stuff:
-            gfx_SetTextFGColor(2);
-            gfx_SetTextScale(3, 3);
-
-            //pretty much all the letters are odd numbers of pixels wide or tall, so that sucks:
-            gfx_PrintStringXY(pauseOptions[0], 120, 47);   //Quit
-            gfx_PrintStringXY(pauseOptions[1], 103, 107); //Retry
-            gfx_PrintStringXY(pauseOptions[2], 90, 167); //Resume
+            //using that draw_button() function to write out the 3 menu options:
+            draw_button(0);
+            draw_button(1);
+            draw_button(2);
 
             gfx_SetColor(2);
 
@@ -787,20 +785,8 @@ GAMESTART:
                     gfx_SetColor(6);
                     gfx_Rectangle(69, 32 + (menuSelect * 60), 182, 52);
 
-                    //and redraw the rectangles too (note to self, functions might be good here):
-                    gfx_Sprite(pauseButtonOn_tiles[menuSelect], 70, 33 + (menuSelect * 60));
-
-                    //and the middle bits are drawn 7 times:
-                    for(uint8_t i = 0; i < 140; i += 20)
-                    {
-                        gfx_Sprite(pauseButtonOn_tiles[3], 90 + i, 33 + (menuSelect * 60));
-                    }
-
-                    //last 20 pixels of button:
-                    gfx_Sprite(pauseButtonOn_tiles[4], 230, 33 + (menuSelect * 60));
-
-                    //words:
-                    gfx_PrintStringXY(pauseOptions[menuSelect], pauseOptionY[menuSelect], 47 + (menuSelect * 60));
+                    //re-draw the unpressed form of whatever button is being moved on from:
+                    draw_button(menuSelect);
 
                     //if down is pressed, add to menu select and correct overflow when necessary:
                     if (kb_Data[7] & kb_Down)
@@ -828,7 +814,7 @@ GAMESTART:
                     gfx_SetColor(2);
                     gfx_Rectangle(69, 32 + (menuSelect * 60), 182, 52);
                 }
-                else if (kb_Data[1] & kb_2nd)
+                else if ((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter))
                 {
                     debounced = true;
 
@@ -838,12 +824,12 @@ GAMESTART:
                     gfx_FillRectangle(69, 32 + (menuSelect * 60), 182, 52);
 
                     gfx_Sprite(pauseButtonOff_tiles[menuSelect], 80, 35 + (menuSelect * 60));
-                    gfx_Sprite(pauseButtonOff_tiles[4], 220, 35 + (menuSelect * 60));
+                    gfx_Sprite(pauseButtonOff_tile_4, 220, 35 + (menuSelect * 60));
 
                     //middle of pressed button is drawn (6 tiles):
                     for (uint8_t i = 0; i < 120; i += 20)
                     {
-                        gfx_Sprite(pauseButtonOff_tiles[3], 100 + i, 35 + (menuSelect * 60));
+                        gfx_Sprite(pauseButtonOff_tile_3, 100 + i, 35 + (menuSelect * 60));
                     }
 
                     //smol selector:
@@ -851,7 +837,7 @@ GAMESTART:
                     gfx_Rectangle(79, 34 + (menuSelect * 60), 162, 48);
 
                     //button text:
-                    gfx_PrintStringXY(pauseOptions[menuSelect], pauseOptionY[menuSelect], 47 + (menuSelect * 60));
+                    gfx_PrintStringXY(pauseOptions[menuSelect], pauseOptionX[menuSelect], 47 + (menuSelect * 60));
                 }
                 else
                 {
@@ -888,8 +874,10 @@ GAMESTART:
     if (health < 1)
     {
         gfx_FillScreen(1);
-        gfx_SetTextScale(4, 4);
-        gfx_PrintStringXY("U is ded lol.", 15, 100);
+        gfx_SetTextScale(3, 3);
+        gfx_PrintStringXY("Congration!", 15, 70);
+        gfx_PrintStringXY("You recieved:", 15, 130);
+        gfx_PrintStringXY("Death", 15, 160);
         gfx_SwapDraw();
 
         while (kb_AnyKey()) kb_Scan();

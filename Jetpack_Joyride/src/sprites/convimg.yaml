@@ -58,21 +58,23 @@ converts:
       images:
         - avatar.png
 
-  - name: exhaust
+  - name: exhaust_optimized
     palette: jetpack_palette
-    tilesets:
-      tile-width: 11
-      tile-height: 23
-      images:
-        - exhaust.png
+    images:
+      - exhaust/exhaust0.png
+      - exhaust/exhaust1.png
+      - exhaust/exhaust2.png
+      - exhaust/exhaust3.png
+      - exhaust/exhaust4.png
+      - exhaust/exhaust5.png
 
-  - name: coin
+  - name: coin_optimized
     palette: jetpack_palette
-    tilesets:
-      tile-width: 12
-      tile-height: 12
-      images:
-        - coin.png
+    images:
+      - coins/coin0.png
+      - coins/coin1.png
+      - coins/coin2.png
+      - coins/coin3.png
 
   - name: zapper
     palette: jetpack_palette
@@ -106,13 +108,16 @@ converts:
       images:
         - missileIncoming.png
 
-  - name: missile
+  - name: missile_optimized
     palette: jetpack_palette
-    tilesets:
-      tile-width: 55
-      tile-height: 35
-      images:
-        - missile.png
+    images:
+      - missile/missile0.png
+      - missile/missile1.png
+      - missile/missile2.png
+      - missile/missile3.png
+      - missile/missile4.png
+      - missile/missile5.png
+      - missile/missile6.png
 
   - name: laser_powering
     palette: jetpack_palette
@@ -150,13 +155,13 @@ outputs:
       - single_sprites
       - laser_beam
       - avatar
-      - exhaust
-      - coin
+      - exhaust_optimized
+      - coin_optimized
       - zapper
       - electricStuff
       - missileWarning
       - missileIncoming
-      - missile
+      - missile_optimized
       - laser_firing
       - laser_powering
       - laser_shutdown
