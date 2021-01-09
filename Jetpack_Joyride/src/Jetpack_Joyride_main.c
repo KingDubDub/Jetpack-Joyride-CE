@@ -22,10 +22,12 @@ but other than that you are obliged to have as much fun as will kill you!
 #include <stdlib.h>
 #include <string.h>
 
+#include <keypadc.h>
 #include <compression.h>
 #include <graphx.h>
-#include <keypadc.h>
+#include <fileioc.h>
 
+//my little headers full of data that I don't touch much or count towards total lines:
 #include "headers.h"
 
 //all the sprite include files:
@@ -40,29 +42,14 @@ but other than that you are obliged to have as much fun as will kill you!
 #define ZAPPER_ORIGIN 330
 #define MISSILE_ORIGIN 1466
 
-//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
-//my child if I had the desire to marry and have children.
-uint16_t avatarX;
-uint8_t avatarY;
-
-//avatar's sprite array and values for keeping track of animation frames:
-int8_t avatarAnimate = 1;
-int8_t displacement = 3;
-
-//variable used for calculating fire animations:
-uint8_t exhaustAnimate = 18;
+#define DATA_APPVAR "JTPKDAT"
 
 //time it takes to complete the game loop, used to control the FPS; if it overflows
-//then we have real problems:
+//then we have real speed problems:
 uint8_t frameTime;
 
-//variables for when jetpack is on or not for math calculations:
-int8_t holdTime;
-
-//speed of scrolling for avatar, obstacles, map, etc.
+//speed of scrolling and time before incrementing it:
 uint8_t scrollSpeed;
-//value added to scroll speed and the delay that is taken before incrementing it:
-uint8_t scrollIncrement;
 uint16_t incrementDelay;
 
 //measures timings for delays between spawning coins, obstacles, etc.:
@@ -72,16 +59,37 @@ uint24_t missileDelay;
 //used for a bad background scroll function that is actually the best for this scenario:
 int24_t backgroundScroll;
 
-//stores if Barry done got wasted or not:
-int8_t health;
+//all the data used to control Barry's position, acceleratoin, etc. are consolidated under one pointer.
+//x and y positions, time 2nd is pressed/released to fly/fall, animation frame, animation cycling control, and jetpack animation frame:
+typedef struct
+{
+    uint24_t x;
+    uint8_t y;
+    int8_t inputDuration;
+    uint8_t playerAnimation;
+    uint8_t playerAnimationToggle;
+    uint8_t exhaustAnimation;
+}
+avatar_t; //looks gross, but it saves 309 bytes in read/write calls to the appvar. It's staying.
 
-//max monies at $4,294,967,295:
-uint32_t monies;
+//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
+//my child if I had the desire to marry and have children.
+avatar_t avatar;
 
-//there's a limit to the distance you can fly in the original game, not sure I'll keep that or not...
-uint32_t distance;
+typedef struct
+{
+    int8_t health;        //the number of hits Barry can take
+    uint32_t monies;      //money collected in the run
+    uint32_t collegeFund; //total money collected from all runs, can be used to purchase stuff (?)
+    uint32_t distance;    //distance travelled in the run
+    uint32_t highscore;   //highest distance travelled in all runs
+}
+game_data_t;
 
-//for randomization values that need to be reused:
+//all important game data, again, all in one clean struct pointer:
+game_data_t save_data;
+
+//for randomization values that can be reused globally (normally just one-and-done use cases):
 uint8_t randVar;
 uint8_t randVar1;
 
@@ -97,35 +105,65 @@ char pauseOptions[3][7] = {"Quit", "Retry", "Resume"};
 //their X-positions, since they don't follow a mathmatical trend:
 int8_t pauseOptionX[3] = {120, 103, 90};
 
-uint24_t coinX[MaxCoins];
-uint8_t coinY[MaxCoins];
-//coin formation variable to keep track of coin lists:
+//hey looky, a coin struct type for easy use, WHY DIDN'T I MAKE THIS EARLIER?
+//stores x and y positions, along with the coin's animation frame:
+typedef struct
+{
+    uint24_t x;
+    uint8_t y;
+    uint8_t animation;
+}
+coin_t;
+
+//initialize some coins, about 30 is the max:
+coin_t coin[MaxCoins];
+
+//coin formation variable to keep track of coin list shapes:
 uint8_t coinFormation;
-//values for keeping track of coin animation sprites, all start at zero:
-uint8_t coinAnimate[MaxCoins];
 
-//arrays for zapper coordinates:
-uint24_t zapperY[MaxZappers];
-uint16_t zapperX[MaxZappers];
-//measured in beam units, 10x10 pixels:
-uint8_t zapperLength[MaxZappers];
-//zapper animation count, all start at zero:
-uint8_t zapperAnimate[MaxZappers];
+//again, WHY did I not make these before...
+//laser x and y positions, length, and animation frame:
+typedef struct
+{
+    uint24_t x;
+    uint8_t y;
+    uint8_t length;
+    uint8_t animation;
+}
+zapper_t;
 
-uint16_t missileX[MaxMissiles];
-uint8_t missileY[MaxMissiles];
+zapper_t zappers[MaxZappers];
+
+//I think the ZDS toolchain broke them and doubled the program size, I love LLVM
+//missile x and y positions:
+typedef struct
+{
+    uint24_t x;
+    uint8_t y;
+}
+missile_t;
+
+missile_t missiles[MaxMissiles];
+
 //keep track of animations for missiles:
 int8_t missile_icon_animate;
-int8_t MAvalue = -1;
 int8_t missileAnimate;
+int8_t MAvalue = -1;
+
+//the point is, updates are good; ergo, Windows is exciting
+//y position (x position is shared among all lasers), laser's time to function:
+typedef struct
+{
+    uint8_t y;
+    uint24_t lifetime;
+}
+laser_t;
+
+laser_t lasers[MaxLasers];
 
 //all lasers have a universal X that doesn't move very far:
 int8_t laserX;
-//laser Y array:
-uint8_t laserY[MaxLasers];
-//time till firing:
-uint24_t laserLifetime[MaxLasers];
-//keep track of laser animations:
+//laser animation variable
 int8_t laserAnimate;
 //which laser formation is being used:
 uint8_t laserFormation;
@@ -139,28 +177,30 @@ gfx_sprite_t *powering_tiles_flipped[4];
 gfx_sprite_t *firing_tiles_flipped[3];
 gfx_sprite_t *shutdown_tiles_flipped[3];
 
+ti_var_t savegame;
+
 //gfx_CheckRectangleHotspot but only the Y checks, since 4 C++ masters write better code than me:
 #define Yspot(master_y, master_height, test_y, test_height) \
-    (((test_y) < ((master_y) + (master_height))) &&         \
-     (((test_y) + (test_height)) > (master_y)))
+    (((test_y) < ((master_y) + (master_height))) && \
+    (((test_y) + (test_height)) > (master_y)))
 
 //clears all objects from gameplay by moving their X-coords out of bounds:
 void delObjects()
 {
     for (uint8_t i = 0; i < coin_max[coinFormation]; ++i)
     {
-        coinX[i] = 2000;
+        coin[i].x = 2000;
     }
 
     for (uint8_t i = 0; i < MaxZappers; ++i)
     {
-        zapperLength[i] = 0;
-        zapperX[i] = (ZAPPER_ORIGIN + 1);
+        zappers[i].length = 0;
+        zappers[i].x = (ZAPPER_ORIGIN + 1);
     }
 
     for (uint8_t i = 0; i < MaxMissiles; ++i)
     {
-        missileX[i] = (MISSILE_ORIGIN + 1);
+        missiles[i].x = (MISSILE_ORIGIN + 1);
     }
 
     laserX = 0;
@@ -189,9 +229,63 @@ void draw_button(uint8_t ButtonSelect)
     gfx_PrintStringXY(pauseOptions[ButtonSelect], pauseOptionX[ButtonSelect], 47 + (ButtonSelect * 60));
 }
 
+//this is purely for streamlining, it should only used twice:
+void save_state(void)
+{
+    //create a new appvar, which erases the old one:
+    savegame = ti_Open(DATA_APPVAR, "w");
+
+    //game save data and stats:
+    ti_Write(&save_data, sizeof(save_data), 1, savegame);
+
+    //game environment variables:
+    ti_Write(&scrollSpeed, sizeof(scrollSpeed), 1, savegame);
+    ti_Write(&incrementDelay, sizeof(incrementDelay), 1, savegame);
+    ti_Write(&backgroundScroll, sizeof(backgroundScroll), 1, savegame);
+    ti_Write(&spawnDelay, sizeof(spawnDelay), 1, savegame);
+
+    //single pointer to avatar struct:
+    ti_Write(&avatar, sizeof(avatar), 1, savegame);
+
+    //coin variables:
+    ti_Write(&coin, sizeof(coin), 1, savegame);
+    ti_Write(&coinFormation, sizeof(coinFormation), 1, savegame);
+
+    //zapper variables:
+    ti_Write(&zappers, sizeof(zappers), 1, savegame);
+
+    //missile variables:
+    ti_Write(&missiles, sizeof(missiles), 1, savegame);
+    ti_Write(&missile_icon_animate, sizeof(missile_icon_animate), 1, savegame);
+    ti_Write(&missileAnimate, sizeof(missileAnimate), 1, savegame);
+    ti_Write(&MAvalue, sizeof(MAvalue), 1, savegame);
+
+    //laser variables:
+    ti_Write(&lasers, sizeof(lasers), 1, savegame);
+    ti_Write(&laserX, sizeof(laserX), 1, savegame);
+    ti_Write(&laserFormation, sizeof(laserFormation), 1, savegame);
+    ti_Write(&deadLasers, sizeof(deadLasers), 1, savegame);
+    ti_Write(&laserAnimate, sizeof(laserAnimate), 1, savegame);
+}
+
 void main(void)
 {
-    //flipped zappers:
+    //some initial values for the avatar struct:
+    avatar.playerAnimationToggle = 1;
+    avatar.playerAnimation = 3;
+    avatar.exhaustAnimation = 18;
+
+    //close any files that may have been left open from the last program:
+    ti_CloseAll();
+
+    //read from appvar if it exists, fails if it returns 0
+    savegame = ti_Open(DATA_APPVAR, "r");
+    if (savegame == 0)
+    {
+        save_state();
+    }
+
+    //flipped zapper sprites:
     for (uint8_t i = 0; i < 3; ++i)
     {
         zapper_tiles_flipped[i] = gfx_MallocSprite(18, 18);
@@ -246,25 +340,65 @@ void main(void)
     //best scan mode according to the angry lettuce man:
     kb_SetMode(MODE_3_CONTINUOUS);
 
-//when I first started using C, I asked some friends if there were GOTO statements.
-//They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
-GAMESTART:
+    //update all of our gameplay data from the save data:
+    ti_Read(&save_data, sizeof(save_data), 1, savegame);
+
+    //when I first started using C, I asked some friends if there were GOTO statements.
+    //They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
+    GAMESTART:
     //But it's still sometimes okay.
 
-    //reset variables for when a game starts:
-    scrollSpeed = 6;
-    incrementDelay = 0;
-    avatarX = 24;
-    avatarY = 185;
-    holdTime = 0;
-    exhaustAnimate = 18;
-    health = 1;
-    spawnDelay = 100;
-    distance = 0;
-    monies = 0;
-    deadLasers = MaxLasers;
+    //load all the appvar data as our "starting point" if distance isn't 0
+    if (save_data.distance)
+    {
+        //game environment variables:
+        ti_Read(&scrollSpeed, sizeof(scrollSpeed), 1, savegame);
+        ti_Read(&incrementDelay, sizeof(incrementDelay), 1, savegame);
+        ti_Read(&backgroundScroll, sizeof(backgroundScroll), 1, savegame);
+        ti_Read(&spawnDelay, sizeof(spawnDelay), 1, savegame);
 
-    delObjects();
+        //single pointer to avatar struct:
+        ti_Read(&avatar, sizeof(avatar), 1, savegame);
+
+        //coin variables:
+        ti_Read(&coin, sizeof(coin), 1, savegame);
+        ti_Read(&coinFormation, sizeof(coinFormation), 1, savegame);
+
+        //zapper variables:
+        ti_Read(&zappers, sizeof(zappers), 1, savegame);
+
+        //missile variables:
+        ti_Read(&missiles, sizeof(missiles), 1, savegame);
+        ti_Read(&missile_icon_animate, sizeof(missile_icon_animate), 1, savegame);
+        ti_Read(&missileAnimate, sizeof(missileAnimate), 1, savegame);
+        ti_Read(&MAvalue, sizeof(MAvalue), 1, savegame);
+
+        //laser variables:
+        ti_Read(&lasers, sizeof(lasers), 1, savegame);
+        ti_Read(&laserX, sizeof(laserX), 1, savegame);
+        ti_Read(&laserFormation, sizeof(laserFormation), 1, savegame);
+        ti_Read(&deadLasers, sizeof(deadLasers), 1, savegame);
+        ti_Read(&laserAnimate, sizeof(laserAnimate), 1, savegame);
+
+        ti_CloseAll();
+    }
+    else
+    {
+        delObjects();
+
+        //reset variables for when a game starts:
+        save_data.distance = 0;
+        scrollSpeed = 6;
+        incrementDelay = 0;
+        avatar.x = 24;
+        avatar.y = 185;
+        avatar.inputDuration = 0;
+        avatar.exhaustAnimation = 18;
+        save_data.health = 1;
+        spawnDelay = 100;
+        save_data.monies = 0;
+        deadLasers = MaxLasers;
+    }
 
     //Loop until clear is pressed:
     do
@@ -303,8 +437,8 @@ GAMESTART:
                 //give each laser their Y-axis:
                 for (uint8_t i = 0; i < laserMax[laserFormation]; ++i)
                 {
-                    laserY[i] = lsrY[laserFormation][i];
-                    laserLifetime[i] = halfLife[laserFormation][i];
+                    lasers[i].y = lsrY[laserFormation][i];
+                    lasers[i].lifetime = halfLife[laserFormation][i];
                 }
 
                 laserX = 1;
@@ -321,9 +455,9 @@ GAMESTART:
                 coinFormation = randInt(0, (COIN_FORMATIONS - 1));
                 for (uint8_t i = 0; i < MaxCoins; ++i)
                 {
-                    coinX[i] = (COIN_ORIGIN + ctx[coinFormation][i]);
-                    coinY[i] = (randVar + cty[coinFormation][i]);
-                    coinAnimate[i] = 0;
+                    coin[i].x = (COIN_ORIGIN + ctx[coinFormation][i]);
+                    coin[i].y = (randVar + cty[coinFormation][i]);
+                    coin[i].animation = 0;
                 }
 
                 spawnDelay = 500;
@@ -334,10 +468,10 @@ GAMESTART:
                 //spawns missiles (and missile swarms if I implement them):
                 for (uint8_t i = 0; i < MaxMissiles; ++i)
                 {
-                    if (missileX[i] > MISSILE_ORIGIN)
+                    if (missiles[i].x > MISSILE_ORIGIN)
                     {
-                        missileX[i] = MISSILE_ORIGIN;
-                        missileY[i] = 10 * randInt(2, 18);
+                        missiles[i].x = MISSILE_ORIGIN;
+                        missiles[i].y = 10 * randInt(2, 18);
 
                         i = MaxZappers;
                     }
@@ -353,12 +487,12 @@ GAMESTART:
                 //randomly generates zapper coordinates and lengths:
                 for (uint8_t i = 0; i < MaxZappers; ++i)
                 {
-                    if (zapperX[i] > ZAPPER_ORIGIN)
+                    if (zappers[i].x > ZAPPER_ORIGIN)
                     {
-                        zapperX[i] = ZAPPER_ORIGIN;
+                        zappers[i].x = ZAPPER_ORIGIN;
 
-                        zapperLength[i] = randInt(2, 4);
-                        zapperY[i] = 10 * randInt(2, 19 - zapperLength[i]);
+                        zappers[i].length = randInt(2, 4);
+                        zappers[i].y = 10 * randInt(2, 19 - zappers[i].length);
 
                         i = MaxZappers;
                     }
@@ -374,85 +508,85 @@ GAMESTART:
         }
 
         //run controls until Barry gets wasted, then bounces his corpse around:
-        if (health > 0)
+        if (save_data.health > 0)
         {
             //when flying:
             if (kb_Data[1] & kb_2nd)
             {
-                //add to holdTime, which is added to avatarY:
-                if ((avatarY > 20) && (holdTime < 12))
+                //add to avatar.inputDuration, which is added to avatar.y:
+                if ((avatar.y > 20) && (avatar.inputDuration < 12))
                 {
-                    holdTime += 1;
+                    avatar.inputDuration += 1;
                 }
 
                 //numbers for jetpack output (bullets or fire or whatever):
-                if (exhaustAnimate < 7)
+                if (avatar.exhaustAnimation < 7)
                 {
-                    ++exhaustAnimate;
-                } else if (exhaustAnimate > 7) {
-                    exhaustAnimate = 0;
+                    ++avatar.exhaustAnimation;
+                } else if (avatar.exhaustAnimation > 7) {
+                    avatar.exhaustAnimation = 0;
                 }
 
             //when falling:
             } else {
-                //subtract from holdtime, added to avatarY (it can be a negative number):
-                if ((avatarY < (185)) && (holdTime > -10))
+                //subtract from avatar.inputDuration, added to avatar.y (it can be a negative number):
+                if ((avatar.y < (185)) && (avatar.inputDuration > -10))
                 {
-                    holdTime -= 1;
+                    avatar.inputDuration -= 1;
                 }
 
                 //increases numbers for jetpack powering down animation:
-                if (exhaustAnimate < 7)
+                if (avatar.exhaustAnimation < 7)
                 {
-                    exhaustAnimate = 8;
+                    avatar.exhaustAnimation = 8;
                 }
-                else if (exhaustAnimate < 11)
+                else if (avatar.exhaustAnimation < 11)
                 {
-                    ++exhaustAnimate;
+                    ++avatar.exhaustAnimation;
                 }
                 else
                 {
-                    exhaustAnimate = 18;
+                    avatar.exhaustAnimation = 18;
                 }
             }
 
             //SAX got pretty mad about this part, turns out a linear equation can model a curve and
             //is actually better than a cubic function:
-            avatarY -= (holdTime);
+            avatar.y -= (avatar.inputDuration);
 
             //sees if Y-value rolled past 20 or 186, figures out if it was going up
             //or down, and auto-corrects accordingly (FUTURE ME; IT'S OPTIMIZED ENOUGH PLEASE DON'T WASTE ANY MORE TIME):
-            if ((avatarY > (186)) || (avatarY < 20))
+            if ((avatar.y > (186)) || (avatar.y < 20))
             {
-                if (holdTime > 0)
+                if (avatar.inputDuration > 0)
                 {
-                    avatarY = 20;
+                    avatar.y = 20;
                 } else {
-                    avatarY = 185;
+                    avatar.y = 185;
                 }
-                holdTime = 0;
+                avatar.inputDuration = 0;
             }
         }
 
         //bit that runs avatar animations:
-        if (avatarY < 185)
+        if (avatar.y < 185)
         {
-            displacement = 9;
+            avatar.playerAnimation = 9;
         }
         else
         {
 
-            if (displacement == 9)
+            if (avatar.playerAnimation == 9)
             {
-                displacement = 3;
+                avatar.playerAnimation = 3;
             }
 
-            if ((displacement < 1) || (displacement > 7))
+            if ((avatar.playerAnimation < 1) || (avatar.playerAnimation > 7))
             {
-                avatarAnimate *= -1;
+                avatar.playerAnimationToggle *= -1;
             }
 
-            displacement += avatarAnimate;
+            avatar.playerAnimation += avatar.playerAnimationToggle;
         }
 
         //control missile warning and incoming animations:
@@ -501,45 +635,45 @@ GAMESTART:
         gfx_Sprite(background, backgroundScroll + background_width, 0);
 
         //draws the avatar, everything is layered over it:
-        gfx_TransparentSprite_NoClip(avatar_tiles[displacement / 3], avatarX, avatarY - abs((displacement / 3) - 1));
+        gfx_TransparentSprite_NoClip(avatar_tiles[avatar.playerAnimation / 3], avatar.x, avatar.y - abs((avatar.playerAnimation / 3) - 1));
 
         //bit that draws exhaust when in flight:
-        if (exhaustAnimate < 18)
+        if (avatar.exhaustAnimation < 18)
         {
-            gfx_TransparentSprite_NoClip(exhaust_tiles_optimized[exhaustAnimate / 2], avatarX + randInt(1, 3), avatarY + 31);
-            gfx_TransparentSprite_NoClip(nozzle, avatarX + 4, avatarY + 31);
+            gfx_TransparentSprite_NoClip(exhaust_tiles_optimized[avatar.exhaustAnimation / 2], avatar.x + randInt(1, 3), avatar.y + 31);
+            gfx_TransparentSprite_NoClip(nozzle, avatar.x + 4, avatar.y + 31);
         }
 
         //bit that runs coin collision and movement:
         for (uint8_t i = 0; i < coin_max[coinFormation]; ++i)
         {
-            //do things if the coin is less than the origin plus some buffer I made up:
-            if (coinX[i] <= COIN_ORIGIN + 500)
+            //do things if the coin is less than the origin plus some buffer I made up on the spot:
+            if (coin[i].x <= COIN_ORIGIN + 500)
             {
                 //collision detection and appropriate sprite drawing:
-                if (gfx_CheckRectangleHotspot(avatarX + 6, avatarY, 18, 40, coinX[i] - 11, coinY[i] + 1, 10, 10))
+                if (gfx_CheckRectangleHotspot(avatar.x + 6, avatar.y, 18, 40, coin[i].x - 11, coin[i].y + 1, 10, 10))
                 {
-                    gfx_TransparentSprite(sparkle, coinX[i] - 13, coinY[i] - 1);
+                    gfx_TransparentSprite(sparkle, coin[i].x - 13, coin[i].y - 1);
 
-                    coinX[i] = 1020;
-                    ++monies;
+                    coin[i].x = 1020;
+                    ++save_data.monies;
                 }
                 else
                 {
 
-                    gfx_TransparentSprite(coin_tiles_optimized[(coinAnimate[i] / 10)], (coinX[i] - 12), coinY[i]);
+                    gfx_TransparentSprite(coin_tiles_optimized[(coin[i].animation / 10)], (coin[i].x - 12), coin[i].y);
 
-                    if ((coinAnimate[i] < 38) && (coinX[i] < COIN_ORIGIN))
+                    if ((coin[i].animation < 38) && (coin[i].x < COIN_ORIGIN))
                     {
-                        coinAnimate[i] += 2;
+                        coin[i].animation += 2;
                     }
                     else
                     {
-                        coinAnimate[i] = 0;
+                        coin[i].animation = 0;
                     }
                 }
 
-                coinX[i] -= scrollSpeed;
+                coin[i].x -= scrollSpeed;
             }
         }
 
@@ -547,85 +681,85 @@ GAMESTART:
         for (uint8_t i = 0; i < MaxZappers; ++i)
         {
             //drawing the zapper beams:
-            if (zapperX[i] <= ZAPPER_ORIGIN)
+            if (zappers[i].x <= ZAPPER_ORIGIN)
             {
-                for (uint8_t i_the_sequel = 0; i_the_sequel < zapperLength[i]; ++i_the_sequel)
+                for (uint8_t i_the_sequel = 0; i_the_sequel < zappers[i].length; ++i_the_sequel)
                 {
-                    gfx_TransparentSprite(beam, zapperX[i] - 14, zapperY[i] + 16 + (i_the_sequel * 10));
+                    gfx_TransparentSprite(beam, zappers[i].x - 14, zappers[i].y + 16 + (i_the_sequel * 10));
                 }
 
                 //draw zapper pairs and beams with distance of zapperLength between them:
-                if (zapperX[i] < 336)
+                if (zappers[i].x < 336)
                 {
                     randVar = randInt(0, 1);
                     randVar1 = randInt(0, 1);
 
-                    gfx_TransparentSprite(electric_animation[randVar + 2 + (randVar1 * 4)], zapperX[i] - 25, zapperY[i] - 7);
-                    gfx_TransparentSprite(electric_animation[randVar], zapperX[i] - 25, zapperY[i] + 7 + (zapperLength[i] * 10));
+                    gfx_TransparentSprite(electric_animation[randVar + 2 + (randVar1 * 4)], zappers[i].x - 25, zappers[i].y - 7);
+                    gfx_TransparentSprite(electric_animation[randVar], zappers[i].x - 25, zappers[i].y + 7 + (zappers[i].length * 10));
 
-                    gfx_TransparentSprite(zapper_tiles_flipped[zapperAnimate[i] / 10], zapperX[i] - 18, zapperY[i]);
-                    gfx_TransparentSprite(zapper_tiles[zapperAnimate[i] / 10], zapperX[i] - 18, zapperY[i] + 14 + (zapperLength[i] * 10));
+                    gfx_TransparentSprite(zapper_tiles_flipped[zappers[i].animation / 10], zappers[i].x - 18, zappers[i].y);
+                    gfx_TransparentSprite(zapper_tiles[zappers[i].animation / 10], zappers[i].x - 18, zappers[i].y + 14 + (zappers[i].length * 10));
 
-                    if (zapperAnimate[i] < 28)
+                    if (zappers[i].animation < 28)
                     {
-                        zapperAnimate[i] += 2;
+                        zappers[i].animation += 2;
                     }
                     else
                     {
-                        zapperAnimate[i] = 0;
+                        zappers[i].animation = 0;
                     }
 
                     //collision for zappers:
-                    if ((health > 0) && (gfx_CheckRectangleHotspot(avatarX + 6, zapperY[i] + 2, 18, (zapperLength[i] * 10) + 30, zapperX[i] - 14, avatarY, 10, 50)))
+                    if ((save_data.health > 0) && (gfx_CheckRectangleHotspot(avatar.x + 6, zappers[i].y + 2, 18, (zappers[i].length * 10) + 30, zappers[i].x - 14, avatar.y, 10, 50)))
                     {
-                        --health;
+                        --save_data.health;
                     }
                 }
 
-                zapperX[i] -= scrollSpeed;
+                zappers[i].x -= scrollSpeed;
             }
         }
 
         //bit that draws and calculates the missiles 'o death:
         for (uint8_t i = 0; i < MaxMissiles; ++i)
         {
-            if (missileX[i] <= MISSILE_ORIGIN)
+            if (missiles[i].x <= MISSILE_ORIGIN)
             {
-                if (missileX[i] < 366)
+                if (missiles[i].x < 366)
                 {
-                    gfx_TransparentSprite(missile_tiles_optimized[missileAnimate / 2], missileX[i] - 46, missileY[i] - 18);
+                    gfx_TransparentSprite(missile_tiles_optimized[missileAnimate / 2], missiles[i].x - 46, missiles[i].y - 18);
 
-                    if ((health > 0) && (gfx_CheckRectangleHotspot(missileX[i] - 45, avatarY, 19, 40, avatarX + 6, missileY[i] - 5, 18, 12)))
+                    if ((save_data.health > 0) && (gfx_CheckRectangleHotspot(missiles[i].x - 45, avatar.y, 19, 40, avatar.x + 6, missiles[i].y - 5, 18, 12)))
                     {
-                        --health;
+                        --save_data.health;
                     }
 
                     //I'm using the X-position as timer, meaning there's less warning as time goes on:
                 }
-                else if (missileX[i] < 641)
+                else if (missiles[i].x < 641)
                 {
                     //AW CRAP HERE COME DAT BOI!
-                    gfx_TransparentSprite(missileIncoming_tiles[missile_icon_animate / 3], 281 + randInt(-1, 1), missileY[i] - 16 + randInt(-1, 1));
+                    gfx_TransparentSprite(missileIncoming_tiles[missile_icon_animate / 3], 281 + randInt(-1, 1), missiles[i].y - 16 + randInt(-1, 1));
                 }
-                else if (missileX[i] < MISSILE_ORIGIN)
+                else if (missiles[i].x < MISSILE_ORIGIN)
                 {
                     //plenty of time to dodge (at the beginning at least)
-                    gfx_TransparentSprite(missileWarning_tiles[missile_icon_animate / 2], 293, missileY[i] - 11);
+                    gfx_TransparentSprite(missileWarning_tiles[missile_icon_animate / 2], 293, missiles[i].y - 11);
 
                     //tracking on avatar
-                    if (missileY[i] < (avatarY + 20))
+                    if (missiles[i].y < (avatar.y + 20))
                     {
-                        missileY[i] += 2;
+                        missiles[i].y += 2;
                     }
-                    else if (missileY[i] > (avatarY + 21))
+                    else if (missiles[i].y > (avatar.y + 21))
                     {
-                        missileY[i] -= 2;
+                        missiles[i].y -= 2;
                     }
                 }
 
                 //missiles travel by 6 pixels each frame. It was surprisingly tedious to figure that out
                 //from frame-by-frame reviewing of missiles; however, it's too slow on the calc.
-                missileX[i] -= scrollSpeed + 8;
+                missiles[i].x -= scrollSpeed + 8;
             }
         }
 
@@ -640,8 +774,8 @@ GAMESTART:
                     laserAnimate = 0;
 
                     //draw an inactive laser:
-                    gfx_TransparentSprite(powering_tile_0, laserX - 19, laserY[i]);
-                    gfx_TransparentSprite(powering_tile_0, 320 - laserX, laserY[i]);
+                    gfx_TransparentSprite(powering_tile_0, laserX - 19, lasers[i].y);
+                    gfx_TransparentSprite(powering_tile_0, 320 - laserX, lasers[i].y);
                 }
                 else
                 {
@@ -656,81 +790,90 @@ GAMESTART:
                     {
 
                         //check to see if the half-life ended:
-                        if (laserLifetime[i] < 1)
+                        if (lasers[i].lifetime < 1)
                         {
                             ++deadLasers;
                         }
-                        else if (laserLifetime[i] < 9)
+                        else if (lasers[i].lifetime < 9)
                         {
 
                             //lasers running out of juice:
-                            gfx_TransparentSprite(shutdown_tiles[laserAnimate / 3], 5, laserY[i] - 16);
-                            gfx_TransparentSprite(shutdown_tiles_flipped[laserAnimate / 3], 285, laserY[i] - 16);
+                            gfx_TransparentSprite(shutdown_tiles[laserAnimate / 3], 5, lasers[i].y - 16);
+                            gfx_TransparentSprite(shutdown_tiles_flipped[laserAnimate / 3], 285, lasers[i].y - 16);
 
-                            gfx_RLETSprite(laser_tiles[(laserAnimate / 3) + 1], 35, laserY[i]);
+                            gfx_RLETSprite(laser_tiles[(laserAnimate / 3) + 1], 35, lasers[i].y);
                         }
-                        else if (laserLifetime[i] < 59)
+                        else if (lasers[i].lifetime < 59)
                         {
                             //firing lasers:
-                            gfx_TransparentSprite(firing_tiles[laserAnimate / 3], 5, laserY[i] - 11);
-                            gfx_TransparentSprite(firing_tiles_flipped[laserAnimate / 3], 285, laserY[i] - 11);
+                            gfx_TransparentSprite(firing_tiles[laserAnimate / 3], 5, lasers[i].y - 11);
+                            gfx_TransparentSprite(firing_tiles_flipped[laserAnimate / 3], 285, lasers[i].y - 11);
 
-                            gfx_RLETSprite(laser_tile_0, 35, laserY[i]);
+                            gfx_RLETSprite(laser_tile_0, 35, lasers[i].y);
 
                             //hitbox for damage. 5 pixel leeway above and below:
-                            if ((health > 0) && Yspot(avatarY, 35, laserY[i], 10))
+                            if ((save_data.health > 0) && Yspot(avatar.y, 35, lasers[i].y, 10))
                             {
-                                --health;
+                                --save_data.health;
                             }
 
                             //makes sure the animations play correctly, I don't have time to fix math today:
-                            if (laserLifetime[i] == 9)
+                            if (lasers[i].lifetime == 9)
                                 laserAnimate = 0;
                         }
-                        else if (laserLifetime[i] < 109)
+                        else if (lasers[i].lifetime < 109)
                         {
 
                             //the simplest drawing code in this hot mess, for powering up:
                             gfx_SetColor(5);
 
-                            gfx_Line(20, laserY[i] + 7, 300, laserY[i] + 7);
+                            gfx_Line(20, lasers[i].y + 7, 300, lasers[i].y + 7);
 
-                            gfx_Circle(11, laserY[i] + 7, 7 + ((laserLifetime[i] - 50) / 4));
-                            //gfx_Circle(11, laserY[i]+7, 6 + ((laserLifetime[i]-50)/4));
+                            gfx_Circle(11, lasers[i].y + 7, 7 + ((lasers[i].lifetime - 50) / 4));
+                            //gfx_Circle(11, lasers[i].y+7, 6 + ((lasers[i].lifetime-50)/4));
 
-                            gfx_Circle(308, laserY[i] + 7, 7 + ((laserLifetime[i] - 50) / 4));
-                            //gfx_Circle(308, laserY[i]+7, 8 + ((laserLifetime[i]-50)/4));
+                            gfx_Circle(308, lasers[i].y + 7, 7 + ((lasers[i].lifetime - 50) / 4));
+                            //gfx_Circle(308, lasers[i].y+7, 8 + ((lasers[i].lifetime-50)/4));
                         }
 
                         //update the laser's timer:
-                        --laserLifetime[i];
+                        --lasers[i].lifetime;
                     }
                 }
 
-                if (laserLifetime[i] < 109)
+                if (lasers[i].lifetime < 109)
                 {
-                    gfx_TransparentSprite(powering_tiles[(laserAnimate / 3) + 1], laserX - 19, laserY[i]);
-                    gfx_TransparentSprite(powering_tiles_flipped[(laserAnimate / 3) + 1], 320 - laserX, laserY[i]);
+                    gfx_TransparentSprite(powering_tiles[(laserAnimate / 3) + 1], laserX - 19, lasers[i].y);
+                    gfx_TransparentSprite(powering_tiles_flipped[(laserAnimate / 3) + 1], 320 - laserX, lasers[i].y);
                 }
                 else
                 {
-                    gfx_TransparentSprite(powering_tile_0, laserX - 19, laserY[i]);
-                    gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, laserY[i]);
+                    gfx_TransparentSprite(powering_tile_0, laserX - 19, lasers[i].y);
+                    gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, lasers[i].y);
                 }
             }
         }
 
-
+        //sets a new highscore:
+        if(save_data.highscore < ((save_data.distance += scrollSpeed) /15))
+        {
+            save_data.highscore = (save_data.distance / 15);
+        }
    
         //gold coin color for money counter:
         gfx_SetTextFGColor(4);
 
         gfx_SetTextScale(1, 1);
-        gfx_SetTextXY(10, 30);
-        gfx_PrintInt(monies, 4);
+        gfx_SetTextXY(10, 41);
+        gfx_PrintInt(save_data.monies, 3);
 
         //distance and FPS counter are gray:
         gfx_SetTextFGColor(3);
+
+        gfx_PrintStringXY("BEST:", 10, 29);
+        gfx_SetTextXY(50, 29);
+        gfx_PrintInt(save_data.highscore, 1);
+
 
         gfx_SetTextXY(280, 10);
         gfx_PrintInt(frameTime, 1);
@@ -738,7 +881,7 @@ GAMESTART:
         gfx_SetTextScale(2, 2);
         gfx_SetTextXY(10, 10);
         //these numbers are magic and just give good results
-        gfx_PrintInt((distance += scrollSpeed) / 15, 4);
+        gfx_PrintInt(save_data.distance / 15, 4);
         
 
         //speedy blitting, but works best when used a lot of cycles BEFORE any new drawing functions:
@@ -856,11 +999,13 @@ GAMESTART:
             //that dumb break means I can't use a switch case (yet) so it just exits the program loop.
             if (menuSelect == 0)
             {
+                save_data.distance = 0;
                 break;
                 //goto main menu
             }
             else if (menuSelect == 1)
             {
+                save_data.distance = 0;
                 goto GAMESTART;
             }
             //if menuSelect is 2 or anything else it just resumes; everything resets when the pause menu is accessed again.
@@ -869,10 +1014,13 @@ GAMESTART:
         //timer reset and "DA WORLDO" is over:
         timer_1_Counter = 0;
 
-    } while (!(kb_Data[6] & kb_Clear) && (health > 0));
+    } while (!(kb_Data[6] & kb_Clear) && (save_data.health > 0));
 
-    if (health < 1)
+    if (save_data.health < 1)
     {
+        //reset distance to flag that a game is no longer in progress:
+        save_data.distance = 0;
+
         gfx_FillScreen(1);
         gfx_SetTextScale(3, 3);
         gfx_PrintStringXY("Congration!", 15, 70);
@@ -889,9 +1037,13 @@ GAMESTART:
             goto GAMESTART;
         }
     }
+    
+    //we only need distance and a few other vars, but I made this function AND I'M GONNA USE THE WHOLE FUNCTION.
+    save_state();
 
     //stop libraries, not doing so causes "interesting" results by messing up the color mode and scaling:
     gfx_End();
+    ti_CloseAll();
 }
 
-//CONGRATULATIONS, YOU FOUND THE END OF THE FILE! I HOPE PEEKING BEHIND THE CURTAIN WAS WORTH IT!
+//CONGRATULATIONS, YOU FOUND THE END OF THE FILE! I HOPE PEEKING BEHIND THE CURTAIN WAS WORTH YOUR SANITY!
