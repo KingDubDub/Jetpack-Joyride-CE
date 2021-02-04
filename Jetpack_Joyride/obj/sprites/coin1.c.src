@@ -1,0 +1,8 @@
+	section	.text,"ax",@progbits
+	assume	adl = 1
+	section	.data,"aw",@progbits
+	public	_coin1_data
+_coin1_data:
+	db	"",013o,014o,000o,000o,000o,000o,214o,214o,214o,352o,000o,000o,000o,000o,000o,000o,"4NNi",360o,352o,000o,000o,000o,000o,"S4N",340o,360o,347o,360o,347o,000o,000o,000o,"f44",352o,347o,"4",347o,352o,000o,000o,245o,"y]",204o,352o,"44",347o,360o,352o,000o,245o,"hy",204o,245o,004o,"4",347o,360o,352o,000o,352o,"ISi",245o,"h4",347o,360o,"~",000o,352o,210o,210o,"X",347o,"444",360o,"^",000o,000o,347o,210o,"~",360o,210o,360o,360o,"~",000o,000o,000o,255o,255o,245o,352o,347o,352o,352o,214o,000o,000o,000o,000o,255o,255o,"X",354o,"~",210o,000o,000o,000o,000o,000o,000o,255o,255o,255o,255o,000o,000o,000o
+
+	ident	"clang version 12.0.0 (https://github.com/jacobly0/llvm-project 170be88120e3aa88c20eea5615ba76b8f1d6c647)"

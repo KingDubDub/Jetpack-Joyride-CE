@@ -2,13 +2,13 @@ palettes:
   - name: jetpack_palette
     images: automatic
     fixed-entries:
-      - color: {index: 0, r: 255, g: 0, b: 128}
-      - color: {index: 1, r: 0, g: 0, b: 0}
-      - color: {index: 2, r: 255, g: 255, b: 255}
-      - color: {index: 3, r: 232, g: 232, b: 232}
-      - color: {index: 4, r: 255, g: 243, b: 115}
-      - color: {index: 5, r: 249, g: 0, b: 0}
-      - color: {index: 6, r: 51, g: 62, b: 92}
+      - color: {index: 0, r: 255, g: 0, b: 128}   #transparent color (hot pink)
+      - color: {index: 1, r: 0, g: 0, b: 0}       #black
+      - color: {index: 2, r: 255, g: 255, b: 255} #white
+      - color: {index: 3, r: 232, g: 232, b: 232} #light grey (font color)
+      - color: {index: 4, r: 255, g: 243, b: 115} #gold (coin counter)
+      - color: {index: 5, r: 249, g: 0, b: 0}     #red (laser color)
+      - color: {index: 6, r: 51, g: 62, b: 92}    #light navy (pause background color)
 
 converts:
   - name: pause_button
@@ -32,31 +32,34 @@ converts:
     images:
       - jetpack.png
       - nozzle.png
-      - beam.png
       - sparkle.png
-
-  - name: laser_beam
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    tilesets:
-      tile-width: 250
-      tile-height: 15
-      images:
-        - laser.png
 
   - name: hallway
     palette: jetpack_palette
     images:
       - background.png
 
-  - name: avatar
+  - name: barry_run_optimized
     palette: jetpack_palette
-    tilesets: 
-      tile-width: 30
-      tile-height: 40
-      images:
-        - avatar.png
+    images:
+      - barry/barry0.png
+      - barry/barry1.png
+      - barry/barry2.png
+      - barry/barry3.png
+
+  - name: barry_hit_optimized
+    palette: jetpack_palette
+    images:
+      - barry_damaged/barryHit0.png
+      - barry_damaged/barryHit1.png
+      - barry_damaged/barryHit2.png
+
+  - name: YOU_ARE_DEAD_no_big_surprise
+    palette: jetpack_palette
+    images:
+      - barry_damaged/barryDed0.png
+      - barry_damaged/barryDed1.png
+      - barry_damaged/barryDed2.png
 
   - name: exhaust_optimized
     palette: jetpack_palette
@@ -78,19 +81,12 @@ converts:
 
   - name: zapper
     palette: jetpack_palette
-    tilesets:
-      tile-width: 18
-      tile-height: 18
-      images:
-        - zapper.png
-
-  - name: electricStuff
-    palette: jetpack_palette
-    tilesets:
-      tile-width: 32
-      tile-height: 32
-      images:
-        - electric.png
+    images:
+      - zapper/beam.png
+      - zapper/zapper0.png
+      - zapper/zapper1.png
+      - zapper/zapper2.png
+      - zapper/zapper3.png
 
   - name: missileWarning
     palette: jetpack_palette
@@ -98,7 +94,7 @@ converts:
       tile-width: 20
       tile-height: 21
       images:
-        - missileWarning.png
+        - missiles/missileWarning.png
  
   - name: missileIncoming
     palette: jetpack_palette
@@ -106,18 +102,18 @@ converts:
       tile-width: 31
       tile-height: 31
       images:
-        - missileIncoming.png
+        - missiles/missileIncoming.png
 
   - name: missile_optimized
     palette: jetpack_palette
     images:
-      - missile/missile0.png
-      - missile/missile1.png
-      - missile/missile2.png
-      - missile/missile3.png
-      - missile/missile4.png
-      - missile/missile5.png
-      - missile/missile6.png
+      - missiles/missile0.png
+      - missiles/missile1.png
+      - missiles/missile2.png
+      - missiles/missile3.png
+      - missiles/missile4.png
+      - missiles/missile5.png
+      - missiles/missile6.png
 
   - name: laser_powering
     palette: jetpack_palette
@@ -143,6 +139,16 @@ converts:
       images:
         - shutdown.png
 
+  - name: laser_beam
+    palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
+    tilesets:
+      tile-width: 250
+      tile-height: 15
+      images:
+        - laser.png
+
 outputs:
   - type: c
     palettes:
@@ -153,16 +159,17 @@ outputs:
       - pause_button_pressed
       - hallway
       - single_sprites
-      - laser_beam
-      - avatar
+      - barry_run_optimized
+      - barry_hit_optimized
+      - YOU_ARE_DEAD_no_big_surprise
       - exhaust_optimized
       - coin_optimized
       - zapper
-      - electricStuff
       - missileWarning
       - missileIncoming
       - missile_optimized
       - laser_firing
       - laser_powering
       - laser_shutdown
+      - laser_beam
 

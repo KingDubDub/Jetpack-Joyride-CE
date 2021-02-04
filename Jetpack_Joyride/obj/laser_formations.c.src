@@ -1,0 +1,26 @@
+	section	.text,"ax",@progbits
+	assume	adl = 1
+	section	.rodata,"a",@progbits
+	public	_laserMax
+_laserMax:
+	db	"",001o,002o,004o,004o,007o
+
+	section	.rodata,"a",@progbits
+	public	_lsrY
+_lsrY:
+	db	"r",000o,000o,000o,000o,000o,000o
+	db	"",030o,314o,000o,000o,000o,000o,000o
+	db	"",030o,220o,256o,314o,000o,000o,000o
+	db	"",030o,"6T",314o,000o,000o,000o
+	db	"",030o,"6Tr",220o,256o,314o
+
+	section	.rodata,"a",@progbits
+	public	_halfLife
+_halfLife:
+	db	"l",000o,000o,000o,000o,000o,000o
+	db	"ll",000o,000o,000o,000o,000o
+	db	"llll",000o,000o,000o
+	db	"llll",000o,000o,000o
+	db	"ll",330o,330o,330o,"ll"
+
+	ident	"clang version 12.0.0 (https://github.com/jacobly0/llvm-project 170be88120e3aa88c20eea5615ba76b8f1d6c647)"

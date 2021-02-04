@@ -1,0 +1,8 @@
+	section	.text,"ax",@progbits
+	assume	adl = 1
+	section	.data,"aw",@progbits
+	public	_exhaust2_data
+_exhaust2_data:
+	db	"",013o,023o,000o,000o,"$=",002o,002o,002o,"=$",000o,000o,000o,"$=Z",002o,002o,002o,"Z=$",000o,000o,"$=Z",002o,002o,002o,"Z=$",000o,"$=ZZ",002o,002o,002o,"ZZ=$$=Zaa",002o,"aaZ=$$=Zaa",002o,"aaZ=$$=ZaaaaaZ=$$$=ZaaaZ=$$",000o,"$=ZaaaZ=$",000o,000o,"$=ZaaaZ=$",000o,000o,"$==ZaZ==$",000o,000o,"$$=ZaZ=$$",000o,000o,"$$==Z==$$",000o,000o,000o,"$$===$$",000o,000o,000o,000o,"$$===$$",000o,000o,000o,000o,000o,"$$=$$",000o,000o,000o,000o,000o,000o,"$$$$$",000o,000o,000o,000o,000o,000o,000o,"$$$",000o,000o,000o,000o,000o,000o,000o,000o,000o,"$",000o,000o,000o,000o,000o
+
+	ident	"clang version 12.0.0 (https://github.com/jacobly0/llvm-project 170be88120e3aa88c20eea5615ba76b8f1d6c647)"

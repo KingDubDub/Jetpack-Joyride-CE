@@ -1,0 +1,93 @@
+	section	.text,"ax",@progbits
+	assume	adl = 1
+	section	.data,"aw",@progbits
+	public	_barryRun_array_data
+_barryRun_array_data:
+	dl	_barry0_data
+	dl	_barry1_data
+	dl	_barry2_data
+	dl	_barry3_data
+
+	section	.data,"aw",@progbits
+	public	_barryHit_array_data
+_barryHit_array_data:
+	dl	_barryHit0_data
+	dl	_barryHit1_data
+	dl	_barryHit2_data
+
+	section	.data,"aw",@progbits
+	public	_barryDed_array_data
+_barryDed_array_data:
+	dl	_barryDed0_data
+	dl	_barryDed1_data
+	dl	_barryDed2_data
+
+	section	.data,"aw",@progbits
+	public	_exhaust_array_data
+_exhaust_array_data:
+	dl	_exhaust0_data
+	dl	_exhaust1_data
+	dl	_exhaust2_data
+	dl	_exhaust3_data
+	dl	_exhaust4_data
+	dl	_exhaust5_data
+
+	section	.data,"aw",@progbits
+	public	_coin_array_data
+_coin_array_data:
+	dl	_coin0_data
+	dl	_coin1_data
+	dl	_coin2_data
+	dl	_coin3_data
+
+	section	.data,"aw",@progbits
+	public	_zapper_array_data
+_zapper_array_data:
+	dl	_zapper0_data
+	dl	_zapper1_data
+	dl	_zapper2_data
+	dl	_zapper3_data
+
+	section	.data,"aw",@progbits
+	public	_missile_array_data
+_missile_array_data:
+	dl	_missile0_data
+	dl	_missile1_data
+	dl	_missile2_data
+	dl	_missile3_data
+	dl	_missile4_data
+	dl	_missile5_data
+	dl	_missile6_data
+
+	ident	"clang version 12.0.0 (https://github.com/jacobly0/llvm-project 170be88120e3aa88c20eea5615ba76b8f1d6c647)"
+	extern	_missile1_data
+	extern	_missile5_data
+	extern	_barry3_data
+	extern	_exhaust1_data
+	extern	_barryHit2_data
+	extern	_exhaust5_data
+	extern	_coin1_data
+	extern	_zapper3_data
+	extern	_missile2_data
+	extern	_missile6_data
+	extern	_barry0_data
+	extern	_exhaust2_data
+	extern	_barryDed0_data
+	extern	_zapper0_data
+	extern	_missile3_data
+	extern	_barry1_data
+	extern	_barryHit0_data
+	extern	_exhaust3_data
+	extern	_coin2_data
+	extern	_barryDed1_data
+	extern	_zapper1_data
+	extern	_coin3_data
+	extern	_missile0_data
+	extern	_missile4_data
+	extern	_barry2_data
+	extern	_exhaust0_data
+	extern	_barryHit1_data
+	extern	_exhaust4_data
+	extern	_coin0_data
+	extern	_barryDed2_data
+	extern	_zapper2_data

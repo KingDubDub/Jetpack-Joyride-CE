@@ -15,12 +15,20 @@ extern "C" {
 #define single_sprites_palette_offset 0
 #include "jetpack.h"
 #include "nozzle.h"
-#include "beam.h"
 #include "sparkle.h"
-#define laser_beam_palette_offset 0
-#include "laser.h"
-#define avatar_palette_offset 0
-#include "avatar.h"
+#define barry_run_optimized_palette_offset 0
+#include "barry0.h"
+#include "barry1.h"
+#include "barry2.h"
+#include "barry3.h"
+#define barry_hit_optimized_palette_offset 0
+#include "barryHit0.h"
+#include "barryHit1.h"
+#include "barryHit2.h"
+#define YOU_ARE_DEAD_no_big_surprise_palette_offset 0
+#include "barryDed0.h"
+#include "barryDed1.h"
+#include "barryDed2.h"
 #define exhaust_optimized_palette_offset 0
 #include "exhaust0.h"
 #include "exhaust1.h"
@@ -34,9 +42,11 @@ extern "C" {
 #include "coin2.h"
 #include "coin3.h"
 #define zapper_palette_offset 0
-#include "zapper.h"
-#define electricStuff_palette_offset 0
-#include "electric.h"
+#include "beam.h"
+#include "zapper0.h"
+#include "zapper1.h"
+#include "zapper2.h"
+#include "zapper3.h"
 #define missileWarning_palette_offset 0
 #include "missileWarning.h"
 #define missileIncoming_palette_offset 0
@@ -55,6 +65,8 @@ extern "C" {
 #include "powering.h"
 #define laser_shutdown_palette_offset 0
 #include "shutdown.h"
+#define laser_beam_palette_offset 0
+#include "laser.h"
 
 #ifdef __cplusplus
 }

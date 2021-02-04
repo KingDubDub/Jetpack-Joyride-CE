@@ -4,7 +4,7 @@
 
 NAME        ?= JETPACK
 COMPRESSED  ?= YES
-ICON        ?= iconc.png
+ICON        ?= icon.png
 DESCRIPTION ?= "Jetpack Joyride for the TI84 PCE"
 ARCHIVED    ?= YES
 
