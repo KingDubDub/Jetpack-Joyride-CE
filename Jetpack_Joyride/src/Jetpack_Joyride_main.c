@@ -39,10 +39,15 @@ but other than that you are obliged to have as much fun as will kill you!
 
 //the starting X-coords for various obstacles and things:
 #define COIN_ORIGIN 330
-#define ZAPPER_ORIGIN 330
+#define ZAPPER_ORIGIN 352
 #define MISSILE_ORIGIN 1466
 
+//appvar name and version since I decided to add versions, it's my code and I'll do what I want:
 #define DATA_APPVAR "JTPKDAT"
+const uint8_t APPVAR_VERSION = 1;
+
+//we read APPVAR_VERSION to this var for testing later:
+uint8_t saveIntegrity;
 
 //time it takes to complete the game loop, used to control the FPS; if it overflows
 //then we have real speed problems:
@@ -62,11 +67,27 @@ uint24_t missileDelay;
 //used for a bad background scroll function that is actually the best for this scenario:
 int24_t backgroundScroll;
 
+//for randomization values that can be reused globally (normally just one-and-done use cases):
+uint8_t randVar;
+uint8_t randVar1;
+
+uint8_t randObject;
+
+//button debouncing for menu:
+bool debounced;
+//value for keeping track of menuing:
+int8_t menuSelect;
+
+//strings used in pause menu:
+char pauseOptions[3][7] = {"Quit", "Retry", "Resume"};
+//their X-positions, since they don't follow a mathmatical trend:
+int8_t pauseOptionX[3] = {120, 103, 90};
+
 //all the data used to control Barry's position, acceleratoin, etc. are consolidated under one pointer.
 //x and y positions, time 2nd is pressed/released to fly/fall, animation frame, animation cycling control, and jetpack animation frame:
 typedef struct
 {
-    uint24_t x;
+    int24_t x;
     uint8_t y;
     uint8_t theta; //in calculator land, there're only 256 degrees, not 360 oogabooga degrees. This is gonna hurt my brain.
     int8_t inputDuration;
@@ -80,7 +101,7 @@ avatar_t; //looks gross, but it saves 309 bytes in read/write calls to the appva
 
 typedef struct
 {
-    uint24_t x;
+    int24_t x;
     uint8_t y;
     int8_t h_accel; //horizontal acceleration
     int8_t v_accel; //vertical acceleration
@@ -108,90 +129,85 @@ game_data_t;
 //all important game data, again, all in one clean struct pointer:
 game_data_t save_data;
 
-//for randomization values that can be reused globally (normally just one-and-done use cases):
-uint8_t randVar;
-uint8_t randVar1;
-
-uint8_t randObject;
-
-//button debouncing for menu:
-bool debounced;
-//value for keeping track of menuing:
-int8_t menuSelect;
-
-//strings used in pause menu:
-char pauseOptions[3][7] = {"Quit", "Retry", "Resume"};
-//their X-positions, since they don't follow a mathmatical trend:
-int8_t pauseOptionX[3] = {120, 103, 90};
-
 //hey looky, a coin struct type for easy use, WHY DIDN'T I MAKE THIS EARLIER?
 //stores x and y positions, along with the coin's animation frame:
 typedef struct
 {
-    uint24_t x;
-    uint8_t y;
-    uint8_t animation;
+    int24_t x[MaxCoins];
+    uint8_t y[MaxCoins];
+    uint8_t animation[MaxCoins];
+
+    //coin formation variable to keep track of coin list shapes:
+    uint8_t formation;
 }
 coin_t;
 
 //initialize some coins, about 30 is the max:
-coin_t coin[MaxCoins];
-
-//coin formation variable to keep track of coin list shapes:
-uint8_t coinFormation;
+coin_t coins;
 
 //again, WHY did I not make these before...
 //laser x and y positions, length, and animation frame:
 typedef struct
 {
-    uint24_t x;
-    uint8_t y;
-    uint8_t length;
+    int24_t x[MaxZappers];
+    uint8_t y[MaxZappers];
+    int8_t length[MaxZappers];
+
+    //zapper type, vertical, horizontal, or positve/negative diagonal:
+    int8_t orientation[MaxZappers];
+
+    //zapper sprite animation frame:
+    int8_t animate;
 }
 zapper_t;
 
-zapper_t zappers[MaxZappers];
-
-uint8_t zapperAnimate;
+zapper_t zappers;
 
 //I think the ZDS toolchain broke them and doubled the program size, I love LLVM
 //missile x and y positions:
 typedef struct
 {
-    uint24_t x;
-    uint8_t y;
+    int24_t x[MaxMissiles];
+    uint8_t y[MaxMissiles];
+
+    //keep track of animations for missiles:
+    int8_t iconAnimate;
+    int8_t animation;
+    int8_t animationToggle;
 }
 missile_t;
 
-missile_t missiles[MaxMissiles];
-
-//keep track of animations for missiles:
-int8_t missile_icon_animate;
-int8_t missileAnimate;
-int8_t MAvalue = -1;
+missile_t missiles;
 
 //the point is, updates are good; ergo, Windows is exciting
 //y position (x position is shared among all lasers), laser's time to function:
 typedef struct
 {
-    uint8_t y;
-    uint24_t lifetime;
+    uint8_t y[MaxLasers];
+    uint24_t lifetime[MaxLasers];
+
+    //all lasers have a universal X that doesn't move very far:
+    int8_t x;
+    //laser animation sprite:
+    int8_t animation;
+    //which laser formation is being used:
+    uint8_t formation;
+    //keep track of how many lasers have fired already:
+    uint8_t deactivated;
 }
 laser_t;
 
-laser_t lasers[MaxLasers];
+laser_t lasers;
 
-//all lasers have a universal X that doesn't move very far:
-int8_t laserX;
-//laser animation variable
-int8_t laserAnimate;
-//which laser formation is being used:
-uint8_t laserFormation;
-//keep track of how many lasers have fired already:
-uint8_t deadLasers;
-
-//flipped sprites and animations:
+//flipped zapper sprites:
 gfx_sprite_t *zapper_array_flipped[4];
+
+//horizontal zapper sprites:
+gfx_sprite_t *horizontal_zapper[4];
+gfx_sprite_t *horizontal_zapper_flipped[4];
+gfx_sprite_t *horizontal_beam;
+
+//flipped laser sprites and effects:
 gfx_sprite_t *powering_tiles_flipped[4];
 gfx_sprite_t *firing_tiles_flipped[3];
 gfx_sprite_t *shutdown_tiles_flipped[3];
@@ -215,7 +231,7 @@ ti_var_t savegame;
 #define Fill_Array(array, entries, value) \
 do{ \
     size_t n = entries; \
-    for (size_t i = 0; i < n; ++i) (array)[i] = value; \
+    for(size_t i = 0; i < n; ++i) (array)[i] = value; \
 } while (0);
 //NOTE: initial tests saw smaller size than memset and equivalent speed. Further testing will be done when I feel like it.
 
@@ -241,23 +257,22 @@ void CopyPasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x
 //clears all objects from gameplay by moving their X-coords out of bounds:
 void delObjects()
 {
-    for (uint8_t i = 0; i < coin_max[coinFormation]; ++i)
+    for(uint8_t i = 0; i < coin_max[coins.formation]; ++i)
     {
-        coin[i].x = 2000;
+        coins.x[i] = 2000;
     }
 
-    for (uint8_t i = 0; i < MaxZappers; ++i)
+    for(uint8_t i = 0; i < MaxZappers; ++i)
     {
-        zappers[i].length = 0;
-        zappers[i].x = (ZAPPER_ORIGIN + 1);
+        zappers.x[i] = ZAPPER_ORIGIN;
     }
 
-    for (uint8_t i = 0; i < MaxMissiles; ++i)
+    for(uint8_t i = 0; i < MaxMissiles; ++i)
     {
-        missiles[i].x = (MISSILE_ORIGIN + 1);
+        missiles.x[i] = (MISSILE_ORIGIN + 10);
     }
 
-    laserX = 0;
+    lasers.x = 0;
 }
 
 //a function for drawing buttons, will hopefully save on flash size and stack usage:
@@ -292,6 +307,9 @@ void save_state(void)
     //game save data and stats:
     ti_Write(&save_data, sizeof(save_data), 1, savegame);
 
+    //version of the appvar, for future use with updater packs and to hopefully provide some more debugging support:
+    ti_Write(&APPVAR_VERSION, 1, 1, savegame);
+
     //game environment variables:
     ti_Write(&scrollSpeed, sizeof(scrollSpeed), 1, savegame);
     ti_Write(&incrementDelay, sizeof(incrementDelay), 1, savegame);
@@ -305,25 +323,16 @@ void save_state(void)
     ti_Write(&jetpackEntity, sizeof(jetpackEntity), 1, savegame);
 
     //coin variables:
-    ti_Write(&coin, sizeof(coin), 1, savegame);
-    ti_Write(&coinFormation, sizeof(coinFormation), 1, savegame);
+    ti_Write(&coins, sizeof(coins), 1, savegame);
 
     //zapper variables:
     ti_Write(&zappers, sizeof(zappers), 1, savegame);
-    ti_Write(&zapperAnimate, sizeof(zapperAnimate), 1, savegame);
 
     //missile variables:
     ti_Write(&missiles, sizeof(missiles), 1, savegame);
-    ti_Write(&missile_icon_animate, sizeof(missile_icon_animate), 1, savegame);
-    ti_Write(&missileAnimate, sizeof(missileAnimate), 1, savegame);
-    ti_Write(&MAvalue, sizeof(MAvalue), 1, savegame);
 
     //laser variables:
     ti_Write(&lasers, sizeof(lasers), 1, savegame);
-    ti_Write(&laserX, sizeof(laserX), 1, savegame);
-    ti_Write(&laserFormation, sizeof(laserFormation), 1, savegame);
-    ti_Write(&deadLasers, sizeof(deadLasers), 1, savegame);
-    ti_Write(&laserAnimate, sizeof(laserAnimate), 1, savegame);
 
     //uncomment this in the NEAR FINAL release, right now it should a temporary save until I iron out the bugs:
     //ti_SetArchiveStatus(true, savegame);
@@ -331,9 +340,6 @@ void save_state(void)
 
 void main(void)
 {
-    //better random seed generation:
-    srand(rtc_Time());
-
    //close any files that may have been left open from the last program:
     ti_CloseAll();
 
@@ -346,7 +352,7 @@ void main(void)
 
     //read from appvar if it exists, fails if it returns 0
     savegame = ti_Open(DATA_APPVAR, "r");
-    if (savegame == 0)
+    if(savegame == 0)
     {
         save_state();
     }
@@ -372,27 +378,40 @@ void main(void)
     CopyPasta(jetpack, jetpack_resized, 2, 0);
 
     //flipped zapper sprites:
-    for (uint8_t i = 0; i < 4; ++i)
+    for(uint8_t i = 0; i < 4; ++i)
     {
         zapper_array_flipped[i] = gfx_MallocSprite(32, 32);
         gfx_FlipSpriteX(zapper_array_optimized[i], zapper_array_flipped[i]);
     }
 
+    //horizontal zapper sprites:
+    for(uint8_t i = 0; i < 4; ++i)
+    {
+        horizontal_zapper[i] = gfx_MallocSprite(32, 32);
+        horizontal_zapper_flipped[i] = gfx_MallocSprite(32, 32);
+        gfx_RotateSpriteC(zapper_array_optimized[i], horizontal_zapper[i]);
+        gfx_RotateSpriteC(zapper_array_flipped[i], horizontal_zapper_flipped[i]);
+    }
+
+    //horizontal zapper beam:
+    horizontal_beam = gfx_MallocSprite(beam_width, beam_height);
+    gfx_RotateSpriteC(beam, horizontal_beam);
+
     //flipping laser powering up animations:
-    for (uint8_t i = 0; i < 4; ++i)
+    for(uint8_t i = 0; i < 4; ++i)
     {
         powering_tiles_flipped[i] = gfx_MallocSprite(19, 15);
         gfx_FlipSpriteY(powering_tiles[i], powering_tiles_flipped[i]);
     }
 
     //flipping laser sprites:
-    for (uint8_t i = 0; i < 3; ++i)
+    for(uint8_t i = 0; i < 3; ++i)
     {
         firing_tiles_flipped[i] = gfx_MallocSprite(30, 37);
         gfx_FlipSpriteY(firing_tiles[i], firing_tiles_flipped[i]);
     }
 
-    for (uint8_t i = 0; i < 3; ++i)
+    for(uint8_t i = 0; i < 3; ++i)
     {
         shutdown_tiles_flipped[i] = gfx_MallocSprite(30, 44);
         gfx_FlipSpriteY(shutdown_tiles[i], shutdown_tiles_flipped[i]);
@@ -407,13 +426,19 @@ void main(void)
     //update all of our gameplay data from the save data:
     ti_Read(&save_data, sizeof(save_data), 1, savegame);
 
+    //check the appvar version for some future reason:
+    ti_Read(&saveIntegrity, 1, 1, savegame);
+
     //when I first started using C, I asked some friends if there were GOTO statements.
     //They proved they were good friends, and told me "No, that's stupid". I'm glad they lied.
     GAMESTART:
     //But it's still sometimes okay.
 
+    //better random seed generation:
+    srand(rtc_Time());
+
     //load all the appvar data as our "starting point" if distance isn't 0
-    if (save_data.distance)
+    if(save_data.distance)
     {
         //game environment variables:
         ti_Read(&scrollSpeed, sizeof(scrollSpeed), 1, savegame);
@@ -428,33 +453,26 @@ void main(void)
         ti_Read(&jetpackEntity, sizeof(jetpackEntity), 1, savegame);
 
         //coin variables:
-        ti_Read(&coin, sizeof(coin), 1, savegame);
-        ti_Read(&coinFormation, sizeof(coinFormation), 1, savegame);
+        ti_Read(&coins, sizeof(coins), 1, savegame);
 
         //zapper variables:
         ti_Read(&zappers, sizeof(zappers), 1, savegame);
-        ti_Read(&zapperAnimate, sizeof(zapperAnimate), 1, savegame);
 
         //missile variables:
         ti_Read(&missiles, sizeof(missiles), 1, savegame);
-        ti_Read(&missile_icon_animate, sizeof(missile_icon_animate), 1, savegame);
-        ti_Read(&missileAnimate, sizeof(missileAnimate), 1, savegame);
-        ti_Read(&MAvalue, sizeof(MAvalue), 1, savegame);
 
         //laser variables:
         ti_Read(&lasers, sizeof(lasers), 1, savegame);
-        ti_Read(&laserX, sizeof(laserX), 1, savegame);
-        ti_Read(&laserFormation, sizeof(laserFormation), 1, savegame);
-        ti_Read(&deadLasers, sizeof(deadLasers), 1, savegame);
-        ti_Read(&laserAnimate, sizeof(laserAnimate), 1, savegame);
 
         ti_CloseAll();
     }
     else
     {
-        delObjects();
-
         //reset variables for when a game starts:
+        scrollSpeed = 6;
+        incrementDelay = 0;
+        spawnDelay = 200;
+        
         save_data.distance = 0;
         save_data.health = 1;
         save_data.monies = 0;
@@ -469,13 +487,15 @@ void main(void)
         avatar.corpseBounce = 0;
         avatar.deathDelay = 0;
 
+        missiles.animationToggle = -1;
+
+        lasers.deactivated = MaxLasers;
+
+        jetpackEntity.theta = 0;
         jetpackEntity.bounce = 0;
         jetpackEntity.h_accel = 2;
 
-        scrollSpeed = 6;
-        incrementDelay = 0;
-        spawnDelay = 200;
-        deadLasers = MaxLasers;
+        delObjects();
     }
 
     //Loop until clear is pressed:
@@ -485,7 +505,7 @@ void main(void)
         kb_Scan();
 
         //controls backgroundScroll, 192 is for background sprite width:
-        if ((backgroundScroll - scrollSpeed) <= 0)
+        if((backgroundScroll - scrollSpeed) <= 0)
         {
             backgroundScroll += (192 - scrollSpeed);
         } else {
@@ -493,56 +513,54 @@ void main(void)
         }
 
         //spawns stuff, SO much better than the debug methods I originally used, lasers act weird sometimes though:
-        if ((spawnDelay < 1) && (laserX < 1))
+        if((spawnDelay < 1) && (lasers.x < 1))
         {
             randObject = randInt(0, 21);
             //randObject = randInt(0,0);
 
-            if (randObject == 0)
+            if(randObject == 0)
             {
                 //picks a random formation from the data arrays in the laser_formations file:
-                laserFormation = randInt(0, (LASER_FORMATIONS - 1));
+                lasers.formation = randInt(0, (LASER_FORMATIONS - 1));
 
                 //give each laser their Y-axis:
-                for (uint8_t i = 0; i < laserMax[laserFormation]; ++i)
+                for(uint8_t i = 0; i < laserMax[lasers.formation]; ++i)
                 {
-                    lasers[i].y = lsrY[laserFormation][i];
-                    lasers[i].lifetime = halfLife[laserFormation][i];
+                    lasers.y[i] = lsrY[lasers.formation][i];
+                    lasers.lifetime[i] = halfLife[lasers.formation][i];
                 }
 
-                laserX = 1;
+                lasers.x = 1;
 
-                deadLasers = 0;
+                lasers.deactivated = 0;
 
                 spawnDelay = scrollSpeed * 40;
             }
-            else if (randObject < 3)
+            else if(randObject < 3)
             {
-
                 //sets coin coordinates from coordinate lists:
                 randVar = randInt(30, 150);
-                coinFormation = randInt(0, (COIN_FORMATIONS - 1));
-                for (uint8_t i = 0; i < MaxCoins; ++i)
+                coins.formation = randInt(0, (COIN_FORMATIONS - 1));
+                for(uint8_t i = 0; i < MaxCoins; ++i)
                 {
-                    coin[i].x = (COIN_ORIGIN + ctx[coinFormation][i]);
-                    coin[i].y = (randVar + cty[coinFormation][i]);
-                    coin[i].animation = 0;
+                    coins.x[i] = (COIN_ORIGIN + ctx[coins.formation][i]);
+                    coins.y[i] = (randVar + cty[coins.formation][i]);
+                    coins.animation[i] = 0;
                 }
-
                 spawnDelay = 500;
             }
-            else if (randObject < 6)
+            else if(randObject < 6)
             {
-
                 //spawns missiles (and missile swarms if I implement them):
-                for (uint8_t i = 0; i < MaxMissiles; ++i)
+                for(uint8_t i = 0; i < MaxMissiles; ++i)
                 {
-                    if (missiles[i].x > MISSILE_ORIGIN)
+                    //if there's a missile offscreen, put it into play:
+                    if((missiles.x[i] > MISSILE_ORIGIN) || (missiles.x[i] < -54))
                     {
-                        missiles[i].x = MISSILE_ORIGIN;
-                        missiles[i].y = 10 * randInt(2, 18);
+                        missiles.x[i] = MISSILE_ORIGIN;
+                        missiles.y[i] = 10 * randInt(2, 18);
 
-                        i = MaxZappers;
+                        i = MaxMissiles;
                     }
                 }
 
@@ -550,24 +568,46 @@ void main(void)
                 //such as coins and lasers (currently doesn't work):
                 missileDelay = 1466;
             }
-            else if ((randObject > 3) && (randObject <= 20))
+            else if((randObject > 3) && (randObject <= 20))
             {
-
                 //randomly generates zapper coordinates and lengths:
-                for (uint8_t i = 0; i < MaxZappers; ++i)
+                for(uint8_t i = 0; i < MaxZappers; ++i)
                 {
-                    if (zappers[i].x > ZAPPER_ORIGIN)
+                    //if the zapper isn't in play:
+                    if((zappers.x[i] >= ZAPPER_ORIGIN) || (zappers.x[i] < -100))
                     {
-                        zappers[i].x = ZAPPER_ORIGIN;
+                        //put it in play:
+                        zappers.x[i] = ZAPPER_ORIGIN - 1;
 
-                        zappers[i].length = randInt(2, 4);
-                        zappers[i].y = 10 * randInt(2, 19 - zappers[i].length);
+                        //zapper length is always set the same way, badly:
+                        zappers.length[i] = randInt(2, 4);
 
+                        //if randInt returns anything that isn't zero, make a vertical zapper:
+                        if(randInt(0, 2))
+                        {
+                            zappers.orientation[i] = 0;
+
+                            //vertical zappers can appear from y-20 to y-170:
+                            zappers.y[i] = 20 * randInt(1, 9 - (zappers.length[i] / 2));
+
+                            //delay the next spawn:
+                            spawnDelay = randInt(140, 180);
+                        }
+                        else //if zero, then it's a horizontal zapper:
+                        {
+                            zappers.orientation[i] = 1;
+
+                            //horizontal zappers do be spawnin' everywhere tho:
+                            zappers.y[i] = (20 * randInt(1, 10)) - 5;
+
+                            //delay the next spawping with respect for the elongation of the zapper:
+                            spawnDelay = (zappers.length[i] * 10) + randInt(140, 180);
+                        }
+
+                        //if we made a zapper, stop making more:
                         i = MaxZappers;
                     }
                 }
-
-                spawnDelay = 200;
             }
         }
         else
@@ -575,17 +615,17 @@ void main(void)
             spawnDelay -= scrollSpeed;
 
             //if missile delay isn't zero, bring it closer to it:
-            if (missileDelay)
+            if(missileDelay)
             {
                 missileDelay -= scrollSpeed;
             }
         }
 
         //run controls and scrolling speed until Barry gets wasted, then bounces his corpse around:
-        if (save_data.health > 0)
+        if(save_data.health > 0)
         {
             //very small bit of code to increase speed with a decreasing frequency over time, max of 12:
-            if ((incrementDelay >= ((scrollSpeed - 5) * 250)) && (scrollSpeed < 12))
+            if((incrementDelay >= ((scrollSpeed - 5) * 250)) && (scrollSpeed < 12))
             {
                 ++scrollSpeed;
                 incrementDelay = 0;
@@ -594,36 +634,36 @@ void main(void)
             }
 
             //when flying:
-            if (kb_Data[1] & kb_2nd)
+            if(kb_Data[1] & kb_2nd)
             {
                 //add to avatar.inputDuration, which is added to avatar.y:
-                if (avatar.inputDuration < 12)
+                if(avatar.inputDuration < 12)
                 {
                     avatar.inputDuration += 1;
                 }
 
                 //numbers for jetpack output (bullets or fire or whatever):
-                if (avatar.exhaustAnimation < 7)
+                if(avatar.exhaustAnimation < 7)
                 {
                     ++avatar.exhaustAnimation;
-                } else if (avatar.exhaustAnimation > 7) {
+                } else if(avatar.exhaustAnimation > 7) {
                     avatar.exhaustAnimation = 0;
                 }
 
             //when falling (2nd isn't pressed):
             } else {
                 //subtract from avatar.inputDuration, added to avatar.y (it can be a negative number):
-                if ((avatar.y < (185)) && (avatar.inputDuration > -12))
+                if((avatar.y < (185)) && (avatar.inputDuration > -12))
                 {
                     avatar.inputDuration -= 1;
                 }
 
                 //increases numbers for jetpack powering down animation:
-                if (avatar.exhaustAnimation < 7)
+                if(avatar.exhaustAnimation < 7)
                 {
                     avatar.exhaustAnimation = 8;
                 }
-                else if (avatar.exhaustAnimation < 11)
+                else if(avatar.exhaustAnimation < 11)
                 {
                     ++avatar.exhaustAnimation;
                 }
@@ -633,11 +673,11 @@ void main(void)
                 }
             }
 
-            //sees if Y-value rolled past 20 or 189, figures out if it was going up
-            //or down, and auto-corrects accordingly (FUTURE ME; IT'S OPTIMIZED ENOUGH PLEASE DON'T WASTE ANY MORE TIME):
-            if (((avatar.y - avatar.inputDuration) > 189) || ((avatar.y - avatar.inputDuration) < 20))
+            //sees if Y-value rolled past 20 or 185, figures out if it was going up
+            //or down, and auto-corrects accordingly (FUTURE ME: IT'S OPTIMIZED ENOUGH PLEASE DON'T WASTE ANY MORE TIME):
+            if(((avatar.y - avatar.inputDuration) > 185) || ((avatar.y - avatar.inputDuration) < 20))
             {
-                if (avatar.inputDuration > 0)
+                if(avatar.inputDuration > 0)
                 {
                     avatar.y = 20;
                 } else {
@@ -653,7 +693,7 @@ void main(void)
             }
 
             //bit that runs avatar animations:
-            if (avatar.y < 185)
+            if(avatar.y < 185)
             {
                 //flying animation:
                 avatar.playerAnimation = 6;
@@ -661,13 +701,13 @@ void main(void)
             else
             {
                 //quickly reset sprite animation to the second running sprite:
-                if (avatar.playerAnimation == 6)
+                if(avatar.playerAnimation == 6)
                 {
                     avatar.playerAnimation = 2;
                 }
 
                 //keep within range of the first 3 sprites in the array:
-                if ((avatar.playerAnimation < 1) || (avatar.playerAnimation > 4))
+                if((avatar.playerAnimation < 1) || (avatar.playerAnimation > 4))
                 {
                     avatar.playerAnimationToggle *= -1;
                 }
@@ -712,7 +752,7 @@ void main(void)
                 }
                 
             }
-            else if ((avatar.y - avatar.inputDuration) < 20) //if Barry hits the ceiling, flip his acceleration:
+            else if((avatar.y - avatar.inputDuration) < 20) //if Barry hits the ceiling, flip his acceleration:
             {
                 avatar.y = 20;
                 avatar.inputDuration *= -1;
@@ -720,9 +760,10 @@ void main(void)
             else
             {
                 avatar.y -= avatar.inputDuration;
+                avatar.theta += scrollSpeed;
 
                 //downwards acceleration increase and cap, slightly faster than normal:
-                if (avatar.inputDuration > -14)
+                if(avatar.inputDuration > -14)
                 {
                     --avatar.inputDuration;
                 }
@@ -738,14 +779,7 @@ void main(void)
 
             //I'm keeping the jetpack rotation and control code seperate until I'm ready to hybridize the old code with it.
 
-            //since rotating sprites is so slow, I'm doing it between drawing and buffer updates to increase speed:
-            gfx_RotateSprite(barryHit_resized, barryHit_rotated, avatar.theta);
-            gfx_RotateSprite(jetpack_resized, jetpack_rotated, jetpackEntity.theta);
-
-            avatar.theta += 4;
-            jetpackEntity.theta += 8;
-                    
-            //if it hits the floor, which is slighty lower for the jetpack:
+            //if it hits the floor, which is slighty lower for the jetpack in order to give a more 3D look:
             if((jetpackEntity.y - jetpackEntity.v_accel) >= 210)
             {
                 jetpackEntity.y = 210;
@@ -766,8 +800,8 @@ void main(void)
                         jetpackEntity.bounce = 3;
                     }
 
-                    //slow down the forward motion after hitting the ground:
-                    if(jetpackEntity.h_accel)
+                    //slow down the forward motion after hitting the ground when the screen stops moving:
+                    if(jetpackEntity.h_accel && !scrollSpeed)
                     {
                         --jetpackEntity.h_accel;
                     }
@@ -776,7 +810,7 @@ void main(void)
                 {
                     //equivalent to rotating 270 degrees clockwise:
                     jetpackEntity.theta = 192;
-                }                        
+                }
             }
             else if((jetpackEntity.y - jetpackEntity.v_accel) < 20) //if it hits the ceiling:
             {
@@ -787,64 +821,71 @@ void main(void)
             {
                 jetpackEntity.x += jetpackEntity.h_accel;
                 jetpackEntity.y -= jetpackEntity.v_accel;
-                
+
+                //the jetpack rotates faster than Barry because I feel like it:
+                jetpackEntity.theta += (scrollSpeed * 2) + jetpackEntity.h_accel;
+
                 if(jetpackEntity.v_accel > -12)
                 {
                     --jetpackEntity.v_accel;
                 }
             }
 
+            //since rotating sprites is so slow, I'm doing it between drawing and buffer updates to increase speed:
+            gfx_RotateSprite(barryHit_resized, barryHit_rotated, avatar.theta);
+            gfx_RotateSprite(jetpack_resized, jetpack_rotated, jetpackEntity.theta);
+
             //An inelastic collision is when something bounces off something and loses some speed, which means the objects
             //stick together. Barry's corpse sticks to the floor a little bit (there's technically air friction and gravity
-            //too but that's not gruesome enough) and I'm essentially modeling all this with some physics modeling.
+            //too but that's not gruesome enough) and I'm essentially emulating all of this with some physics modeling.
             //THANKS AP PHYSICS, YOU WERE ACTUALLY USEFUL!
         }
 
-        if (zapperAnimate < 11)
+        if(zappers.animate < 11)
         {
-            ++zapperAnimate;
+            ++zappers.animate;
         } else {                    //see that else statment? That's code from 2020 and I don't plan on changing it.
-            zapperAnimate = 0;
+            zappers.animate = 0;
         }                           //BUT OH DOES IT HURT TO LOOK AT.
 
         //control missile warning and incoming animations:
-        if ((missile_icon_animate < 1) || (missile_icon_animate > 4))
+        if((missiles.iconAnimate < 1) || (missiles.iconAnimate > 4))
         {
-            MAvalue *= -1;
+            missiles.animationToggle *= -1;
         }
-        missile_icon_animate += MAvalue;
+        missiles.iconAnimate += missiles.animationToggle;
 
         //animate missile sprites:
-        if (missileAnimate < 12)
+        if(missiles.animation < 12)
         {
-            ++missileAnimate;
+            ++missiles.animation;
         }
-        else
+        else                        //but on the flip side, this else might be worse looking...
         {
-            missileAnimate = 0;
+            missiles.animation = 0;
         }
 
         //move lasers into play when needed:
-        if (deadLasers < laserMax[laserFormation])
+        if(lasers.deactivated < laserMax[lasers.formation])
         {
             spawnDelay = scrollSpeed * 40;
 
-            if (laserX < 20)
+            if(lasers.x < 20)
             {
-                ++laserX;
+                ++lasers.x;
             }
         }
-        else if ((deadLasers >= laserMax[laserFormation]) && (laserX > 0))
+        else if((lasers.deactivated >= laserMax[lasers.formation]) && (lasers.x > 0))
         {
-            --laserX;
+            --lasers.x;
         }
 
         //mess with number for laser animations
-        if (laserAnimate < 8)
+        if(lasers.animation < 8)
         {
-            ++laserAnimate;
+            ++lasers.animation;
         } else {
-            laserAnimate = 0;
+            lasers.animation = 0;
         }
 
         //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
@@ -853,13 +894,13 @@ void main(void)
         gfx_Sprite(background, backgroundScroll + background_width, 0);
 
         //draws avatar depending on health 'n stuff:
-        if (save_data.health > 0)
+        if(save_data.health > 0)
         {
             //draws the avatar, everything is layered over it:
             gfx_TransparentSprite_NoClip(barryRun_array[avatar.playerAnimation / 2], avatar.x, avatar.y);
 
             //bit that draws exhaust when in flight:
-            if (avatar.exhaustAnimation < 18)
+            if(avatar.exhaustAnimation < 18)
             {
                 gfx_TransparentSprite_NoClip(exhaust_array_optimized[avatar.exhaustAnimation / 2], avatar.x + randInt(1, 3), avatar.y + 31);
                 gfx_TransparentSprite_NoClip(nozzle, avatar.x + 4, avatar.y + 31);
@@ -881,84 +922,104 @@ void main(void)
 
             //draw the jetpack seperate from everything else:
             gfx_TransparentSprite_NoClip(jetpack_rotated, jetpackEntity.x, jetpackEntity.y);
-            
         }
 
         //bit that runs coin collision and movement:
-        for (uint8_t i = 0; i < coin_max[coinFormation]; ++i)
+        for(uint8_t i = 0; i < coin_max[coins.formation]; ++i)
         {
             //do things if the coin is less than the origin plus some buffer I made up on the spot:
-            if (coin[i].x <= COIN_ORIGIN + 500)
+            if(coins.x[i] <= COIN_ORIGIN + 500)
             {
                 //collision detection and appropriate sprite drawing:
-                if (gfx_CheckRectangleHotspot(avatar.x + 2, avatar.y, 18, 37, coin[i].x - 11, coin[i].y + 1, 10, 10))
+                if(gfx_CheckRectangleHotspot(avatar.x + 2, avatar.y, 18, 37, coins.x[i] - 11, coins.y[i] + 1, 10, 10))
                 {
-                    gfx_TransparentSprite_NoClip(sparkle, coin[i].x - 13, coin[i].y - 1);
+                    gfx_TransparentSprite_NoClip(sparkle, coins.x[i] - 13, coins.y[i] - 1);
 
-                    coin[i].x = 1020;
+                    coins.x[i] = 1020;
                     ++save_data.monies;
                 }
                 else
                 {
+                    gfx_TransparentSprite(coin_array_optimized[(coins.animation[i] / 10)], (coins.x[i] - 12), coins.y[i]);
 
-                    gfx_TransparentSprite(coin_array_optimized[(coin[i].animation / 10)], (coin[i].x - 12), coin[i].y);
-
-                    if ((coin[i].animation < 38) && (coin[i].x < COIN_ORIGIN))
+                    if((coins.animation[i] < 38) && (coins.x[i] < COIN_ORIGIN))
                     {
-                        coin[i].animation += 2;
+                        coins.animation[i] += 2;
                     }
                     else
                     {
-                        coin[i].animation = 0;
+                        coins.animation[i] = 0;
                     }
                 }
 
-                coin[i].x -= scrollSpeed;
+                coins.x[i] -= scrollSpeed;
             }
         }
 
         //bit that calculates zappers 'n stuff:
-        for (uint8_t i = 0; i < MaxZappers; ++i)
+        for(uint8_t i = 0; i < MaxZappers; ++i)
         {
-            //drawing the zapper beams:
-            if (zappers[i].x <= ZAPPER_ORIGIN)
+            if(zappers.x[i] != ZAPPER_ORIGIN)
             {
-                for (uint8_t i_the_sequel = 0; i_the_sequel < zappers[i].length; ++i_the_sequel)
+                //if orientation is zero, use data to draw vertical sprites:
+                if(!zappers.orientation[i])
                 {
-                    gfx_TransparentSprite(beam, zappers[i].x - 14, zappers[i].y + 16 + (i_the_sequel * 10));
-                }
+                    for(uint8_t i_the_sequel = 0; i_the_sequel < zappers.length[i]; ++i_the_sequel)
+                    {
+                        gfx_TransparentSprite(beam, zappers.x[i] - 14, zappers.y[i] + 16 + (i_the_sequel * 10));
+                    }
 
-                //draw zapper pairs and beams with distance of zapperLength between them:
-                if (zappers[i].x < 336)
-                {
+                    //draw zapper pairs and beams with distance of zapperLength between them:
+                    gfx_TransparentSprite(zapper_array_flipped[zappers.animate/3], zappers.x[i] - 25, zappers.y[i] - 7);
+                    gfx_TransparentSprite(zapper_array_optimized[zappers.animate/3], zappers.x[i] - 25, zappers.y[i] + 7 + (zappers.length[i] * 10));
 
-                    gfx_TransparentSprite(zapper_array_flipped[zapperAnimate/3], zappers[i].x - 25, zappers[i].y - 7);
-                    gfx_TransparentSprite(zapper_array_optimized[zapperAnimate/3], zappers[i].x - 25, zappers[i].y + 7 + (zappers[i].length * 10));
-
-                    //collision for zappers:
-                    if ((save_data.health > 0) && (gfx_CheckRectangleHotspot(avatar.x + 2, zappers[i].y + 2, 18, (zappers[i].length * 10) + 30, zappers[i].x - 14, avatar.y, 10, 37)))
+                    //collision for vertical zappers:
+                    if((save_data.health > 0) && (gfx_CheckRectangleHotspot(zappers.x[i] - 14, zappers.y[i] + 2, 10, (zappers.length[i] * 10) + 30, avatar.x + 2, avatar.y, 18, 37)))
                     {
                         --save_data.health;
 
-                        //screen flashes yellow
+                        //screen flashes yellow:
                         deathColor = 4;
                     }
                 }
+                else //if the orientation is not zero:
+                {
+                    //draw the horizontal beam, which WAS painful as hekk to do mathwise before I changed everything. Again.
+                    for(uint8_t i_the_sequel = 0; i_the_sequel < (zappers.length[i] * 10); i_the_sequel += 10)
+                    {
+                        //horizontal zappers are why I had to change all my x-values to int24 instead of uint24:
+                        gfx_TransparentSprite(horizontal_beam, zappers.x[i] + 32 + i_the_sequel, zappers.y[i] + 11);
+                    }
 
-                zappers[i].x -= scrollSpeed;
+                    //left side:
+                    gfx_TransparentSprite(horizontal_zapper[zappers.animate/3], zappers.x[i], zappers.y[i]);
+                    //right side:
+                    gfx_TransparentSprite(horizontal_zapper_flipped[zappers.animate/3], zappers.x[i]+32+(zappers.length[i]*10), zappers.y[i]);
+                
+                    //collision for horizontal zappers, a 68-88x10 rectangle:
+                    if((save_data.health > 0) && (gfx_CheckRectangleHotspot(zappers.x[i]+8, zappers.y[i], (zappers.length[i]*10)+48, 10, avatar.x, avatar.y, 20, 37)))
+                    {
+                        --save_data.health;
+
+                         //screen flashes yellow:
+                        deathColor = 4;
+                    }
+                }
+                //all zappers move the same:
+                zappers.x[i] -= scrollSpeed;
             }
         }
 
         //bit that draws and calculates the missiles 'o death:
-        for (uint8_t i = 0; i < MaxMissiles; ++i)
+        for(uint8_t i = 0; i < MaxMissiles; ++i)
         {
-            if (missiles[i].x <= MISSILE_ORIGIN)
+            if(missiles.x[i] <= MISSILE_ORIGIN)
             {
-                if (missiles[i].x < 366)
+                if(missiles.x[i] < 366)
                 {
-                    gfx_TransparentSprite(missile_array_optimized[missileAnimate / 2], missiles[i].x - 46, missiles[i].y - 18);
+                    gfx_TransparentSprite(missile_array_optimized[missiles.animation / 2], missiles.x[i] - 46, missiles.y[i] - 18);
 
-                    if ((save_data.health > 0) && (gfx_CheckRectangleHotspot(missiles[i].x - 45, avatar.y, 19, 37, avatar.x + 2, missiles[i].y - 5, 18, 12)))
+                    if((save_data.health > 0) && (gfx_CheckRectangleHotspot(missiles.x[i] - 45, avatar.y, 19, 37, avatar.x + 2, missiles.y[i] - 5, 18, 12)))
                     {
                         --save_data.health;
 
@@ -968,83 +1029,81 @@ void main(void)
 
                     //I'm using the X-position as timer, meaning there's less warning as time goes on:
                 }
-                else if (missiles[i].x < 641)
+                else if(missiles.x[i] < 641)
                 {
                     //AW CRAP HERE COME DAT BOI!
-                    gfx_TransparentSprite_NoClip(missileIncoming_tiles[missile_icon_animate / 3], 281 + randInt(-1, 1), missiles[i].y - 16 + randInt(-1, 1));
+                    gfx_TransparentSprite_NoClip(missileIncoming_tiles[missiles.iconAnimate / 3], 281 + randInt(-1, 1), missiles.y[i] - 16 + randInt(-1, 1));
                 }
-                else if (missiles[i].x < MISSILE_ORIGIN)
+                else if(missiles.x[i] < MISSILE_ORIGIN)
                 {
                     //plenty of time to dodge (at the beginning at least)
-                    gfx_TransparentSprite_NoClip(missileWarning_tiles[missile_icon_animate / 2], 293, missiles[i].y - 11);
+                    gfx_TransparentSprite_NoClip(missileWarning_tiles[missiles.iconAnimate / 2], 293, missiles.y[i] - 11);
 
                     //tracking on avatar
-                    if (missiles[i].y < (avatar.y + 20))
+                    if(missiles.y[i] < (avatar.y + 20))
                     {
-                        missiles[i].y += 2;
+                        missiles.y[i] += 2;
                     }
-                    else if (missiles[i].y > (avatar.y + 21))
+                    else if(missiles.y[i] > (avatar.y + 21))
                     {
-                        missiles[i].y -= 2;
+                        missiles.y[i] -= 2;
                     }
                 }
 
                 //missiles travel by 6 pixels each frame. It was surprisingly tedious to figure that out
                 //from frame-by-frame reviewing of missiles; however, it's too slow on the calc.
-                missiles[i].x -= scrollSpeed + 8;
+                missiles.x[i] -= scrollSpeed + 8;
             }
         }
 
         //bit for lasers, lots of moving parts:
-        for (uint8_t i = 0; i < laserMax[laserFormation]; ++i)
+        for(uint8_t i = 0; i < laserMax[lasers.formation]; ++i)
         {
-            if (laserX > 0)
+            if(lasers.x > 0)
             {
                 //reset the laser animations:
-                if ((laserX < 20) && (deadLasers < laserMax[laserFormation]))
+                if((lasers.x < 20) && (lasers.deactivated < laserMax[lasers.formation]))
                 {
-                    laserAnimate = 0;
+                    lasers.animation = 0;
 
                     //draw an inactive laser:
-                    gfx_TransparentSprite(powering_tile_0, laserX - 19, lasers[i].y);
-                    gfx_TransparentSprite(powering_tile_0, 320 - laserX, lasers[i].y);
+                    gfx_TransparentSprite(powering_tile_0, lasers.x - 19, lasers.y[i]);
+                    gfx_TransparentSprite(powering_tile_0, 320 - lasers.x, lasers.y[i]);
                 }
                 else
                 {
                     //if they are finished, finish the animation sequence and hide them again:
-                    if (deadLasers >= laserMax[laserFormation])
+                    if(lasers.deactivated >= laserMax[lasers.formation])
                     {
-                        laserAnimate = 0;
+                        lasers.animation = 0;
 
                         //if they aren't dead and have moved, run through their animations and attacks:
                     }
                     else
                     {
-
                         //check to see if the half-life ended:
-                        if (lasers[i].lifetime < 1)
+                        if(lasers.lifetime[i] < 1)
                         {
-                            ++deadLasers;
+                            ++lasers.deactivated;
                         }
-                        else if (lasers[i].lifetime < 9)
+                        else if(lasers.lifetime[i] < 9)
                         {
-
                             //lasers running out of juice:
-                            gfx_TransparentSprite_NoClip(shutdown_tiles[laserAnimate / 3], 5, lasers[i].y - 16);
-                            gfx_TransparentSprite_NoClip(shutdown_tiles_flipped[laserAnimate / 3], 285, lasers[i].y - 16);
+                            gfx_TransparentSprite_NoClip(shutdown_tiles[lasers.animation / 3], 5, lasers.y[i] - 16);
+                            gfx_TransparentSprite_NoClip(shutdown_tiles_flipped[lasers.animation / 3], 285, lasers.y[i] - 16);
 
-                            gfx_RLETSprite(laser_tiles[(laserAnimate / 3) + 1], 35, lasers[i].y);
+                            gfx_RLETSprite(laser_tiles[(lasers.animation / 3) + 1], 35, lasers.y[i]);
                         }
-                        else if (lasers[i].lifetime < 59)
+                        else if(lasers.lifetime[i] < 59)
                         {
                             //firing lasers:
-                            gfx_TransparentSprite_NoClip(firing_tiles[laserAnimate / 3], 5, lasers[i].y - 11);
-                            gfx_TransparentSprite_NoClip(firing_tiles_flipped[laserAnimate / 3], 285, lasers[i].y - 11);
+                            gfx_TransparentSprite_NoClip(firing_tiles[lasers.animation / 3], 5, lasers.y[i] - 11);
+                            gfx_TransparentSprite_NoClip(firing_tiles_flipped[lasers.animation / 3], 285, lasers.y[i] - 11);
 
-                            gfx_RLETSprite(laser_tile_0, 35, lasers[i].y);
+                            gfx_RLETSprite(laser_tile_0, 35, lasers.y[i]);
 
                             //hitbox for damage. 3 pixel leeway above and below:
-                            if ((save_data.health > 0) && Yspot(avatar.y, 34, lasers[i].y, 12))
+                            if((save_data.health > 0) && Yspot(avatar.y, 34, lasers.y[i], 12))
                             {
                                 --save_data.health;
 
@@ -1053,38 +1112,38 @@ void main(void)
                             }
 
                             //makes sure the animations play correctly, I don't have time to fix math today:
-                            if (lasers[i].lifetime == 9)
-                                laserAnimate = 0;
+                            if(lasers.lifetime[i] == 9)
+                                lasers.animation = 0;
                         }
-                        else if (lasers[i].lifetime < 109)
+                        else if(lasers.lifetime[i] < 109)
                         {
 
                             //the simplest drawing code in this hot mess, for powering up:
                             gfx_SetColor(5);
 
-                            gfx_Line(20, lasers[i].y + 7, 300, lasers[i].y + 7);
+                            gfx_Line(20, lasers.y[i] + 7, 300, lasers.y[i] + 7);
 
-                            gfx_Circle(11, lasers[i].y + 7, 7 + ((lasers[i].lifetime - 50) / 4));
-                            //gfx_Circle(11, lasers[i].y+7, 6 + ((lasers[i].lifetime-50)/4));
+                            gfx_Circle(11, lasers.y[i] + 7, 7 + ((lasers.lifetime[i] - 50) / 4));
+                            //gfx_Circle(11, lasers.y[i]+7, 6 + ((lasers.lifetime[i]-50)/4));
 
-                            gfx_Circle(308, lasers[i].y + 7, 7 + ((lasers[i].lifetime - 50) / 4));
-                            //gfx_Circle(308, lasers[i].y+7, 8 + ((lasers[i].lifetime-50)/4));
+                            gfx_Circle(308, lasers.y[i] + 7, 7 + ((lasers.lifetime[i] - 50) / 4));
+                            //gfx_Circle(308, lasers.y[i]+7, 8 + ((lasers.lifetime[i]-50)/4));
                         }
 
                         //update the laser's timer:
-                        --lasers[i].lifetime;
+                        --lasers.lifetime[i];
                     }
                 }
 
-                if (lasers[i].lifetime < 109)
+                if(lasers.lifetime[i] < 109)
                 {
-                    gfx_TransparentSprite(powering_tiles[(laserAnimate / 3) + 1], laserX - 19, lasers[i].y);
-                    gfx_TransparentSprite(powering_tiles_flipped[(laserAnimate / 3) + 1], 320 - laserX, lasers[i].y);
+                    gfx_TransparentSprite(powering_tiles[(lasers.animation / 3) + 1], lasers.x - 19, lasers.y[i]);
+                    gfx_TransparentSprite(powering_tiles_flipped[(lasers.animation / 3) + 1], 320 - lasers.x, lasers.y[i]);
                 }
                 else
                 {
-                    gfx_TransparentSprite(powering_tile_0, laserX - 19, lasers[i].y);
-                    gfx_TransparentSprite(powering_tiles_flipped[0], 320 - laserX, lasers[i].y);
+                    gfx_TransparentSprite(powering_tile_0, lasers.x - 19, lasers.y[i]);
+                    gfx_TransparentSprite(powering_tiles_flipped[0], 320 - lasers.x, lasers.y[i]);
                 }
             }
         }
@@ -1123,7 +1182,7 @@ void main(void)
         gfx_SwapDraw();
 
         //afterwards, we check if Barry was hit, and if so then the screen will quickly flash a certain color:
-        if (deathColor)
+        if(deathColor)
         {
             //we also set some variables that need to be updated once at time of death:
             jetpackEntity.y = avatar.y + 7;
@@ -1148,13 +1207,13 @@ void main(void)
         FPS = (32768 / timer_1_Counter);
 
         //time is frozen for a delay, and I wanna make a Jo-Jo reference but I don't speak Japanese
-        if (FPS > 25)
+        if(FPS > 25)
         {
             delay(40 - (1000 / FPS));
         }
 
         //pause menu controls and drawing, can be accessed as long as in main loop:
-        if (kb_Data[1] & kb_Del)
+        if(kb_Data[1] & kb_Del)
         {
             //drawing the base color for all the menu stuff:
             gfx_FillScreen(6);
@@ -1189,9 +1248,9 @@ void main(void)
                     draw_button(menuSelect);
 
                     //if down is pressed, add to menu select and correct overflow when necessary:
-                    if (kb_Data[7] & kb_Down)
+                    if(kb_Data[7] & kb_Down)
                     {
-                        if (menuSelect > 1)
+                        if(menuSelect > 1)
                         {
                             menuSelect = 0;
                         } else {
@@ -1200,9 +1259,9 @@ void main(void)
                     }
 
                     //and if up is pressed, subtract from menu select and correct overflow:
-                    if (kb_Data[7] & kb_Up)
+                    if(kb_Data[7] & kb_Up)
                     {
-                        if (menuSelect < 1)
+                        if(menuSelect < 1)
                         {
                             menuSelect = 2;
                         } else {
@@ -1214,7 +1273,7 @@ void main(void)
                     gfx_SetColor(2);
                     gfx_Rectangle(69, 32 + (menuSelect * 60), 182, 52);
                 }
-                else if ((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter))
+                else if((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter))
                 {
                     debounced = true;
 
@@ -1227,7 +1286,7 @@ void main(void)
                     gfx_Sprite_NoClip(pauseButtonOff_tile_4, 220, 35 + (menuSelect * 60));
 
                     //middle of pressed button is drawn (6 tiles):
-                    for (uint8_t i = 0; i < 120; i += 20)
+                    for(uint8_t i = 0; i < 120; i += 20)
                     {
                         gfx_Sprite_NoClip(pauseButtonOff_tile_3, 100 + i, 35 + (menuSelect * 60));
                     }
@@ -1241,7 +1300,7 @@ void main(void)
                 }
                 else
                 {
-                    if (debounced)
+                    if(debounced)
                     {
                         break;
                     }
@@ -1253,8 +1312,8 @@ void main(void)
                 while(((kb_Data[7] & kb_Down) || (kb_Data[7] & kb_Up)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
             }
 
-            //that dumb break means I can't use a switch case (yet) so it just exits the program loop.
-            if (menuSelect == 0)
+            //that dumb break means I can't use a switch case (yet) so it just exits the program loop when "Quit" is selected.
+            if(menuSelect == 0)
             {
                 //set health to 1 to keep from triggering death menu on loop exit:
                 save_data.health = 1;
@@ -1262,9 +1321,9 @@ void main(void)
                 //and this to flag that the game is over:
                 save_data.distance = 0;
                 break;
-                //goto main menu
+                //goto main menu later
             }
-            else if (menuSelect == 1)
+            else if(menuSelect == 1)
             {
                 save_data.distance = 0;
                 goto GAMESTART;
@@ -1272,12 +1331,12 @@ void main(void)
             //if menuSelect is 2 or anything else it just resumes; everything resets when the pause menu is accessed again.
         }
 
-        //timer reset and "ZA WORLDO" is over (iS tHaT A jOJo rEfERenCe):
+        //timer reset and "ZA WARUDO" is over (iS tHaT A jOJo rEfERenCe):
         timer_1_Counter = 0;
 
     } while (!(kb_Data[6] & kb_Clear) && (avatar.deathDelay != 50));
 
-    if (!(kb_Data[6] & kb_Clear) && (save_data.health < 1))
+    if(!(kb_Data[6] & kb_Clear) && (save_data.health < 1))
     {
         //reset distance to flag that a game is no longer in progress:
         save_data.distance = 0;
@@ -1292,7 +1351,7 @@ void main(void)
         while (kb_AnyKey()) kb_Scan();
         while (!kb_AnyKey()) kb_Scan();
 
-        if (kb_Data[6] != kb_Clear)
+        if(kb_Data[6] != kb_Clear)
         {
             //I still can't believe I used a goto label...
             goto GAMESTART;
