@@ -44,7 +44,7 @@ but other than that you are obliged to have as much fun as will kill you!
 
 //appvar name and version since I decided to add versions, it's my code and I'll do what I want:
 #define DATA_APPVAR "JTPKDAT"
-const uint8_t APPVAR_VERSION = 1;
+const uint8_t APPVAR_VERSION = 2;
 
 //we read APPVAR_VERSION to this var for testing later:
 uint8_t saveIntegrity;
@@ -255,7 +255,7 @@ void CopyPasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x
 }
 
 //clears all objects from gameplay by moving their X-coords out of bounds:
-void delObjects()
+void clrObjects()
 {
     for(uint8_t i = 0; i < coin_max[coins.formation]; ++i)
     {
@@ -337,6 +337,8 @@ void save_state(void)
     //uncomment this in the NEAR FINAL release, right now it should a temporary save until I iron out the bugs:
     //ti_SetArchiveStatus(true, savegame);
 }
+
+uint8_t backgroundList[5] = {0, 1, 2, 1, 0};
 
 void main(void)
 {
@@ -487,6 +489,8 @@ void main(void)
         avatar.corpseBounce = 0;
         avatar.deathDelay = 0;
 
+        //if there's a bug, it's because the animation values are funky, check them first:
+        missiles.iconAnimate = 0;
         missiles.animationToggle = -1;
 
         lasers.deactivated = MaxLasers;
@@ -495,7 +499,7 @@ void main(void)
         jetpackEntity.bounce = 0;
         jetpackEntity.h_accel = 2;
 
-        delObjects();
+        clrObjects();
     }
 
     //Loop until clear is pressed:
@@ -504,12 +508,22 @@ void main(void)
         //update keys, fixes bugs with update errors that can lead to softlocks:
         kb_Scan();
 
-        //controls backgroundScroll, 192 is for background sprite width:
-        if((backgroundScroll - scrollSpeed) <= 0)
+        //controls backgroundScroll, 92 is for background sprite width:
+        if((backgroundScroll + scrollSpeed) >= 92)
         {
-            backgroundScroll += (192 - scrollSpeed);
-        } else {
-            backgroundScroll -= scrollSpeed;
+            //seamlessly reset the position and increment it:
+            backgroundScroll -= (92 - scrollSpeed);
+
+            //move the background list and add a new entry at the end:
+            for(uint8_t i = 0; i < 4; ++i)
+            {
+                backgroundList[i] = backgroundList[i + 1];
+            }
+            backgroundList[4] = randInt(0, 2);
+        }
+        else
+        {
+            backgroundScroll += scrollSpeed;
         }
 
         //spawns stuff, SO much better than the debug methods I originally used, lasers act weird sometimes though:
@@ -706,12 +720,15 @@ void main(void)
                     avatar.playerAnimation = 2;
                 }
 
-                //keep within range of the first 3 sprites in the array:
-                if((avatar.playerAnimation < 1) || (avatar.playerAnimation > 4))
+                //toggle the animation frame order from first to last and vice versa:
+                if(avatar.playerAnimation < 1)
                 {
-                    avatar.playerAnimationToggle *= -1;
+                    avatar.playerAnimationToggle = 1;
                 }
-
+                else if(avatar.playerAnimation > 4)
+                {
+                    avatar.playerAnimationToggle = -1;
+                }
                 avatar.playerAnimation += avatar.playerAnimationToggle;
             }
         }
@@ -848,10 +865,14 @@ void main(void)
             zappers.animate = 0;
         }                           //BUT OH DOES IT HURT TO LOOK AT.
 
-        //control missile warning and incoming animations:
-        if((missiles.iconAnimate < 1) || (missiles.iconAnimate > 4))
+        //control missile warning and incoming animation orders:
+        if(missiles.iconAnimate < 1)
         {
-            missiles.animationToggle *= -1;
+            missiles.animationToggle = 1;
+        }
+        else if(missiles.iconAnimate > 4)
+        {
+            missiles.animationToggle = -1;
         }
         missiles.iconAnimate += missiles.animationToggle;
 
@@ -889,9 +910,10 @@ void main(void)
         }
 
         //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
-        gfx_Sprite(background, backgroundScroll - background_width, 0);
-        gfx_Sprite(background, backgroundScroll, 0);
-        gfx_Sprite(background, backgroundScroll + background_width, 0);
+        for(uint8_t i = 0; i < 5; ++i)
+        {
+            gfx_Sprite(background_tiles[backgroundList[i]], (i * 92) - backgroundScroll, 0);
+        }
 
         //draws avatar depending on health 'n stuff:
         if(save_data.health > 0)

@@ -23,7 +23,7 @@ Controls:
 -Press [del] to enter the pause menu.
 -Press [clear] to exit the game.
 
-Special thanks to TIny_Hacker for somehow figuring out HalfBrick's propriety sprite format, without him this would've looke a lot uglier. Like, REALLY ugly, check the first commit to see what I mean.
+Special thanks to TIny_Hacker for somehow figuring out HalfBrick's proprietary sprite format, without him this would've looke a lot uglier. Like, REALLY ugly, check the first commit to see what I mean.
 
 NOTES FOR PEOPLE WHO WANT TO BUILD FROM SOURCE:
 -The convimg.yaml is written for Mateo's convimg utility version 8.3 and up, it will give an output error if you use a lower version.

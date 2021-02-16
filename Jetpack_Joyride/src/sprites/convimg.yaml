@@ -36,8 +36,11 @@ converts:
 
   - name: hallway
     palette: jetpack_palette
-    images:
-      - background.png
+    tilesets:
+      tile-width: 92
+      tile-height: 240
+      images:
+        - background/background.png
 
   - name: barry_run_optimized
     palette: jetpack_palette
