@@ -12,16 +12,16 @@ Software Installation Instructions:
 
 1. Make sure you've installed the TI-Connect software from the Texas Instruments site.
 2. Make sure your calculator OS is below 5.5-5.6, since the program can't be run on those OS's or any that disable C/Assembly programs.
-    -If your OS is 5.5 or higher, use the arTIfiCE exploit tool to run the program: https://yvantt.github.io/arTIfiCE/
+    - If your OS is 5.5 or higher, use the arTIfiCE exploit tool to run the program: https://yvantt.github.io/arTIfiCE/
 3. Send the JETPACK.8xp program from /bin to the calculator
 4. The progam saves to the archive by default, if you put it in the RAM it will disappear when your battery dies or the RAM resets.
 5. On the calc, press "prgm" and select JETPACK.
 6. Brag to your freinds that you're a "l337 h4x0r" with games on your calculator!
 
 Controls:
--Hold [2nd] to rise, release to fall.
--Press [del] to enter the pause menu.
--Press [clear] to exit the game.
+- Hold [2nd] to rise, release to fall.
+- Press [del] to enter the pause menu.
+- Press [clear] to exit the game.
 
 Special thanks to TIny_Hacker for somehow figuring out HalfBrick's proprietary sprite format, without him this would've looke a lot uglier. Like, REALLY ugly, check the first commit to see what I mean.
 
