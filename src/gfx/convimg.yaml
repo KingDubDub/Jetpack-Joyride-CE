@@ -11,98 +11,107 @@ palettes:
       - color: {index: 6, r:  51, g:  62, b:  92}    #light navy (pause background color)
 
 outputs:
-  - type: c
-    directory: converts
+
+# Appvar palette
+
+  - type: appvar
+    name: JPJRPAL
     palettes:
       - jetpack_palette
-    converts:
-      - pause_button
-      - pause_button_pressed
-      - wall_gradient
-      - barry_assets
-      - barry_run_optimized
-      - barry_hit_optimized
-      - YOU_ARE_DEAD_no_big_surprise
-      - exhaust_optimized
-      - coin_optimized
-      - zapper
-      - missileWarning
-      - missileIncoming
-      - missile_optimized
-      - laser_firing
-      - laser_powering
-      - laser_shutdown
-      - laser_beam
-
-# Sprites for upper ceiling tiles
-
-  - type: appvar
-    name: JPJRCEIL
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - ceiling
-
-# Sprites for lower floor tiles
-
-  - type: appvar
-    name: JPJRFLR
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - floor
 
 # Background tile appvars
-
-  - type: appvar
-    name: JPJRBG0
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - opening
 
   - type: appvar
     name: JPJRBG1
     lut-entries: true
     lut-entry-size: 2
     converts:
+      - opening
+
+  - type: appvar
+    name: JPJRBG2
+    lut-entries: true
+    lut-entry-size: 2
+    converts:
+      - transition
       - backgrounds
 
-# Menu buttons
+  - type: appvar
+    name: JPJRBG3
+    lut-entries: true
+    lut-entry-size: 2
+    converts:
+      - background_extra_bits
+
+# Avatar sprites and assets
+
+  - type: appvar
+    name: BARRY
+    lut-entries: true
+    lut-entry-size: 2
+    converts:
+      - barry_assets
+      - barry_run_optimized
+      - barry_hit_optimized
+      - YOU_ARE_DEAD_no_big_surprise
+      - exhaust_optimized
+
+# Menu sprites
+
+  - type: appvar
+    name: JPJRGFX1
+    lut-entries: true
+    lut-entry-size: 2
+    converts:
+      - button_released
+      - button_pressed
+
+# Obstacle and item sprites
+
+  - type: appvar
+    name: JPJRGFX2
+    lut-entries: true
+    lut-entry-size: 2
+    converts:
+      - coins_optimized
+      - zapper
+      - missileWarning
+      - missileIncoming
+      - missile_optimized
+      - laser_powering
+      - laser_firing
+      - laser_shutdown
+      - laser_beam
 
 converts:
-  - name: pause_button
-    palette: jetpack_palette
-    tilesets:
-      tile-width:  14
-      tile-height: 50
-      images:
-        - pauseButtonOn.png
-
-  - name: pause_button_pressed
-    palette: jetpack_palette
-    tilesets:
-      tile-width: 14
-      tile-height: 46
-      images:
-        - pauseButtonOff.png
-
-# Everything else (self-explanatory)
-
-  - name: wall_gradient
+  - name: button_released
     palette: jetpack_palette
     images:
-      - background/wall.png
+      - buttons/button_on0.png
+      - buttons/button_on1.png
+      - buttons/button_on2.png
+      - buttons/button_on3.png
+
+  - name: button_pressed
+    palette: jetpack_palette
+    images:
+      - buttons/button_off0.png
+      - buttons/button_off1.png
+      - buttons/button_off2.png
+      - buttons/button_off3.png
+
+# Everything else (self-explanatory)
 
   - name: barry_assets
     palette: jetpack_palette
     images:
       - jetpack.png
       - nozzle.png
-      - sparkle.png
 
   - name: barry_run_optimized
     palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
     images:
       - barry/barry0.png
       - barry/barry1.png
@@ -125,6 +134,8 @@ converts:
 
   - name: exhaust_optimized
     palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
     images:
       - exhaust/exhaust0.png
       - exhaust/exhaust1.png
@@ -133,13 +144,16 @@ converts:
       - exhaust/exhaust4.png
       - exhaust/exhaust5.png
 
-  - name: coin_optimized
+  - name: coins_optimized
     palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
     images:
       - coins/coin0.png
       - coins/coin1.png
       - coins/coin2.png
       - coins/coin3.png
+      - coins/sparkle.png
 
   - name: zapper
     palette: jetpack_palette
@@ -152,19 +166,21 @@ converts:
 
   - name: missileWarning
     palette: jetpack_palette
-    tilesets:
-      tile-width:  20
-      tile-height: 21
-      images:
-        - missiles/missileWarning.png
- 
+    style: rlet
+    transparent-color-index: 0
+    images:
+      - missiles/missileWarning0.png
+      - missiles/missileWarning1.png
+      - missiles/missileWarning2.png
+
   - name: missileIncoming
     palette: jetpack_palette
-    tilesets:
-      tile-width:  31
-      tile-height: 31
-      images:
-        - missiles/missileIncoming.png
+    style: rlet
+    transparent-color-index: 0
+    images:
+      - missiles/missileIncoming0.png
+      - missiles/missileIncoming1.png
+
 
   - name: missile_optimized
     palette: jetpack_palette
@@ -181,51 +197,46 @@ converts:
 
   - name: laser_powering
     palette: jetpack_palette
-    tilesets:
-      tile-width:  19
-      tile-height: 15
-      images:
-        - powering.png
+    images:
+      - lasers/powering0.png
+      - lasers/powering1.png
+      - lasers/powering2.png
+      - lasers/powering3.png
 
   - name: laser_firing
     palette: jetpack_palette
-    tilesets:
-      tile-width:  30
-      tile-height: 37
-      images:
-        - firing.png
+    images:
+      - lasers/firing0.png
+      - lasers/firing1.png
+      - lasers/firing2.png
 
   - name: laser_shutdown
     palette: jetpack_palette
-    tilesets:
-      tile-width:  30
-      tile-height: 44
-      images:
-        - shutdown.png
+    style: rlet
+    transparent-color-index: 0
+    images:
+      - lasers/shutdown0.png
+      - lasers/shutdown1.png
+      - lasers/shutdown2.png
+      - lasers/shutdown3.png
+      - lasers/shutdown4.png
+      - lasers/shutdown5.png
 
   - name: laser_beam
     palette: jetpack_palette
-    tilesets:
-      tile-width:  1
-      tile-height: 15
-      images:
-        - laser.png
+    images:
+      - lasers/laser0.png
+      - lasers/laser1.png
+      - lasers/laser2.png
+      - lasers/laser3.png
 
-  - name: ceiling
+  - name: background_extra_bits
     palette: jetpack_palette
     tilesets:
       tile-width:  46
       tile-height: 40
       images:
-        - background/ceiling.png
-
-  - name: floor
-    palette: jetpack_palette
-    tilesets:
-      tile-width:  46
-      tile-height: 40
-      images:
-        - background/floor.png
+        - background/background_extra.png
 
   - name: opening
     palette: jetpack_palette
@@ -235,10 +246,18 @@ converts:
       images:
         - background/opening.png
 
+  - name: transition
+    palette: jetpack_palette
+    images:
+      - background/background0
+
   - name: backgrounds
     palette: jetpack_palette
-    tilesets:
-      tile-width:  46
-      tile-height: 160
-      images:
-        - background/background.png
+    compress: zx7
+    images:
+      - background/background1.png
+      - background/background2.png
+      - background/background3.png
+      - background/background4.png
+      - background/background5.png
+      - background/background6.png

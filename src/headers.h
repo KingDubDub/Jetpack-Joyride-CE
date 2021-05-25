@@ -16,5 +16,3 @@ extern const uint8_t laserMax[5];
 extern const uint8_t lsrY[5][MaxLasers];
 
 extern const uint8_t halfLife[5][MaxLasers];
-
-#include "optimized_sprites.c"
