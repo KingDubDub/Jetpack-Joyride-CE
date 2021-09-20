@@ -12,55 +12,32 @@ but other than that you are obliged to have as much fun as will kill you!
 
 */
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <tice.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
+#include <tice.h>
 #include <keypadc.h>
-#include <compression.h>
 #include <graphx.h>
+#include <compression.h>
 #include <fileioc.h>
 
 //my little headers thingy that's full of data I neither touch much nor count towards total lines:
 #include "headers.h"
 
-//max number of various obstacles that are allowed to spawn:
-#define MAX_ZAPPERS 3
-#define MAX_MISSILES 1
-
-//the starting X-coords for various obstacles and things:
-#define COIN_ORIGIN 330
-#define ZAPPER_ORIGIN 352
-#define MISSILE_ORIGIN 1466
-
-//appvar name and version since I decided to add versions, it's my code and I'll do what I want:
-#define DATA_APPVAR "JTPKDAT"
-const uint8_t APPVAR_VERSION = 3;
+//appvar version since I decided to add versions, it's my code and I'll do what I want:
+const uint8_t APPVAR_VERSION = 4;
 
 //HEY FUTURE ME, REMEMBER TO UPDATE THE VERSION WHEN WE ADD STUFF!
-
-//our wonderful appvar for the save data:
-ti_var_t savegame;
+//SCREW YOU PAST-FUTURE ME, hopefully future-future me does better.
 
 //we read APPVAR_VERSION to this var for testing later:
 uint8_t saveIntegrity;
 
-//time it takes to complete the game loop, used to control the FPS; if it overflows
-//then we have real speed problems:
-uint8_t FPS;
-
 //speed of scrolling and time before incrementing it:
 int8_t scrollSpeed;
 uint16_t incrementDelay;
-
-//color to flash when hit by bullet, it's a really cool effect:
-uint8_t deathColor;
 
 //measures timings for delays between spawning coins, obstacles, etc.:
 int24_t spawnDelay;
@@ -73,338 +50,210 @@ int24_t bg_scroll;
 uint8_t bg_list[9];
 uint8_t secondary_bg_list[9];
 
-//all the data used to control Barry's position, acceleration, etc. are consolidated under one pointer.
-//x and y positions, time 2nd is pressed/released to fly/fall, animation frame, animation cycling control,
-//and jetpack animation frame:
-typedef struct
-{
-    int24_t x;
-    uint8_t y;
-    uint8_t theta; //in calculator land, there're only 256 degrees, not 360 oogabooga degrees.
-    int8_t inputDuration;
-    uint8_t playerAnimation;
-    uint8_t playerAnimationToggle;
-    uint8_t exhaustAnimation;
-    uint8_t corpseBounce;
-    uint8_t deathDelay;
-}
-avatar_t; //looks gross, but it saves 309 bytes in read/write calls to the appvar. It's staying.
-
-typedef struct
-{
-    int24_t x;
-    uint8_t y;
-    int8_t h_accel; //horizontal acceleration
-    int8_t v_accel; //vertical acceleration
-    uint8_t theta;
-    uint8_t bounce;
-}
-jetpack_t;
-
-jetpack_t jetpackEntity;
-
-//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name
-//my child if I had the desire to marry and have children.
-avatar_t avatar;
-
-typedef struct
-{
-    uint8_t health;        //the number of hits Barry can take (increased with vehicles and shields)
-    uint32_t monies;      //money collected in the run
-    uint32_t collegeFund; //total money collected from all runs, can be used to purchase stuff (when can I add this?)
-    uint32_t distance;    //distance travelled in the run, measured in pixels
-    uint32_t highscore;   //highest distance travelled in all runs
-}
-game_data_t;
-
-//all important game data, again, all in one clean struct pointer:
+//all important game data, and in one clean struct pointer too:
 game_data_t save_data;
 
-//hey looky, a coin struct type for easy use, WHY DIDN'T I MAKE THIS EARLIER?
-//stores x and y positions, along with the coin's animation frame:
-typedef struct
-{
-    int24_t x[MAX_COINS];
-    uint8_t y[MAX_COINS];
-    uint8_t animation[MAX_COINS];
+//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name my child if I had the desire to marry
+//and have children.
+avatar_t avatar;
 
-    //coin formation variable to keep track of coin list shapes:
-    uint8_t formation;
-}
-coin_t;
+//everything needed to keep track of the points and speed of the seperate jetpack when Barry dies:
+jetpack_t jetpackEntity;
 
-//initialize some coins, about 30 is the max:
+//and here's some obstacles and stuff:
 coin_t coins;
-
-//again, WHY did I not make these before...
-//laser x and y positions, length, and animation frame:
-typedef struct
-{
-    int24_t x[MAX_ZAPPERS];
-    uint8_t y[MAX_ZAPPERS];
-    int8_t length[MAX_ZAPPERS];
-
-    //zapper type, vertical, horizontal, or positve/negative diagonal:
-    int8_t orientation[MAX_ZAPPERS];
-
-    //zapper sprite animation frame:
-    int8_t animate;
-}
-zapper_t;
-
 zapper_t zappers;
-
-//I think the ZDS toolchain broke them and doubled the program size, I love LLVM
-//missile x and y positions:
-typedef struct
-{
-    int24_t x[MAX_MISSILES];
-    uint8_t y[MAX_MISSILES];
-
-    //keep track of animations for missiles:
-    int8_t iconAnimate;
-    int8_t animation;
-    int8_t animationToggle;
-}
-missile_t;
-
 missile_t missiles;
-
-//the point is, updates are good; ergo, Windows is exciting
-//y position (x position is shared among all lasers), laser's time to function:
-typedef struct
-{
-    uint8_t y[MaxLasers];
-    uint24_t lifetime[MaxLasers];
-
-    //all lasers have a universal X that doesn't move very far:
-    int8_t x;
-    //laser animation sprite:
-    int8_t animation;
-    //which laser formation is being used:
-    uint8_t formation;
-    //keep track of how many lasers have fired already:
-    uint8_t deactivated;
-}
-laser_t;
-
 laser_t lasers;
 
-//flipped zapper sprites:
-gfx_sprite_t *zapper_array_flipped[4];
-
-//horizontal zapper sprites:
-gfx_sprite_t *horizontal_zapper[4];
-gfx_sprite_t *horizontal_zapper_flipped[4];
-
-//flipped laser sprites and effects:
-gfx_sprite_t *powering_tiles_flipped[4];
-gfx_sprite_t *firing_tiles_flipped[3];
-
-//buffers for resizing the smaller sprites, and another to rotate them once enlarged:
-gfx_sprite_t *barryHit_resized;
-gfx_sprite_t *barryHit_rotated;
-
-//buffers for the jetpack:
-gfx_sprite_t *jetpack_resized;
-gfx_sprite_t *jetpack_rotated;
+//a simple framecount delay for the opening screen scrolling scene:
+uint8_t opening_delay = 138;
 
 //gfx_CheckRectangleHotspot but only the Y checks, since 4 C++ masters write better code than me:
-#define Yspot(master_y, master_height, test_y, test_height) \
-    (((test_y) < ((master_y) + (master_height))) && \
-    (((test_y) + (test_height)) > (master_y)))
+// #define Yspot(master_y, master_height, test_y, test_height);
 
 //Mmm smells like stolen code... adapted from StackOverflow, fills an array of a given size with a given value very quickly:
-#define Fill_Array(array, entries, value) \
-do{ \
-    size_t n = entries; \
-    for(size_t i = 0; i < n; ++i) (array)[i] = value; \
-} while (0);
-//NOTE: initial tests saw smaller size than memset and equivalent speed. Further testing will be done when I feel like it.
+// #define Fill_Array(array, entries, value)
 
 //takes an input sprite and pastes it into another sprite at given coordinates:
-void CopyPasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x, uint8_t y)
-{
-    const uint24_t widthIn = spriteIn->width;
-    const uint24_t spriteIn_size = spriteIn->height * widthIn;
-    const uint24_t widthOut = spriteOut->width;
-    uint24_t start_write = (widthOut * y) + x;
-
-    //write out input sprite row by row into the output sprite:
-    for(uint24_t j = 0; j < spriteIn_size; j += widthIn)
-    {
-        //copy the row of the input to the position needed in the output:
-        memcpy(&spriteOut->data[start_write], &spriteIn->data[j], widthIn);
-
-        //add the output sprite's width to move to the next row plus the given X that was added at the start:
-        start_write += widthOut;
-    }
-}
-
-//clears all objects from gameplay by moving their X-coords out of bounds:
-void clrObjects(void)
-{
-    for(uint8_t i = 0; i < coin_max[coins.formation]; ++i)
-    {
-        coins.x[i] = 2000;
-    }
-
-    for(uint8_t i = 0; i < MAX_ZAPPERS; ++i)
-    {
-        zappers.x[i] = ZAPPER_ORIGIN;
-    }
-
-    for(uint8_t i = 0; i < MAX_MISSILES; ++i)
-    {
-        missiles.x[i] = (MISSILE_ORIGIN + 10);
-    }
-
-    lasers.x = 0;
-}
+void CopyPasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x, uint8_t y);
 
 //a function for drawing buttons, will hopefully save on flash size and stack usage:
-void draw_button(gfx_sprite_t *sprites[], char *text, uint8_t buttonSelect, uint8_t x)
+void draw_button(gfx_sprite_t *sprites[], char *text, uint8_t buttonSelect);
+
+//resets the backgrounds starting from a given tile, no error checks or handling:
+void Set_Background(const uint8_t start);
+
+//saves the game data to the JPJRDAT appvar, creates one if it doesn't exist:
+void save_state(void);
+
+//a simple function based off of flawed but efficient code for getting sprite data out of appvars with one tileset:
+void* GetTile_Ptr(void *ptr, uint8_t tile);
+
+//Almost the exact same function as before but for pulling lists of single sprites out of an appvar without tilesets:
+void* GetSprite_Ptr(void *ptr, uint8_t tile);
+
+//Draws the title screen menu and all that cool stuff:
+void TitleMenu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], gfx_sprite_t *menusprite);
+
+//stuff for the death screen:
+void ded_menu(gfx_sprite_t *menusprite)
 {
-    //first 14 pixels of the button:
-    gfx_Sprite_NoClip(sprites[buttonSelect], 70, 33 + (buttonSelect * 60));
+    //make sure that whatever's on the screen is the same as what's in the buffer:
+    gfx_BlitScreen();
 
-    //I'm up to my cheaty tricks again, I turn the 14th column of pixels into 152 columns:
-    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 83, 33 + (buttonSelect * 60), 84, 33 + (buttonSelect * 60), 152, 50);
+    //temporary flipped menu sprite with hardcoded numbers to annoy people:
+    gfx_sprite_t *flipped_menusprite = gfx_MallocSprite(8, 167);
 
-    //and the last 14 pixels:
-    gfx_Sprite_NoClip(sprites[3], 236, 33 + (buttonSelect * 60));
+    gfx_TransparentSprite_NoClip(menusprite, 160, 10);
 
-    //words 'n stuff:
-    gfx_SetTextFGColor(2);
+    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 167, 10, 168, 10, 132, 167);
+
+    //this hearkens back to the early days of this project when I thought this actually worked and looked good...
+    //I know know it only kinda works, and it looks cramped.
+    gfx_TransparentSprite_NoClip(gfx_FlipSpriteY(menusprite, flipped_menusprite), 300, 10);
+
+    gfx_SetTextFGColor(2); //white
+    gfx_SetTextScale(1, 1);
+
+    gfx_PrintStringXY("YOU FLEW", 200, 40);
+    gfx_PrintStringXY("AND COLLECTED", 190, 100);
+    gfx_PrintStringXY("COINS:", 170, 140);
+
+    gfx_SetTextFGColor(4); //gold
     gfx_SetTextScale(3, 3);
 
-    //pretty much all the letters are odd numbers of pixels wide or tall, so that sucks:
-    gfx_PrintStringXY(text, x, 47 + (buttonSelect * 60));
+    //draw coin count:
+    gfx_SetTextXY(210, 130);
+    gfx_PrintUInt(save_data.monies, 1);
+
+    //draw distance:
+    gfx_SetTextXY(190, 60);
+    gfx_PrintUInt(save_data.distance / 15, 1);
+
+    //add the meters symbol:
+    gfx_SetTextScale(2, 2);
+    gfx_PrintStringXY("m", gfx_GetTextX(), 68);
+
+    gfx_SwapDraw();
+
+    while (kb_AnyKey()) kb_Scan();
+    while (!(kb_Data[1] & kb_2nd) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+
+    free(flipped_menusprite);
+
+    //reset distance to flag that a game is no longer in progress:
+    save_data.distance = 0;
 }
 
-//this is purely for streamlining, it should only used twice:
-void save_state(void)
-{
-    //create a new appvar, which erases the old one:
-    savegame = ti_Open(DATA_APPVAR, "w");
 
-    //game save data and stats:
-    ti_Write(&save_data, sizeof(save_data), 1, savegame);
 
-    //version of the appvar, for future use with updater packs and to hopefully provide some more debugging support:
-    ti_Write(&APPVAR_VERSION, 1, 1, savegame);
-
-    //game environment variables:
-    ti_Write(&scrollSpeed, sizeof(scrollSpeed), 1, savegame);
-    ti_Write(&incrementDelay, sizeof(incrementDelay), 1, savegame);
-    ti_Write(&bg_scroll, sizeof(bg_scroll), 1, savegame);
-    ti_Write(&bg_list, sizeof(bg_list), 1, savegame);
-    ti_Write(&secondary_bg_list, sizeof(secondary_bg_list), 1, savegame);
-    ti_Write(&spawnDelay, sizeof(spawnDelay), 1, savegame);
-
-    //single pointer to avatar struct:
-    ti_Write(&avatar, sizeof(avatar), 1, savegame);
-
-    //jetpack variables:
-    ti_Write(&jetpackEntity, sizeof(jetpackEntity), 1, savegame);
-
-    //coin variables:
-    ti_Write(&coins, sizeof(coins), 1, savegame);
-
-    //zapper variables:
-    ti_Write(&zappers, sizeof(zappers), 1, savegame);
-
-    //missile variables:
-    ti_Write(&missiles, sizeof(missiles), 1, savegame);
-
-    //laser variables:
-    ti_Write(&lasers, sizeof(lasers), 1, savegame);
-
-    //uncomment this in the NEAR FINAL release, right now it should a temporary save until I iron out the bugs:
-    //ti_SetArchiveStatus(true, savegame);
-}
-
+//I'm perfectly aware that the main() is too long, go away.
 int main(void)
 {
-    //close any files that may have been left open from the last program:
-    ti_CloseAll();
+    //set my crappy port of the Jetpackia font as the current font:
+    gfx_SetFontData(jetpackia);
+    gfx_SetFontSpacing(jetpackia_spacing);
 
-    //get the pointers to the palette and sprites in the flash:
-    void *palette_ptr = ti_GetDataPtr(ti_Open("JPJRPAL", "r"));
-    ti_CloseAll();
-    void *start_background_ptr = ti_GetDataPtr(ti_Open("JPJRBG1", "r"));
-    ti_CloseAll();
-    void *background_ptr = ti_GetDataPtr(ti_Open("JPJRBG2", "r"));
-    ti_CloseAll();
-    void *background_extras_ptr = ti_GetDataPtr(ti_Open("JPJRBG3", "r"));
-    ti_CloseAll();
-    void *menu_ptr = ti_GetDataPtr(ti_Open("JPJRGFX1", "r"));
-    ti_CloseAll();
-    void *obstacles_ptr = ti_GetDataPtr(ti_Open("JPJRGFX2", "r"));
-    ti_CloseAll();
-    void *avatar_ptr = ti_GetDataPtr(ti_Open("BARRY", "r"));
-    ti_CloseAll();
+    //a slot variable to hold any appvar locations I need since Mateo yeeted ti_CloseAll() out of the toolchain:
+    ti_var_t tmp_slot;
+
+    void *palette_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRPAL", "r"));
+    ti_Close(tmp_slot);
+
+    void *start_1_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRBG1", "r"));
+    ti_Close(tmp_slot);
+
+    void *start_2_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRBG2", "r"));
+    ti_Close(tmp_slot);
+
+    void *background_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRBG3", "r"));
+    ti_Close(tmp_slot);
+
+    void *background_extras_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRBG4", "r"));
+    ti_Close(tmp_slot);
+
+    void *menu_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRGFX1", "r"));
+    ti_Close(tmp_slot);
+
+    void *obstacles_ptr = ti_GetDataPtr(tmp_slot = ti_Open("JPJRGFX2", "r"));
+    ti_Close(tmp_slot);
+
+    void *avatar_ptr = ti_GetDataPtr(tmp_slot = ti_Open("BARRY", "r"));
+    ti_Close(tmp_slot);
 
     //make sure that the appvar checks didn't return NULL:
     if( (!palette_ptr)           ||
-        (!start_background_ptr)  ||
+        (!start_1_ptr)           ||
+        (!start_2_ptr)           ||
         (!background_ptr)        ||
         (!background_extras_ptr) ||
         (!menu_ptr)              ||
         (!obstacles_ptr)         ||
         (!avatar_ptr)
-        ) return 1;
+    ) return 1;
+
+    //Wow I hate how that looks.
+
+    //pointers to the background sprites:
+    gfx_sprite_t *ceiling_tiles[14];
+    gfx_sprite_t *background_tiles[18];
+    gfx_sprite_t *floor_tiles[14];
+
+    //the start menu is also a part of the actual hallway, which is just me being lazy really:
+    for(uint8_t i = 0; i < 8; ++i)
+    {
+        //we add one to the second input because all these appvar pointers go to single tilesets:
+        background_tiles[i] = GetTile_Ptr(start_1_ptr, i + 1);
+    }
+
+    //set the pointers for the opening background where we bust through the wall:
+    for(uint8_t i = 0; i < 4; ++i)
+    {
+        background_tiles[8 + i] = GetTile_Ptr(start_2_ptr, i + 1);
+    }
+
+    //move the background sprites directly into the RAM:
+    for(uint8_t i = 0; i < 6; ++i)
+    {
+        background_tiles[12 + i] = gfx_MallocSprite(46, 160);
+        zx7_Decompress(background_tiles[12 + i], GetTile_Ptr(background_ptr, i + 1));
+    }
+
+    //set the pointers for the ceiling sprites, some are reused with different backgrounds:
+    for(uint8_t i = 0; i < 14; ++i)
+    {
+        ceiling_tiles[i] = GetTile_Ptr(background_extras_ptr, i + 1);
+    }
+
+    //and get the floor bits too:
+    for(uint8_t i = 14; i < 28; ++i)
+    {
+        floor_tiles[i - 14] = GetTile_Ptr(background_extras_ptr, i + 1);
+    }
 
     //used to save which offset in the obstacles appvar's LUT entries we need to use:
     uint8_t offsets_offset = 0;
 
-    //pointers to the background sprites:
-    gfx_sprite_t *ceiling_tiles[11];
-    gfx_sprite_t *background_tiles[15];
-    gfx_sprite_t *floor_tiles[11];
-
-    //set the pointers for the opening background where we bust through the wall:
-    for(uint8_t i = 0; i < 8; ++i)
-    {
-        background_tiles[i] = (gfx_sprite_t*)(start_background_ptr + *((uint16_t*)start_background_ptr + 1) + *((uint16_t*)start_background_ptr + i + 2));
-    }
-
-    //there's this one opening background bit that has to go with the normal backgrounds since it doesn't fit in the appvar:
-    background_tiles[8] = (gfx_sprite_t*)(background_ptr + *((uint16_t*)background_ptr + 1));
-
-    //move the background sprites directly into the RAM:
-    for(uint8_t i = 1; i < 7; ++i)
-    {
-        background_tiles[8 + i] = gfx_MallocSprite(46, 160);
-        zx7_Decompress(background_tiles[8 + i], (gfx_sprite_t*)(background_ptr + *((uint16_t*)background_ptr + i + 1)));
-    }
-
-    //set the pointers for the ceiling sprites, some are reused with different backgrounds:
-    for(uint8_t i = 0; i < 11; ++i)
-    {
-        ceiling_tiles[i] = (gfx_sprite_t*)(background_extras_ptr + *((uint16_t*)background_extras_ptr + 1) + *((uint16_t*)background_extras_ptr + i + 2));
-    }
-
-    //and get the floor bits too:
-    for(uint8_t i = 11; i < 22; ++i)
-    {
-        floor_tiles[i - 11] = (gfx_sprite_t*)(background_extras_ptr + *((uint16_t*)background_extras_ptr + 1) + *((uint16_t*)background_extras_ptr + i + 2));
-    }
-
+    //sprites for menus and stuff:
     gfx_sprite_t *button_on_tiles[4];
     gfx_sprite_t *button_off_tiles[4];
+    gfx_sprite_t *window;
 
     //now we get the sprites for the menus, here's the unpressed pause buttons:
     for(uint8_t i = 0; i < (sizeof(button_on_tiles) / 3); ++i)
     {
-        button_on_tiles[i] = (gfx_sprite_t*)(menu_ptr + *((uint16_t*)menu_ptr + (offsets_offset++) + 1));
+        //we leave the tiles parameter as-is since these sprites aren't stored as tilesets (which is awful and I will change that):
+        button_on_tiles[i] = GetSprite_Ptr(menu_ptr, offsets_offset++);
     }
 
     //and the pressed buttons:
     for(uint8_t i = 0; i < (sizeof(button_off_tiles) / 3); ++i)
     {
-        button_off_tiles[i] = (gfx_sprite_t*)(menu_ptr + *((uint16_t*)menu_ptr + (offsets_offset++) + 1));
+        button_off_tiles[i] = GetSprite_Ptr(menu_ptr, offsets_offset++);
     }
+
+    window = GetSprite_Ptr(menu_ptr, offsets_offset);
 
     offsets_offset = 0;
 
@@ -423,56 +272,56 @@ int main(void)
     //locate coin sprite pointers:
     for(uint8_t i = 0; i < (sizeof(coin_tiles) / 3); ++i)
     {
-        coin_tiles[i] = (gfx_rletsprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        coin_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //lookit the zapper beam being all weird and stuff:
-    beam[0] = (gfx_sprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+    beam[0] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
 
     //get the ding-dang zapper sprite pointers:
     for(uint8_t i = 0; i < (sizeof(zapper_tiles) / 3); ++i)
     {
-        zapper_tiles[i] = (gfx_sprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        zapper_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //find the missile warning and incoming icon pointers:
     for(uint8_t i = 0; i < (sizeof(missileWarning_tiles) / 3); ++i)
     {
-        missileWarning_tiles[i] = (gfx_rletsprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        missileWarning_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
     for(uint8_t i = 0; i < (sizeof(missileIncoming_tiles) / 3); ++i)
     {
-        missileIncoming_tiles[i] = (gfx_rletsprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        missileIncoming_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //calculate pointers for missile sprites:
     for(uint8_t i = 0; i < (sizeof(missile_tiles) / 3); ++i)
     {
-        missile_tiles[i] = (gfx_rletsprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        missile_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //the laser node itself, but only the left side, we create flipped copies later:
     for(uint8_t i = 0; i < (sizeof(powering_tiles) / 3); ++i)
     {
-        powering_tiles[i] = (gfx_sprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        powering_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //pew pew pew
     for(uint8_t i = 0; i < (sizeof(firing_tiles) / 3); ++i)
     {
-        firing_tiles[i] = (gfx_sprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        firing_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //when the lasers power down:
     for(uint8_t i = 0; i < (sizeof(shutdown_tiles) / 3); ++i)
     {
-        shutdown_tiles[i] = (gfx_rletsprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        shutdown_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //the laser beam sprite is used as a color index for drawing the beams, it's only 1/250 of the total image:
     for(uint8_t i = 0; i < (sizeof(laser_tiles) / 3); ++i)
     {
-        laser_tiles[i] = (gfx_sprite_t*)(obstacles_ptr + *((uint16_t*)obstacles_ptr + (offsets_offset++) + 1));
+        laser_tiles[i] = GetSprite_Ptr(obstacles_ptr, offsets_offset++);
     }
 
     //we start reading from a different appvar after this:
@@ -486,39 +335,50 @@ int main(void)
     gfx_rletsprite_t *exhaust_tiles[6];
 
     //Oh my gosh, a post-increment was actually useful for once. Huh.
-    jetpack = (gfx_sprite_t*)(avatar_ptr + *((uint16_t*)avatar_ptr + (offsets_offset++) + 1));
+    jetpack = GetSprite_Ptr(avatar_ptr, offsets_offset++);
 
-    nozzle = (gfx_sprite_t*)(avatar_ptr + *((uint16_t*)avatar_ptr + (offsets_offset++) + 1));
+    nozzle = GetSprite_Ptr(avatar_ptr, offsets_offset++);
 
     //the laser beam sprite is used as a color index for drawing the beams, it's only 1/250 of the total image:
     for(uint8_t i = 0; i < (sizeof(barry_run_tiles) / 3); ++i)
     {
-        barry_run_tiles[i] = (gfx_rletsprite_t*)(avatar_ptr + *((uint16_t*)avatar_ptr + (offsets_offset++) + 1));
+        barry_run_tiles[i] = GetSprite_Ptr(avatar_ptr, offsets_offset++);
     }
 
     //the laser beam sprite is used as a color index for drawing the beams, it's only 1/250 of the total image:
     for(uint8_t i = 0; i < (sizeof(barry_hit_tiles) / 3); ++i)
     {
-        barry_hit_tiles[i] = (gfx_sprite_t*)(avatar_ptr + *((uint16_t*)avatar_ptr + (offsets_offset++) + 1));
+        barry_hit_tiles[i] = GetSprite_Ptr(avatar_ptr, offsets_offset++);
     }
 
     //the laser beam sprite is used as a color index for drawing the beams, it's only 1/250 of the total image:
     for(uint8_t i = 0; i < (sizeof(barry_ded_tiles) / 3); ++i)
     {
-        barry_ded_tiles[i] = (gfx_sprite_t*)(avatar_ptr + *((uint16_t*)avatar_ptr + (offsets_offset++) + 1));
+        barry_ded_tiles[i] = GetSprite_Ptr(avatar_ptr, offsets_offset++);
     }
 
     //the laser beam sprite is used as a color index for drawing the beams, it's only 1/250 of the total image:
     for(uint8_t i = 0; i < (sizeof(exhaust_tiles) / 3); ++i)
     {
-        exhaust_tiles[i] = (gfx_rletsprite_t*)(avatar_ptr + *((uint16_t*)avatar_ptr + (offsets_offset++) + 1));
+        exhaust_tiles[i] = GetSprite_Ptr(avatar_ptr, offsets_offset++);
     }
+
+    //and here's all the flipped sprites we'll put in the RAM:
+    gfx_sprite_t *zapper_tiles_flipped[4];
+    gfx_sprite_t *horizontal_zapper[4];
+    gfx_sprite_t *horizontal_zapper_flipped[4];
+    gfx_sprite_t *powering_tiles_flipped[4];
+    gfx_sprite_t *firing_tiles_flipped[3];
+    gfx_sprite_t *barryHit_resized;
+    gfx_sprite_t *barryHit_rotated;
+    gfx_sprite_t *jetpack_resized;
+    gfx_sprite_t *jetpack_rotated;
 
     //flipped zapper sprites:
     for(uint8_t i = 0; i < 4; ++i)
     {
-        zapper_array_flipped[i] = gfx_MallocSprite(32, 32);
-        gfx_FlipSpriteX(zapper_tiles[i], zapper_array_flipped[i]);
+        zapper_tiles_flipped[i] = gfx_MallocSprite(32, 32);
+        gfx_FlipSpriteX(zapper_tiles[3 - i], zapper_tiles_flipped[i]);
     }
 
     //horizontal zapper sprites:
@@ -527,7 +387,7 @@ int main(void)
         horizontal_zapper[i] = gfx_MallocSprite(32, 32);
         horizontal_zapper_flipped[i] = gfx_MallocSprite(32, 32);
         gfx_RotateSpriteC(zapper_tiles[i], horizontal_zapper[i]);
-        gfx_RotateSpriteC(zapper_array_flipped[i], horizontal_zapper_flipped[i]);
+        gfx_RotateSpriteC(zapper_tiles_flipped[i], horizontal_zapper_flipped[i]);
     }
 
     //horizontal zapper beam:
@@ -568,9 +428,6 @@ int main(void)
     //prepare the jetpack:
     CopyPasta(jetpack, jetpack_resized, 2, 0);
 
-    //start up a timer for FPS monitoring, do not move:
-    timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
-
     //best scan mode according to the angry lettuce man:
     kb_SetMode(MODE_3_CONTINUOUS);
 
@@ -581,15 +438,10 @@ int main(void)
     gfx_SetPalette(palette_ptr, 512, 0);
     gfx_SetTransparentColor(0);
 
-    //this single function is keeping the code running:
-    ti_CloseAll();
-
     //read from appvar if it exists, fails if it returns 0
-    savegame = ti_Open(DATA_APPVAR, "r");
-    if(!savegame)
-    {
-        save_state();
-    }
+    ti_var_t savegame = ti_Open(DATA_APPVAR, "r");
+    
+    if(!savegame) save_state();
 
     //update all of our gameplay data from the save data:
     ti_Read(&save_data, sizeof(save_data), 1, savegame);
@@ -605,7 +457,7 @@ int main(void)
     //better random seed generation:
     srand(rtc_Time());
 
-    //load all the appvar data as our "starting point" if distance isn't 0
+    //load all the appvar data as our "starting point" if distance isn't 0 and resume gameplay:
     if(save_data.distance)
     {
         //game environment variables:
@@ -634,84 +486,135 @@ int main(void)
         //laser variables:
         ti_Read(&lasers, sizeof(lasers), 1, savegame);
 
-        ti_CloseAll();
+        ti_Read(&opening_delay, sizeof(opening_delay), 1, savegame);
+
+        ti_Close(savegame);
     }
-    else
+    else //make a fresh start and show the game menu:
     {
         //reset variables for when a game starts:
-        scrollSpeed = 6;
+        scrollSpeed    = 6;
+        bg_scroll      = 0;
         incrementDelay = 0;
-        spawnDelay = 512;
+        spawnDelay     = 512;
         
         save_data.distance = 0;
-        save_data.health = 1;
-        save_data.monies = 0;
+        save_data.health   = 1;
+        save_data.monies   = 0;
 
-        avatar.x = 24;
-        avatar.y = 185;
-        avatar.theta = 0;
-        avatar.inputDuration = 0;
+        avatar.x                     = 24;
+        avatar.y                     = 185;
+        avatar.theta                 = 0;
+        avatar.inputDuration         = 0;
         avatar.playerAnimationToggle = 1;
-        avatar.playerAnimation = 3;
-        avatar.exhaustAnimation = 18;
-        avatar.corpseBounce = 0;
-        avatar.deathDelay = 0;
+        avatar.playerAnimation       = 3;
+        avatar.exhaustAnimation      = 18;
+        avatar.corpseBounce          = 0;
+        avatar.deathDelay            = 0;
 
         //if there's a bug, it's always because the animation values are funky:
-        missiles.iconAnimate = 0;
+        missiles.iconAnimate     = 0;
         missiles.animationToggle = -1;
 
         lasers.deactivated = MaxLasers;
 
-        jetpackEntity.theta = 0;
-        jetpackEntity.bounce = 0;
+        jetpackEntity.theta   = 0;
+        jetpackEntity.bounce  = 0;
         jetpackEntity.h_accel = 2;
 
-        clrObjects();
+        //clear all objects from gameplay by moving their X-coords out of bounds:
+        for(uint8_t i = 0; i < coin_max[coins.formation]; ++i) coins.x[i] = 2000;
+
+        for(uint8_t i = 0; i < MAX_ZAPPERS; ++i) zappers.x[i] = ZAPPER_ORIGIN;
+
+        for(uint8_t i = 0; i < MAX_MISSILES; ++i) missiles.x[i] = (MISSILE_ORIGIN + 10);
+
+        lasers.x = 0;
 
         //set the backgrounds up for the opening scene:
-        for(int8_t i = 0; i < 9; ++i)
+        Set_Background(0);
+
+        //if the opening delay isn't zero, AKA none, then we do the scrolling intro:
+        if(opening_delay)
         {
-            bg_list[i] = i;
-            secondary_bg_list[i] = i;
+            //quickly (lazily) draw the opening hallway tiles:
+            for(uint8_t i = 0; i < 7; ++i)
+            {
+                gfx_Sprite(ceiling_tiles[secondary_bg_list[i]], i * 46, 0);
+                gfx_Sprite(background_tiles[bg_list[i]],        i * 46, 40);
+                gfx_Sprite(floor_tiles[secondary_bg_list[i]],   i * 46, 200);
+            }
+
+            //blit the fresh background:
+            gfx_BlitBuffer();
+
+            //opening menu function to make this mess more readable:
+            TitleMenu(ceiling_tiles, background_tiles, floor_tiles, window);
+
+            while(!(kb_Data[6] & kb_Clear) && opening_delay)
+            {
+                kb_Scan();
+
+                //ceil() doesn't work with ints so here's some numbers I made up and some funky math:
+                uint8_t deincrement = opening_delay/12 + (opening_delay % 12 != 0);
+
+                if((opening_delay - deincrement) > 0)
+                {
+                    opening_delay -= deincrement;
+
+                    if((bg_scroll + deincrement) < 46)
+                    {
+                        bg_scroll += deincrement;
+                    }
+                    else
+                    {
+                        bg_scroll = 0;
+
+                        //a neat way to shift the opening tiles since they appear in order:
+                        for(uint8_t i = 0; i < sizeof(bg_list); ++i)
+                        {
+                            ++bg_list[i];
+                            ++secondary_bg_list[i];
+                        }
+                    }
+                }
+                else
+                {
+                    opening_delay = 0;
+                    bg_scroll = 0;
+
+                    break;
+                }
+
+                //what is this magical witchcraft and why didn't I use it earlier?!
+                gfx_ShiftLeft(deincrement);
+
+                gfx_Sprite(ceiling_tiles[secondary_bg_list[7]], (7 * 46) - bg_scroll, 0);
+                gfx_Sprite(background_tiles[bg_list[7]],        (7 * 46) - bg_scroll, 40);
+                gfx_Sprite(floor_tiles[secondary_bg_list[7]],   (7 * 46) - bg_scroll, 200);
+
+                gfx_BlitBuffer();
+            }
         }
+        //make absolutely sure all the background tiles are set correctly:
+        Set_Background(3);
     }
 
-    //Loop until clear is pressed:
-    do
+    //color to flash when hit by obstacles, it's a really cool effect and I'm surprised I thought of a way to do it:
+    uint8_t deathColor;
+
+    //time it takes to complete the game loop, used to control the FPS; if it overflows
+    //then we have real speed problems:
+    uint8_t FPS;
+
+    //start up a timer for FPS monitoring, do not move:
+    timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
+
+    //Loop until clear is pressed or Barry has been dead for a little while:
+    while(!(kb_Data[6] & kb_Clear) && (avatar.deathDelay != 50))
     {
         //update keys, fixes bugs with update errors that can lead to softlocks:
         kb_Scan();
-
-        //controls bg_scroll, 46 is for background sprite width:
-        if((bg_scroll + scrollSpeed) >= 46)
-        {
-            //seamlessly reset the position and increment it:
-            bg_scroll -= (46 - scrollSpeed);
-
-            //move the background tileset lists:
-            for(uint8_t i = 0; i < 8; ++i)
-            {
-                bg_list[i] = bg_list[i + 1];
-                secondary_bg_list[i] = secondary_bg_list[i + 1];
-            }
-
-            //if the last entry has been "dragged" through the next 2 list entries, make new sprite addresses,
-            //note that I only check the background tiles since the timings are the same for all tiles:
-            if((bg_list[7] == bg_list[8]) && (bg_list[6] == bg_list[8]))
-            {
-                bg_list[7] = 9 + randInt(0, 2) * 2;
-                bg_list[8] = bg_list[7] + 1;
-
-                secondary_bg_list[7] =  9;
-                secondary_bg_list[8] = 10;
-            }
-            //the problem is that all the tiles are only half of a single hallway "chunk" of 92 pixels.
-        }
-        else
-        {
-            bg_scroll += scrollSpeed;
-        }
 
         //if missile delay isn't zero, keep counting down:
         if(missileDelay > 0)
@@ -725,10 +628,10 @@ int main(void)
             uint8_t randObject = randInt(0, 30);
             //uint8_t randObject = randInt(0, 0);
 
-            if(!randObject && (missileDelay <= 0))
+            if(!randObject && (missileDelay <= 0) && save_data.health)
             {
-                //picks a random formation from the data arrays in the laser_formations file:
-                lasers.formation = randInt(0, (LASER_FORMATIONS - 1));
+                //picks a random formation from the data arrays in the functions.c file:
+                lasers.formation = randInt(0, (sizeof(laserMax) - 1));
 
                 //give each laser their Y-axis:
                 for(uint8_t i = 0; i < laserMax[lasers.formation]; ++i)
@@ -760,21 +663,26 @@ int main(void)
             }
             else if(randObject < 10)
             {
-                //spawns missiles (and missile swarms if I implement them):
-                for(uint8_t i = 0; i < MAX_MISSILES; ++i)
+                //after finishing the spawn checks, make sure missiles don't spawn when Barry is dead, I don't like it when they
+                //spawn in and get frozen on screen.
+                if(save_data.health)
                 {
-                    //if there's a missile offscreen, put it into play:
-                    if((missiles.x[i] > MISSILE_ORIGIN) || (missiles.x[i] < -54))
+                    //spawns missiles (and missile swarms if I implement them):
+                    for(uint8_t i = 0; i < MAX_MISSILES; ++i)
                     {
-                        missiles.x[i] = MISSILE_ORIGIN;
-                        missiles.y[i] = 10 * randInt(2, 18);
+                        //if there's a missile offscreen, put it into play:
+                        if((missiles.x[i] > MISSILE_ORIGIN) || (missiles.x[i] < -54))
+                        {
+                            missiles.x[i] = MISSILE_ORIGIN;
+                            missiles.y[i] = 10 * randInt(2, 18);
 
-                        i = MAX_MISSILES;
+                            i = MAX_MISSILES;
+                        }
                     }
-                }
 
-                //if there's a missile I can't spawn lasers or coins, so here's a special thing just for it:
-                missileDelay = MISSILE_ORIGIN;
+                    //if there's a missile I can't spawn lasers or coins, so here's a special thing just for it:
+                    missileDelay = MISSILE_ORIGIN;
+                }
             }
             else if(randObject < 30)
             {
@@ -1084,7 +992,7 @@ int main(void)
                 ++lasers.x;
             }
         }
-        else if((lasers.deactivated >= laserMax[lasers.formation]) && (lasers.x > 0))
+        else if(lasers.x > 0)
         {
             --lasers.x;
         }
@@ -1196,7 +1104,7 @@ int main(void)
                     }
 
                     //draw zapper pairs and beams with distance of zapperLength between them:
-                    gfx_TransparentSprite(zapper_array_flipped[zappers.animate/3], zappers.x[i] - 25, zappers.y[i] - 7);
+                    gfx_TransparentSprite(zapper_tiles_flipped[zappers.animate/3], zappers.x[i] - 25, zappers.y[i] - 7);
                     gfx_TransparentSprite(zapper_tiles[zappers.animate/3], zappers.x[i] - 25, zappers.y[i] + 7 + zappers.length[i]);
 
                     //collision for vertical zappers:
@@ -1313,7 +1221,7 @@ int main(void)
                         {
                             ++lasers.deactivated;
                         }
-                        else if(lasers.lifetime[i] < 9)
+                        else if(lasers.lifetime[i] <= 8)
                         {
                             //lasers running out of juice:
                             gfx_RLETSprite_NoClip(shutdown_tiles[animation_index], 5, lasers.y[i] - 16);
@@ -1331,7 +1239,7 @@ int main(void)
 
                             gfx_Sprite_NoClip(laser_tiles[animation_index], 35, lasers.y[i]);
                         }
-                        else if(lasers.lifetime[i] < 59)
+                        else if(lasers.lifetime[i] < 64)
                         {
                             //firing lasers:
                             gfx_TransparentSprite_NoClip(firing_tiles[animation_index], 5, lasers.y[i] - 11);
@@ -1356,12 +1264,10 @@ int main(void)
                             }
 
                             //makes sure the animations play correctly, I don't have time to fix math today:
-                            if(lasers.lifetime[i] == 9)
-                                lasers.animation = 0;
+                            if(lasers.lifetime[i] == 9) lasers.animation = 0;
                         }
-                        else if(lasers.lifetime[i] < 109)
+                        else if(lasers.lifetime[i] <= 120)
                         {
-
                             //the simplest drawing code in this hot mess, for powering up:
                             gfx_SetColor(5);
 
@@ -1374,8 +1280,8 @@ int main(void)
                             //gfx_Circle_NoClip(308, lasers.y[i]+7, 8 + ((lasers.lifetime[i]-50)/4));
                         }
 
-                        //update the laser's timer:
-                        --lasers.lifetime[i];
+                        //I thought it was an issue with how I deactivated lasers, but it was really an int24 overflow:
+                        if(lasers.lifetime[i] != 16777215) --lasers.lifetime[i];
                     }
                 }
 
@@ -1397,36 +1303,40 @@ int main(void)
         {
             save_data.highscore = (save_data.distance / 15);
         }
-   
-        //gold coin color for money counter:
-        gfx_SetTextFGColor(4);
 
-        gfx_SetTextScale(1, 1);
-        gfx_SetTextXY(10, 41);
-        gfx_PrintInt(save_data.monies, 3);
-
-        //distance and FPS counter are gray:
-        gfx_SetTextFGColor(3);
-
-        gfx_PrintStringXY("BEST:", 10, 29);
-        gfx_SetTextXY(50, 29);
-        gfx_PrintInt(save_data.highscore, 1);
-
-
-        gfx_SetTextXY(280, 10);
-        gfx_PrintInt(FPS, 1);
-
-        /*for(uint8_t i = 0; i < 15; ++i)
+        //draw the score 'n stuff unless we're on the last frame of Barry's death delay:
+        if(avatar.deathDelay != 50)
         {
-            gfx_SetTextXY(260, 30 + (10 * i));
-            gfx_PrintUInt((int)compressed_backgrounds[i], 1);
-        }*/
+            //distance and FPS counter are grey:
+            gfx_SetTextFGColor(2);
 
-        gfx_SetTextScale(2, 2);
-        gfx_SetTextXY(10, 10);
-        //these numbers are magic and just give good results
-        gfx_PrintInt(save_data.distance / 15, 4);
-        
+            gfx_SetTextScale(2, 2);
+            gfx_SetTextXY(10, 10);
+            //I pulled that number out of my butt and it gives good results, distance in pixels divided by 15:
+            gfx_PrintInt(save_data.distance / 15, 4);
+
+            gfx_SetTextScale(1, 1);
+
+            //print a little meters symbol after the distance:
+            gfx_PrintStringXY("M", gfx_GetTextX(), 18);
+
+            gfx_PrintStringXY("BEST:", 10, 29); gfx_PrintInt(save_data.highscore, 1);
+
+            gfx_SetTextXY(280, 10);
+            gfx_PrintInt(FPS, 1);
+
+            /*for(uint8_t i = 0; i < 7; ++i)
+            {
+                gfx_SetTextXY(260, 30 + (10 * i));
+                gfx_PrintUInt(lasers.lifetime[i], 1);
+            }*/
+
+            //gold coin color for money counter:
+            gfx_SetTextFGColor(4);
+
+            gfx_SetTextXY(10, 41);
+            gfx_PrintInt(save_data.monies, 3);
+        }
 
         //speedy blitting, but works best when used a lot of cycles BEFORE any new drawing functions:
         gfx_SwapDraw();
@@ -1434,28 +1344,45 @@ int main(void)
         //afterwards, we check if Barry was hit, and if so then the screen will quickly flash a certain color:
         if(deathColor)
         {
+            gfx_FillScreen(deathColor);
+            
+            //blit the color:
+            gfx_SwapDraw();
+
             //we also set some variables that need to be updated once at time of death:
             jetpackEntity.y = avatar.y + 7;
 
             jetpackEntity.x = avatar.x;
             jetpackEntity.v_accel = avatar.inputDuration + 2;
 
-            gfx_FillScreen(deathColor);
-            
-            //blit the color:
-            gfx_SwapDraw();
-            delay(80);
-            //then swap the screen and buffer again to hide it:
-            gfx_SwapDraw();
-            //Basically, the color is drawn to the buffer and swapped with the screen, and then the process is reversed.
-            //The solid-color screen becomes the buffer again and is overwritten after the next drawing loop.
+            for(uint8_t i = 0; i < sizeof(lasers.y); ++i)
+            {
+                //either overflow the int24 instantly or put it in the last animation frames:
+                if(lasers.lifetime[i] > 120)
+                {
+                    if(lasers.lifetime[i] < 16777215)
+                    {
+                        lasers.lifetime[i] = 16777215;
+                        ++lasers.deactivated;
+                    }
+                }
+                else if(lasers.lifetime[i] > 8)
+                {
+                    lasers.lifetime[i] = 8;
+                }
+            }
 
+            lasers.animation = 0;
+            
+            delay(50);
+
+            //reset the flag, comment this out if you need to off an epileptic cheese-themed supervillian:
             deathColor = 0;
         }
 
         //FPS counter data collection, time "stops" (being relevant) after this point:
         FPS = (32768 / timer_GetSafe(1, TIMER_UP));
-        //the GetSafe is to make sure we don't read bad values as they change while they're read (AFIK)
+        //the GetSafe() is to make Tari stop bothering me
 
         //time is frozen for a delay, and I wanna make a Jo-Jo reference but I don't speak Japanese
         if(FPS > 25)
@@ -1468,29 +1395,26 @@ int main(void)
         {
             //button debouncing for menu:
             bool debounced;
-            //value for keeping track of menuing:
-            int8_t menuSelect;
 
             //strings used in pause menu:
-            char pauseOptions[3][7] = {"Quit", "Retry", "Resume"};
-            //their X-positions, since they don't follow a mathmatical trend:
-            int8_t pauseOptionX[3] = {120, 103, 90};
+            char pauseOptions[3][7] = {"QUIT", "RETRY", "RESUME"};
 
             //drawing the base color for all the menu stuff:
             gfx_FillScreen(6);
 
             //using that draw_button() function to write out the 3 menu options:
-            draw_button(button_on_tiles, pauseOptions[0], 0, pauseOptionX[0]);
-            draw_button(button_on_tiles, pauseOptions[1], 1, pauseOptionX[1]);
-            draw_button(button_on_tiles, pauseOptions[2], 2, pauseOptionX[2]);
+            draw_button(button_on_tiles, pauseOptions[0], 0);
+            draw_button(button_on_tiles, pauseOptions[1], 1);
+            draw_button(button_on_tiles, pauseOptions[2], 2);
 
             gfx_SetColor(2);
 
             //draw initial selector position:
             gfx_Rectangle(69, 32, 182, 52);
 
+            //used by menuing functions to do "stuff:"
             debounced = false;
-            menuSelect = 0;
+            int8_t menuSelect = 0;
 
             //menu control loop:
             while (!(kb_Data[6] & kb_Clear))
@@ -1506,7 +1430,7 @@ int main(void)
                     gfx_Rectangle(69, 32 + (menuSelect * 60), 182, 52);
 
                     //re-draw the unpressed form of whatever button is being moved on from:
-                    draw_button(button_on_tiles, pauseOptions[menuSelect], menuSelect, pauseOptionX[menuSelect]);
+                    draw_button(button_on_tiles, pauseOptions[menuSelect], menuSelect);
 
                     //if down is pressed, add to menu select and correct overflow when necessary:
                     if(kb_Data[7] & kb_Down)
@@ -1555,7 +1479,7 @@ int main(void)
                     gfx_Rectangle(79, 34 + (menuSelect * 60), 162, 48);
 
                     //button text:
-                    gfx_PrintStringXY(pauseOptions[menuSelect], pauseOptionX[menuSelect], 47 + (menuSelect * 60));
+                    gfx_PrintStringXY(pauseOptions[menuSelect], 160 - gfx_GetStringWidth(pauseOptions[menuSelect])/2, 47 + (menuSelect * 60));
                 }
                 else
                 {
@@ -1565,7 +1489,7 @@ int main(void)
                     }
                 }
 
-                gfx_Blit(1);
+                gfx_BlitBuffer();
 
                 //simple way to wait until none of the arrow keys are pressed:
                 while(((kb_Data[7] & kb_Down) || (kb_Data[7] & kb_Up)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
@@ -1574,63 +1498,89 @@ int main(void)
             //imagine completing menuing checks when [clear] is pressed and leaving it in the code for 4 updates.
             if(!(kb_Data[6] & kb_Clear))
             {
-                //that dumb break means I can't use a switch case (yet) so it just exits the program loop when "Quit" is selected.
+                //quitting sets the opening delay to 138 along with some other values:
                 if(!menuSelect)
                 {
-                    //set health to 1 to keep from triggering death menu on loop exit:
-                    save_data.health = 1;
+                    //set that menu delay variable to a positive value that I'll use for some funky math:
+                    opening_delay = 138;
 
-                    //and this to flag that the game is over:
+                    bg_scroll = 0;
+
+                    //set this to flag that the game is over:
                     save_data.distance = 0;
-                    break;
-                    //goto main menu later
                 }
-                else if(menuSelect == 1)
+                else if(menuSelect == 1) //reset the game without the opening bit:
                 {
+                    opening_delay      = 0;
+                    bg_scroll          = 0;
                     save_data.distance = 0;
-                    goto GAMESTART;
                 }
                 //if menuSelect is 2 or anything else it just resumes; everything resets when the pause menu is accessed again.
+
+                goto GAMESTART;
             }
         }
 
         //and with a timer reset "ZA WARUDO" is over (iS tHaT A jOJo rEfERenCe and also yes I looked it up):
         timer_1_Counter = 0;
 
-    } while (!(kb_Data[6] & kb_Clear) && (avatar.deathDelay != 50));
-
-    if(!(kb_Data[6] & kb_Clear) && (save_data.health < 1))
-    {
-        //reset distance to flag that a game is no longer in progress:
-        save_data.distance = 0;
-
-        gfx_FillScreen(1);
-        gfx_SetTextScale(3, 3);
-        gfx_PrintStringXY("Imagine having", 10, 60);
-        gfx_PrintStringXY("a stable game", 15, 100);
-        gfx_PrintStringXY("after 9 months.", 8, 140);
-        gfx_SetTextScale(1, 1);
-        gfx_PrintStringXY("*laughs in idiot*", (320 - gfx_GetStringWidth("*laughs in dumb*"))/2, 200);
-        gfx_SwapDraw();
-
-        while (kb_AnyKey()) kb_Scan();
-        while (!kb_AnyKey()) kb_Scan();
-
-        if(kb_Data[6] != kb_Clear)
+        //controls bg_scroll, 46 is for background sprite width:
+        if((bg_scroll + scrollSpeed) >= 46)
         {
-            //I still can't believe I used a goto label...
-            goto GAMESTART;
+            //seamlessly reset the position and increment it:
+            bg_scroll -= (46 - scrollSpeed);
+
+            //move the background tileset lists:
+            for(uint8_t i = 0; i < 8; ++i)
+            {
+                bg_list[i] = bg_list[i + 1];
+                secondary_bg_list[i] = secondary_bg_list[i + 1];
+            }
+
+            //if the last entry has been "dragged" through the next 2 list entries, make new sprite addresses;
+            //note that I only check the background tiles since the timings are the same for all tile insertions:
+            if(bg_list[7] == bg_list[8])
+            {
+                if(bg_list[8] < 11)
+                {
+                    //this just makes sure that we've done the opening 12 tiles before we start spawning the 16:
+                    ++bg_list[8];
+                    ++secondary_bg_list[8];
+                }
+                else if(bg_list[6] == bg_list[8])
+                {
+                    bg_list[7] = 12 + randInt(0, 2) * 2;
+                    bg_list[8] = bg_list[7] + 1;
+
+                    secondary_bg_list[7] =  12;
+                    secondary_bg_list[8] = 13;
+                }
+            }
+            //the problem is that all the tiles are only half of a single hallway "chunk" of 92 pixels.
+        }
+        else
+        {
+            bg_scroll += scrollSpeed;
         }
     }
+
+    //if we didn't quit out of the game and Barry is clearly dead, pull up the death screen:
+    if(!(kb_Data[6] & kb_Clear) && (save_data.health < 1))
+    {
+        //do all the graphical stuff and menuing until some decision is reached:
+        ded_menu(window);
+
+        //I still can't believe I used a goto label...
+        goto GAMESTART;
+    }
     
-    //we only need distance and a few other vars in most cases, but I made this function AND I'M GONNA USE THE WHOLE FUNCTION.
+    //we only need distance and a few other vars to be saved, but I made this function AND I'M GONNA USE THE WHOLE FUNCTION.
     save_state();
 
     //stop libraries, not doing so causes "interesting" results by messing up the color mode and scaling:
     gfx_End();
-    ti_CloseAll();
 
     return 1;
 }
 
-//CONGRATULATIONS, YOU FOUND THE END OF THE FILE! I HOPE PEEKING BEHIND THE CURTAIN WAS WORTH YOUR SANITY!
+//CONGRATION, YOU FOUND THE END OF THE FILE! I HOPE PEEKING BEHIND THE CURTAIN WAS WORTH YOUR SANITY!

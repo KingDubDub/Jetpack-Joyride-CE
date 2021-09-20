@@ -33,11 +33,17 @@ outputs:
     lut-entries: true
     lut-entry-size: 2
     converts:
-      - transition
-      - backgrounds
+      - opening_2
 
   - type: appvar
     name: JPJRBG3
+    lut-entries: true
+    lut-entry-size: 2
+    converts:
+      - backgrounds
+
+  - type: appvar
+    name: JPJRBG4
     lut-entries: true
     lut-entry-size: 2
     converts:
@@ -65,6 +71,7 @@ outputs:
     converts:
       - button_released
       - button_pressed
+      - menu_window
 
 # Obstacle and item sprites
 
@@ -87,18 +94,23 @@ converts:
   - name: button_released
     palette: jetpack_palette
     images:
-      - buttons/button_on0.png
-      - buttons/button_on1.png
-      - buttons/button_on2.png
-      - buttons/button_on3.png
+      - menu/button_on0.png
+      - menu/button_on1.png
+      - menu/button_on2.png
+      - menu/button_on3.png
 
   - name: button_pressed
     palette: jetpack_palette
     images:
-      - buttons/button_off0.png
-      - buttons/button_off1.png
-      - buttons/button_off2.png
-      - buttons/button_off3.png
+      - menu/button_off0.png
+      - menu/button_off1.png
+      - menu/button_off2.png
+      - menu/button_off3.png
+
+  - name: menu_window
+    palette: jetpack_palette
+    images:
+      - menu/window.png
 
 # Everything else (self-explanatory)
 
@@ -230,14 +242,6 @@ converts:
       - lasers/laser2.png
       - lasers/laser3.png
 
-  - name: background_extra_bits
-    palette: jetpack_palette
-    tilesets:
-      tile-width:  46
-      tile-height: 40
-      images:
-        - background/background_extra.png
-
   - name: opening
     palette: jetpack_palette
     tilesets:
@@ -246,18 +250,27 @@ converts:
       images:
         - background/opening.png
 
-  - name: transition
+  - name: opening_2
     palette: jetpack_palette
-    images:
-      - background/background0
+    tilesets:
+      tile-width:  46
+      tile-height: 160
+      images:
+        - background/opening2.png    
 
   - name: backgrounds
     palette: jetpack_palette
     compress: zx7
-    images:
-      - background/background1.png
-      - background/background2.png
-      - background/background3.png
-      - background/background4.png
-      - background/background5.png
-      - background/background6.png
+    tilesets:
+      tile-width:  46
+      tile-height: 160
+      images:
+        - background/background.png
+
+  - name: background_extra_bits
+    palette: jetpack_palette
+    tilesets:
+      tile-width:  46
+      tile-height: 40
+      images:
+        - background/background_extra.png
