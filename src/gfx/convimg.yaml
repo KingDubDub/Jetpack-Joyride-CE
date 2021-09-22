@@ -82,8 +82,8 @@ outputs:
     converts:
       - coins_optimized
       - zapper
-      - missileWarning
-      - missileIncoming
+      - missile_warning
+      - missile_incoming
       - missile_optimized
       - laser_powering
       - laser_firing
@@ -133,16 +133,16 @@ converts:
   - name: barry_hit_optimized
     palette: jetpack_palette
     images:
-      - barry_damaged/barryHit0.png
-      - barry_damaged/barryHit1.png
-      - barry_damaged/barryHit2.png
+      - barry_damaged/barry_hit0.png
+      - barry_damaged/barry_hit1.png
+      - barry_damaged/barry_hit2.png
 
   - name: YOU_ARE_DEAD_no_big_surprise
     palette: jetpack_palette
     images:
-      - barry_damaged/barryDed0.png
-      - barry_damaged/barryDed1.png
-      - barry_damaged/barryDed2.png
+      - barry_damaged/barry_ded0.png
+      - barry_damaged/barry_ded1.png
+      - barry_damaged/barry_ded2.png
 
   - name: exhaust_optimized
     palette: jetpack_palette
@@ -176,22 +176,22 @@ converts:
       - zapper/zapper2.png
       - zapper/zapper3.png
 
-  - name: missileWarning
+  - name: missile_warning
     palette: jetpack_palette
     style: rlet
     transparent-color-index: 0
     images:
-      - missiles/missileWarning0.png
-      - missiles/missileWarning1.png
-      - missiles/missileWarning2.png
+      - missiles/missile_warning0.png
+      - missiles/missile_warning1.png
+      - missiles/missile_warning2.png
 
-  - name: missileIncoming
+  - name: missile_incoming
     palette: jetpack_palette
     style: rlet
     transparent-color-index: 0
     images:
-      - missiles/missileIncoming0.png
-      - missiles/missileIncoming1.png
+      - missiles/missile_incoming0.png
+      - missiles/missile_incoming1.png
 
 
   - name: missile_optimized

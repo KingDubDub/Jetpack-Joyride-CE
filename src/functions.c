@@ -16,67 +16,86 @@ set aside doesn't mean they aren't perfect yet.
 
 #include "headers.h"
 
+/* --- Globals -- */
 
-//all the externs from the main program (they don't need to be clean, who looks in here anyway?):
-extern game_data_t save_data;
-extern const uint8_t APPVAR_VERSION;
-extern int8_t scrollSpeed;
-extern uint16_t incrementDelay;
-extern int24_t bg_scroll;
-extern uint8_t bg_list[9];
-extern uint8_t secondary_bg_list[9];
-extern int24_t spawnDelay;
-extern avatar_t avatar;
-extern jetpack_t jetpackEntity;
-extern coin_t coins;
-extern zapper_t zappers;
-extern missile_t missiles;
-extern laser_t lasers;
-extern uint8_t opening_delay;
+//we read APPVAR_VERSION to this var for testing later:
+uint8_t save_integrity;
 
+//speed of scrolling and time before incrementing it:
+int8_t scroll_speed;
+uint16_t increment_delay;
 
+//measures timings for delays between spawning coins, obstacles, etc.:
+int24_t spawn_delay;
+int24_t missile_delay;
+
+//used for a bad background scroll function that is actually the best for this scenario:
+int24_t bg_scroll;
+
+//arrays for storing background tileset pointer values to draw:
+uint8_t bg_list[9];
+uint8_t secondary_bg_list[9];
+
+//all important game data, and in one clean struct pointer too:
+game_data_t save_data;
+
+//the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name my child if I had the desire to marry
+//and have children.
+avatar_t avatar;
+
+//everything needed to keep track of the points and speed of the seperate jetpack when Barry dies:
+jetpack_t jetpack_entity;
+
+//and here's some obstacles and stuff:
+coin_t coins;
+zapper_t zappers;
+missile_t missiles;
+laser_t lasers;
+
+//a simple framecount delay for the opening screen scrolling scene:
+uint8_t opening_delay = 138;
 
 //takes an input sprite and pastes it into another sprite at given coordinates:
-void CopyPasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x, uint8_t y)
+void copy_pasta(const gfx_sprite_t *sprite_in, gfx_sprite_t *sprite_out, uint24_t x, uint8_t y)
 {
-    const uint24_t widthIn = spriteIn->width;
-    const uint24_t spriteIn_size = spriteIn->height * widthIn;
-    const uint24_t widthOut = spriteOut->width;
-    uint24_t start_write = (widthOut * y) + x;
+    const uint24_t width_in = sprite_in->width;
+    const uint24_t sprite_in_size = sprite_in->height * width_in;
+    const uint24_t width_out = sprite_out->width;
+    uint24_t start_write = (width_out * y) + x;
 
     //write out input sprite row by row into the output sprite:
-    for(uint24_t j = 0; j < spriteIn_size; j += widthIn)
+    for(uint24_t j = 0; j < sprite_in_size; j += width_in)
     {
         //copy the row of the input to the position needed in the output:
-        memcpy(&spriteOut->data[start_write], &spriteIn->data[j], widthIn);
+        memcpy(&sprite_out->data[start_write], &sprite_in->data[j], width_in);
 
         //add the output sprite's width to move to the next row plus the given X that was added at the start:
-        start_write += widthOut;
+        start_write += width_out;
     }
 }
 
 //a function for drawing buttons, will hopefully save on flash size and stack usage:
-void draw_button(gfx_sprite_t *sprites[], char *text, uint8_t buttonSelect)
+void draw_button(gfx_sprite_t *sprites[], char *text, uint8_t button_select)
 {
     //first 14 pixels of the button:
-    gfx_Sprite_NoClip(sprites[buttonSelect], 70, 33 + (buttonSelect * 60));
+    gfx_Sprite_NoClip(sprites[button_select], 70, 33 + (button_select * 60));
 
     //I'm up to my cheaty tricks again, I turn the 14th column of pixels into 152 columns:
-    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 83, 33 + (buttonSelect * 60), 84, 33 + (buttonSelect * 60), 152, 50);
+    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 83, 33 + (button_select * 60), 84, 33 + (button_select * 60), 152, 50);
 
     //and the last 14 pixels:
-    gfx_Sprite_NoClip(sprites[3], 236, 33 + (buttonSelect * 60));
+    gfx_Sprite_NoClip(sprites[3], 236, 33 + (button_select * 60));
 
     //words 'n stuff:
     gfx_SetTextFGColor(2);
     gfx_SetTextScale(3, 3);
 
     //pretty much all the letters are odd numbers of pixels wide or tall, so that sucks:
-    gfx_PrintStringXY(text, 160 - gfx_GetStringWidth(text)/2, 47 + (buttonSelect * 60));
+    gfx_PrintStringXY(text, 160 - gfx_GetStringWidth(text)/2, 47 + (button_select * 60));
 }
 
 //set the background tiles starting at a given point:
-void Set_Background(const uint8_t start)
+void set_background(const uint8_t start)
 {
     for(uint8_t i = 0; i < + 9; ++i)
     {
@@ -94,22 +113,25 @@ void save_state(void)
     //game save data and stats:
     ti_Write(&save_data, sizeof(save_data), 1, savegame);
 
+    //this exists to silence a compiler warning that I can't get to shut up:
+    const uint8_t ver = APPVAR_VERSION;
+
     //version of the appvar, for future use with updater fix programs and hopefully help with debugging:
-    ti_Write(&APPVAR_VERSION, 1, 1, savegame);
+    ti_Write(&ver, 1, 1, savegame);
 
     //game environment variables:
-    ti_Write(&scrollSpeed, sizeof(scrollSpeed), 1, savegame);
-    ti_Write(&incrementDelay, sizeof(incrementDelay), 1, savegame);
+    ti_Write(&scroll_speed, sizeof(scroll_speed), 1, savegame);
+    ti_Write(&increment_delay, sizeof(increment_delay), 1, savegame);
     ti_Write(&bg_scroll, sizeof(bg_scroll), 1, savegame);
     ti_Write(&bg_list, sizeof(bg_list), 1, savegame);
     ti_Write(&secondary_bg_list, sizeof(secondary_bg_list), 1, savegame);
-    ti_Write(&spawnDelay, sizeof(spawnDelay), 1, savegame);
+    ti_Write(&spawn_delay, sizeof(spawn_delay), 1, savegame);
 
     //single pointer to avatar struct:
     ti_Write(&avatar, sizeof(avatar), 1, savegame);
 
     //jetpack variables:
-    ti_Write(&jetpackEntity, sizeof(jetpackEntity), 1, savegame);
+    ti_Write(&jetpack_entity, sizeof(jetpack_entity), 1, savegame);
 
     //coin variables:
     ti_Write(&coins, sizeof(coins), 1, savegame);
@@ -131,10 +153,22 @@ void save_state(void)
     ti_Close(savegame);
 }
 
+//A quick-'n-dirty function for finding an appvar pointer in read mode:
+void* get_appvar_ptr(const char *appvar)
+{
+    ti_var_t tmp_slot = ti_Open(appvar, "r");
+
+    void *ptr = ti_GetDataPtr(tmp_slot);
+ 
+    ti_Close(tmp_slot);
+
+    return ptr;
+}
+
 //A function for returning the pointers of tileset sprites in appvars with 2-byte LookUp Table (LUT) entries,
 //this only works if the appvar only has single images loaded into it, but you can use a single tileset if you
 //add 1 to your tiles input, note that the sprite type (normal or RLET) doesn't matter:
-void* GetTile_Ptr(void *ptr, uint8_t tile)
+void* get_tile_ptr(const void *ptr, uint8_t tile)
 {
     // pointer to data + offset of LUT data from start + stored offset at LUT entry "tile"
     return (void*)(ptr + *((uint16_t*)ptr + 1) + *((uint16_t*)ptr + tile + 1));
@@ -142,7 +176,7 @@ void* GetTile_Ptr(void *ptr, uint8_t tile)
 
 //The exact same thing as the above, but we don't add an extra offset to the tileset LUT; meaning this only works
 //for lists of sprites in an appvar (no tilesets). Again, type doesn't matter:
-void* GetSprite_Ptr(void *ptr, uint8_t tile)
+void* get_sprite_ptr(const void *ptr, uint8_t tile)
 {
     // pointer to data + stored offset at LUT entry "tile"
     return (void*)(ptr + *((uint16_t*)ptr + tile + 1));
@@ -150,7 +184,7 @@ void* GetSprite_Ptr(void *ptr, uint8_t tile)
 
 //Draws the opening tiles and the button selector for choosing what to do, handles all menus and popups at the
 //beginning, I have to have pointers to the sprites because they're local variables:
-void TitleMenu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], gfx_sprite_t *menusprite)
+void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], gfx_sprite_t *menusprite)
 {
     uint8_t selectorY = 5;
 

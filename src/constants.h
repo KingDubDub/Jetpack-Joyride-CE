@@ -7,23 +7,32 @@ All variables and datatypes for Jetpack Joyride CE that are hard-coded and used 
 #include <stddef.h>
 #include <stdint.h>
 
-//name of the savedata appvar:
-#define DATA_APPVAR "JTPKDAT"
+/* --- Defines --- */
 
-//max number of various obstacles that are allowed to spawn:
-#define MAX_ZAPPERS 3
+#define DATA_APPVAR    "JTPKDAT"
+#define APPVAR_VERSION 4
+
+//HEY FUTURE ME, REMEMBER TO UPDATE THE VERSION WHEN WE ADD STUFF!
+//SCREW YOU PAST-FUTURE ME, hopefully future-future me does better.
+//No, we definitely did not.
+
+//max number of various obstacles that are allowed to spawn, mostly used for array sizes:
+#define MAX_ZAPPERS  3
 #define MAX_MISSILES 1
+#define MAX_LASERS   7
 
 //the starting X-coords for various obstacles and things:
-#define COIN_ORIGIN 330
-#define ZAPPER_ORIGIN 352
+#define COIN_ORIGIN    330
+#define ZAPPER_ORIGIN  352
 #define MISSILE_ORIGIN 1466
+
+/* --- Types --- */
 
 typedef struct
 {
     uint8_t health;       //the number of hits Barry can take (increased with vehicles and shields)
     uint32_t monies;      //money collected in the run
-    uint32_t collegeFund; //total money collected from all runs, can be used to purchase stuff (when can I add this?)
+    uint32_t college_fund; //total money collected from all runs, can be used to purchase stuff (when can I add this?)
     uint32_t distance;    //distance travelled in the run, measured in pixels
     uint32_t highscore;   //highest distance travelled in all runs
 }
@@ -37,12 +46,12 @@ typedef struct
     int24_t x;
     uint8_t y;
     uint8_t theta; //in calculator land, there're only 256 degrees, not 360 oogabooga degrees.
-    int8_t inputDuration;
-    uint8_t playerAnimation;
-    uint8_t playerAnimationToggle;
-    uint8_t exhaustAnimation;
-    uint8_t corpseBounce;
-    uint8_t deathDelay;
+    int8_t  input_duration;
+    uint8_t player_animation;
+    uint8_t player_animation_toggle;
+    uint8_t exhaust_animation;
+    uint8_t corpse_bounce;
+    uint8_t death_delay;
 }
 avatar_t; //looks gross, but it saves 309 bytes in read/write calls to the appvar. It's staying.
 
@@ -50,8 +59,8 @@ typedef struct
 {
     int24_t x;
     uint8_t y;
-    int8_t h_accel; //horizontal acceleration
-    int8_t v_accel; //vertical acceleration
+    int8_t  h_accel; //horizontal acceleration
+    int8_t  v_accel; //vertical acceleration
     uint8_t theta;
     uint8_t bounce;
 }
@@ -94,9 +103,9 @@ typedef struct
     uint8_t y[MAX_MISSILES];
 
     //keep track of animations for missiles:
-    int8_t iconAnimate;
+    int8_t icon_animate;
     int8_t animation;
-    int8_t animationToggle;
+    int8_t animation_toggle;
 }
 missile_t;
 
@@ -117,6 +126,8 @@ typedef struct
     uint8_t deactivated;
 }
 laser_t;
+
+/* --- Strings --- */
 
 //There's got to be a better way:
 const char txt0[] = "Yes, this is a calculator. When I was";
@@ -151,7 +162,7 @@ const char txt24[] = "or submit an issue on GitHub if you";
 const char txt25[] = "find any bugs or grammar mistakes!";
 
 //The shortlink sends you through 8+ redirects to a catgirl gacha game page if typed in caps, so I can't use it with the font.
-//That was such a sentence I had to keep it; If I were a chaotic evil, I would've left the link in the game.
+//That was such a sentence I had to keep it; If I were a chaotic evil, I would've left the link in the game until someone noticed.
 const char txt26[] = "https://git.io/JRhEp";
 
 const char txt27[] = "https://cemetech.net/forum/";
@@ -218,7 +229,7 @@ const uint8_t coin_max[COIN_FORMATIONS] =
 };
 
 //coin formation type arrays:
-const uint24_t ctx[COIN_FORMATIONS][MAX_COINS] =
+const uint24_t coin_form_x[COIN_FORMATIONS][MAX_COINS] =
 {{
     0, 12, 24, 36, 48, 60, 72, 84, 96, 108,
     0, 12, 24, 36, 48, 60, 72, 84, 96, 108,
@@ -257,7 +268,7 @@ const uint24_t ctx[COIN_FORMATIONS][MAX_COINS] =
        12,     36,     60,     84,     108,
 }};
 
-const uint8_t cty[COIN_FORMATIONS][MAX_COINS] =
+const uint8_t coin_form_y[COIN_FORMATIONS][MAX_COINS] =
 {{
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
@@ -296,14 +307,11 @@ const uint8_t cty[COIN_FORMATIONS][MAX_COINS] =
         60,     60,     60,     60,     60
 }};
 
-//max number of lasers, used for initializing:
-#define MaxLasers 7
-
 //max number of... do I really need to explain this one?
 #define LASER_FORMATIONS 5
 
 //max number of lasers per formation, so only the ones used are updated:
-const uint8_t laserMax[LASER_FORMATIONS] =
+const uint8_t formation_max_lasers[LASER_FORMATIONS] =
 {
     1,
     2,
@@ -313,7 +321,7 @@ const uint8_t laserMax[LASER_FORMATIONS] =
 };
 
 //Y-coords, no X's needed:
-const uint8_t lsrY[LASER_FORMATIONS][MaxLasers] =
+const uint8_t laser_y[LASER_FORMATIONS][MAX_LASERS] =
 {{
     114
 },{
@@ -340,7 +348,7 @@ const uint8_t lsrY[LASER_FORMATIONS][MaxLasers] =
 }};
 
 //TTL for lasers, it's the last 108 cycles that count:
-const uint8_t halfLife[LASER_FORMATIONS][MaxLasers] =
+const uint8_t half_life[LASER_FORMATIONS][MAX_LASERS] =
 {{
     108
 },{
