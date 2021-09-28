@@ -5,8 +5,11 @@
 NAME        ?= JETPACK
 COMPRESSED  ?= YES
 ICON        ?= icon.png
-DESCRIPTION ?= "Jetpack Joyride for the TI84 PCE"
+DESCRIPTION ?= "Jetpack Joyride for the TI-84PCE"
 ARCHIVED    ?= YES
+
+#Break the BSS to let me overuse it to death:
+BSSHEAP_LOW = D031F6
 
 
 CFLAGS ?= -Wall -Wextra -Oz
@@ -18,4 +21,4 @@ ifndef CEDEV
 $(error CEDEV environment path variable is not set)
 endif
 
-include $(CEDEV)/meta/makefile.mk
+include $(shell cedev-config --makefile)

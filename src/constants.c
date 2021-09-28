@@ -7,125 +7,7 @@ All variables and datatypes for Jetpack Joyride CE that are hard-coded and used 
 #include <stddef.h>
 #include <stdint.h>
 
-/* --- Defines --- */
-
-#define DATA_APPVAR    "JTPKDAT"
-#define APPVAR_VERSION 4
-
-//HEY FUTURE ME, REMEMBER TO UPDATE THE VERSION WHEN WE ADD STUFF!
-//SCREW YOU PAST-FUTURE ME, hopefully future-future me does better.
-//No, we definitely did not.
-
-//max number of various obstacles that are allowed to spawn, mostly used for array sizes:
-#define MAX_ZAPPERS  3
-#define MAX_MISSILES 1
-#define MAX_LASERS   7
-
-//the starting X-coords for various obstacles and things:
-#define COIN_ORIGIN    330
-#define ZAPPER_ORIGIN  352
-#define MISSILE_ORIGIN 1466
-
-/* --- Types --- */
-
-typedef struct
-{
-    uint8_t health;       //the number of hits Barry can take (increased with vehicles and shields)
-    uint32_t monies;      //money collected in the run
-    uint32_t college_fund; //total money collected from all runs, can be used to purchase stuff (when can I add this?)
-    uint32_t distance;    //distance travelled in the run, measured in pixels
-    uint32_t highscore;   //highest distance travelled in all runs
-}
-game_data_t;
-
-//all the data used to control Barry's position, acceleration, etc. are consolidated under one pointer.
-//x and y positions, time 2nd is pressed/released to fly/fall, animation frame, animation cycling control,
-//and jetpack animation frame:
-typedef struct
-{
-    int24_t x;
-    uint8_t y;
-    uint8_t theta; //in calculator land, there're only 256 degrees, not 360 oogabooga degrees.
-    int8_t  input_duration;
-    uint8_t player_animation;
-    uint8_t player_animation_toggle;
-    uint8_t exhaust_animation;
-    uint8_t corpse_bounce;
-    uint8_t death_delay;
-}
-avatar_t; //looks gross, but it saves 309 bytes in read/write calls to the appvar. It's staying.
-
-typedef struct
-{
-    int24_t x;
-    uint8_t y;
-    int8_t  h_accel; //horizontal acceleration
-    int8_t  v_accel; //vertical acceleration
-    uint8_t theta;
-    uint8_t bounce;
-}
-jetpack_t;
-
-//hey looky, a coin struct type for easy use, WHY DIDN'T I MAKE THIS EARLIER?
-//stores x and y positions, along with the coin's animation frame:
-typedef struct
-{
-    int24_t x[30];
-    uint8_t y[30];
-    uint8_t animation[30];
-
-    //coin formation variable to keep track of coin list shapes:
-    uint8_t formation;
-}
-coin_t;
-
-//again, WHY did I not make these before... I think there was a reason...
-//laser x and y positions, length, and animation frame:
-typedef struct
-{
-    int24_t x[MAX_ZAPPERS];
-    uint8_t y[MAX_ZAPPERS];
-    int8_t length[MAX_ZAPPERS];
-
-    //zapper type, vertical, horizontal, or positve/negative diagonal:
-    int8_t orientation[MAX_ZAPPERS];
-
-    //zapper sprite animation frame:
-    int8_t animate;
-}
-zapper_t;
-
-//I believe the ZDS toolchain broke them and doubled the program size, praise God I upgraded to LLVM.
-//missile x and y positions:
-typedef struct
-{
-    int24_t x[MAX_MISSILES];
-    uint8_t y[MAX_MISSILES];
-
-    //keep track of animations for missiles:
-    int8_t icon_animate;
-    int8_t animation;
-    int8_t animation_toggle;
-}
-missile_t;
-
-//the point is, updates are good; ergo, Windows is exciting
-//y position (x position is shared among all lasers), laser's time to function:
-typedef struct
-{
-    uint8_t y[7];
-    uint24_t lifetime[7];
-
-    //all lasers have a universal X that doesn't move very far:
-    int8_t x;
-    //laser animation sprite:
-    int8_t animation;
-    //which laser formation is being used:
-    uint8_t formation;
-    //keep track of how many lasers have fired already:
-    uint8_t deactivated;
-}
-laser_t;
+#include "headers.h"
 
 /* --- Strings --- */
 
@@ -173,7 +55,7 @@ const char txt28[] = "viewtopic.php?t=16984";
 //I'm surprised that NULL or 0 don't work for line breaks, but as the purple man once said: "Fine, I'll do it myself"
 const char blank[] = {0};
 
-const char *about_txt[] =
+const char *about_txt[34] =
 {
     txt0,
     txt1,
@@ -210,11 +92,6 @@ const char *about_txt[] =
     txt28,
         blank,
 };
-
-//global maximum coins, technically redundant but still useful for debugging:
-#define MAX_COINS 30
-
-#define COIN_FORMATIONS 6
 
 //the max number of coins in each shape, used so the coin-calculation runs through the minimum
 //number of coins:
@@ -306,9 +183,6 @@ const uint8_t coin_form_y[COIN_FORMATIONS][MAX_COINS] =
     48,     48,     48,     48,     48,
         60,     60,     60,     60,     60
 }};
-
-//max number of... do I really need to explain this one?
-#define LASER_FORMATIONS 5
 
 //max number of lasers per formation, so only the ones used are updated:
 const uint8_t formation_max_lasers[LASER_FORMATIONS] =

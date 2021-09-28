@@ -75,7 +75,7 @@ void copy_pasta(const gfx_sprite_t *sprite_in, gfx_sprite_t *sprite_out, uint24_
 }
 
 //a function for drawing buttons, will hopefully save on flash size and stack usage:
-void draw_button(gfx_sprite_t *sprites[], char *text, uint8_t button_select)
+void draw_button(gfx_sprite_t *sprites[], const char *text, uint8_t button_select)
 {
     //first 14 pixels of the button:
     gfx_Sprite_NoClip(sprites[button_select], 70, 33 + (button_select * 60));
@@ -168,7 +168,7 @@ void* get_appvar_ptr(const char *appvar)
 //A function for returning the pointers of tileset sprites in appvars with 2-byte LookUp Table (LUT) entries,
 //this only works if the appvar only has single images loaded into it, but you can use a single tileset if you
 //add 1 to your tiles input, note that the sprite type (normal or RLET) doesn't matter:
-void* get_tile_ptr(const void *ptr, uint8_t tile)
+void* get_tile_ptr(const void *ptr, const uint8_t tile)
 {
     // pointer to data + offset of LUT data from start + stored offset at LUT entry "tile"
     return (void*)(ptr + *((uint16_t*)ptr + 1) + *((uint16_t*)ptr + tile + 1));
@@ -184,7 +184,7 @@ void* get_sprite_ptr(const void *ptr, uint8_t tile)
 
 //Draws the opening tiles and the button selector for choosing what to do, handles all menus and popups at the
 //beginning, I have to have pointers to the sprites because they're local variables:
-void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], gfx_sprite_t *menusprite)
+void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], const gfx_sprite_t *menusprite)
 {
     uint8_t selectorY = 5;
 
@@ -298,7 +298,7 @@ void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_
 }
 
 //stuff for the death screen:
-void ded_menu(gfx_sprite_t *menusprite)
+void ded_menu(const gfx_sprite_t *menusprite)
 {
     //make sure that whatever's on the screen is the same as what's in the buffer:
     gfx_BlitScreen();
