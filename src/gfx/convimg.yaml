@@ -72,6 +72,7 @@ outputs:
       - button_released
       - button_pressed
       - menu_window
+      - title
 
 # Obstacle and item sprites
 
@@ -112,13 +113,20 @@ converts:
     images:
       - menu/window.png
 
+  - name: title
+    palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
+    images:
+      - menu/title.png
+
 # Everything else (self-explanatory)
 
   - name: barry_assets
     palette: jetpack_palette
     images:
-      - jetpack.png
-      - nozzle.png
+      - barry/jetpack.png
+      - barry/nozzle.png
 
   - name: barry_run_optimized
     palette: jetpack_palette

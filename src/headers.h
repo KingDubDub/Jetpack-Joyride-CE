@@ -15,12 +15,28 @@ extern "C" {
 
     /* --- Defines --- */
 
+    //just some little macros to speed up debugging:
+    #define KEY_2ND   (kb_Data[1] & kb_2nd)
+    #define KEY_DEL   (kb_Data[1] & kb_Del)
+    #define KEY_ENTER (kb_Data[6] & kb_Enter)
+    #define KEY_CLEAR (kb_Data[6] & kb_Clear)
+    #define KEY_DOWN  (kb_Data[7] & kb_Down)
+    #define KEY_LEFT  (kb_Data[7] * kb_Left)
+    #define KEY_RIGHT (kb_Data[7] & kb_Right)
+    #define KEY_UP    (kb_Data[7] & kb_Up)
+
     #define DATA_APPVAR    "JTPKDAT"
     #define APPVAR_VERSION 4
 
     //HEY FUTURE ME, REMEMBER TO UPDATE THE VERSION WHEN WE ADD STUFF!
     //SCREW YOU PAST-FUTURE ME, hopefully future-future me does better.
     //No, we definitely did not.
+
+    #define START_SPEED 6
+    #define MAX_SPEED   12
+
+    #define CEILING 20
+    #define FLOOR   185
 
     //the starting X-coords for various obstacles and things:
     #define COIN_ORIGIN    330
@@ -35,6 +51,10 @@ extern "C" {
 
     #define MAX_LASERS   7
     #define LASER_FORMATIONS 5
+
+    //rotation speeds:
+    #define BARRY_DEFLECTION   5
+    #define JETPACK_DEFLECTION 5
 
     /* --- Types --- */
 
@@ -161,7 +181,18 @@ extern "C" {
     extern const uint8_t     formation_max_lasers[LASER_FORMATIONS];
     extern const uint8_t     laser_y[LASER_FORMATIONS][MAX_LASERS];
     extern const uint8_t     half_life[LASER_FORMATIONS][MAX_LASERS];
-    extern const char        *about_txt[34];
+    extern const char        *about_txt[36];
+
+    //pointers to the background sprites:
+    extern gfx_sprite_t *ceiling_tiles[14];
+    extern gfx_sprite_t *background_tiles[18];
+    extern gfx_sprite_t *floor_tiles[14];
+
+    //globalizing these saves about ~200 bytes, so there is a good reason for this:
+    extern gfx_sprite_t     *button_on_tiles[4];
+    extern gfx_sprite_t     *button_off_tiles[4];
+    extern gfx_sprite_t     *window;
+    extern gfx_rletsprite_t *title;
 
     /* --- Functions --- */
 
@@ -180,7 +211,11 @@ extern "C" {
 
     void  copy_pasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x, uint8_t y);
 
-    void  draw_button(gfx_sprite_t *sprites[], const char *text, uint8_t buttonSelect);
+    void  draw_background(void);
+
+    void  draw_button(const gfx_sprite_t *first_tile, const gfx_sprite_t *last_tile, const uint16_t x, const uint8_t y, const uint8_t width);
+
+    void  draw_pause_buttons(gfx_sprite_t *sprites[], const char *text, uint8_t buttonSelect);
 
     void  set_background(const uint8_t start);
 
@@ -192,9 +227,9 @@ extern "C" {
 
     void* get_sprite_ptr(const void *ptr, uint8_t tile);
 
-    void  title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], const gfx_sprite_t *menusprite);
+    void  title_menu(void);
 
-    void  ded_menu(const gfx_sprite_t *menusprite);
+    uint8_t  ded_menu(void);
 
 #ifdef __cplusplus
 }

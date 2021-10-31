@@ -55,6 +55,15 @@ laser_t lasers;
 //a simple framecount delay for the opening screen scrolling scene:
 uint8_t opening_delay = 138;
 
+//globalized sprite pointers, uses less RAM than managing a bunch of function parameters:
+gfx_sprite_t     *ceiling_tiles[14];
+gfx_sprite_t     *background_tiles[18];
+gfx_sprite_t     *floor_tiles[14];
+gfx_sprite_t     *button_on_tiles[4];
+gfx_sprite_t     *button_off_tiles[4];
+gfx_sprite_t     *window;
+gfx_rletsprite_t *title;
+
 //takes an input sprite and pastes it into another sprite at given coordinates:
 void copy_pasta(const gfx_sprite_t *sprite_in, gfx_sprite_t *sprite_out, uint24_t x, uint8_t y)
 {
@@ -74,17 +83,51 @@ void copy_pasta(const gfx_sprite_t *sprite_in, gfx_sprite_t *sprite_out, uint24_
     }
 }
 
-//a function for drawing buttons, will hopefully save on flash size and stack usage:
-void draw_button(gfx_sprite_t *sprites[], const char *text, uint8_t button_select)
+//draws the hallway background:
+void draw_background(void)
 {
-    //first 14 pixels of the button:
-    gfx_Sprite_NoClip(sprites[button_select], 70, 33 + (button_select * 60));
+    //draw the first and last background tiles with clipping since they go offscreen:
+    gfx_Sprite(ceiling_tiles[secondary_bg_list[0]], 0 - bg_scroll, 0);
+    gfx_Sprite(background_tiles[bg_list[0]],        0 - bg_scroll, 40);
+    gfx_Sprite(floor_tiles[secondary_bg_list[0]],   0 - bg_scroll, 200);
+    
+    gfx_Sprite(ceiling_tiles[secondary_bg_list[6]], 276 - bg_scroll, 0);
+    gfx_Sprite(background_tiles[bg_list[6]],        276 - bg_scroll, 40);
+    gfx_Sprite(floor_tiles[secondary_bg_list[6]],   276 - bg_scroll, 200);
 
-    //I'm up to my cheaty tricks again, I turn the 14th column of pixels into 152 columns:
-    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 83, 33 + (button_select * 60), 84, 33 + (button_select * 60), 152, 50);
+    gfx_Sprite(ceiling_tiles[secondary_bg_list[7]], 322 - bg_scroll, 0);
+    gfx_Sprite(background_tiles[bg_list[7]],        322 - bg_scroll, 40);
+    gfx_Sprite(floor_tiles[secondary_bg_list[7]],   322 - bg_scroll, 200);
 
-    //and the last 14 pixels:
-    gfx_Sprite_NoClip(sprites[3], 236, 33 + (button_select * 60));
+    //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
+    for(uint8_t i = 1; i < 6; ++i)
+    {
+        //these are drawn all speedy-like without clipping calculations:
+        gfx_Sprite_NoClip(ceiling_tiles[secondary_bg_list[i]], (i * 46) - bg_scroll, 0);
+        gfx_Sprite_NoClip(background_tiles[bg_list[i]], (i * 46) - bg_scroll, 40);
+        gfx_Sprite_NoClip(floor_tiles[secondary_bg_list[i]], (i * 46) - bg_scroll, 200);
+    }
+}
+
+//draws buttons, optimized for program size, not speed, with given button tileset, coords, and width:
+void draw_button(const gfx_sprite_t *first_tile, const gfx_sprite_t *last_tile, const uint16_t x, const uint8_t y, const uint8_t width)
+{
+    //draw the first button tile (green, yellow, or red in my case):
+    gfx_Sprite_NoClip(first_tile, x, y);
+
+    uint16_t middle_start = x + first_tile->width;
+
+    //copy the last column of pixels from the first tile across the given width:
+    gfx_CopyRectangle(gfx_buffer, gfx_buffer, middle_start - 1, y, middle_start, y, width, first_tile->height);
+
+    //draw the last tile for the button tilesets:
+    gfx_Sprite_NoClip(last_tile, middle_start + width, y);
+}
+
+//a function for drawing the pause menu, saves on stack usage:
+void draw_pause_buttons(gfx_sprite_t *sprites[], const char *text, uint8_t button_select)
+{
+    draw_button(sprites[button_select], sprites[3], 70, 33 + (button_select * 60), 152);
 
     //words 'n stuff:
     gfx_SetTextFGColor(2);
@@ -184,7 +227,7 @@ void* get_sprite_ptr(const void *ptr, uint8_t tile)
 
 //Draws the opening tiles and the button selector for choosing what to do, handles all menus and popups at the
 //beginning, I have to have pointers to the sprites because they're local variables:
-void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_t *floor[], const gfx_sprite_t *menusprite)
+void title_menu(void)
 {
     uint8_t selectorY = 5;
 
@@ -195,22 +238,17 @@ void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_
     gfx_SetTextFGColor(2);
 
     //temporary flipped menu sprite with hardcoded numbers to annoy people:
-    gfx_sprite_t *flipped_menusprite = gfx_MallocSprite(8, 167);
+    gfx_sprite_t *flipped_window = gfx_MallocSprite(8, 167);
 
-    //menuing loop:
+    //main menuing loop:
     do{
         //graphics and input handling for main menu:
         do{
             kb_Scan();
 
-            for(uint8_t i = 0; i < 7; ++i)
-            {
-                gfx_Sprite(ceiling[i],    i * 46, 0);
-                gfx_Sprite(background[i], i * 46, 40);
-                gfx_Sprite(floor[i],      i * 46, 200);
-            }
+            draw_background();
 
-            if((kb_Data[7] & kb_Down) && !(kb_Data[7] & kb_Up))
+            if((KEY_DOWN) && !KEY_UP)
             {
                 if(selectorY == 110)
                 {
@@ -219,7 +257,7 @@ void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_
                     selectorY += 35;
                 }
             }
-            else if((kb_Data[7] & kb_Up) && !(kb_Data[7] & kb_Down))
+            else if((KEY_UP) && !KEY_DOWN)
             {
                 if(selectorY == 5)
                 {
@@ -231,43 +269,48 @@ void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_
 
             gfx_Rectangle_NoClip(36, selectorY, 98, 31);
 
+            gfx_RLETSprite_NoClip(title, 160, 50);
+
             gfx_BlitBuffer();
 
             //wait until none of the arrow keys are pressed:
-            while(((kb_Data[7] & kb_Down) || (kb_Data[7] & kb_Up)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+            while((KEY_DOWN || KEY_UP) && !KEY_CLEAR) kb_Scan();
         }
-        while(!((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter)) && !(kb_Data[6] & kb_Clear));
+        while(!(KEY_2ND || KEY_ENTER) && !KEY_CLEAR);
 
         //make sure the 2nd and enter keys aren't still pressed:
-        while(((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+        while((KEY_2ND || KEY_ENTER) && !KEY_CLEAR) kb_Scan();
 
-        //where to start my rambling monologue about coding and friends and motivation and crap:
-        uint8_t txt_start = 0;
-
-        //figure out what to do based on selection with my favorite evaluation technique, and that [clear] check
+        //figures out what to do based on selection with my favorite evaluation technique, and that [clear] check
         //is a big brain play where the key being pressed adds one to selectorY and keeps it from matching anything:
-        switch(selectorY + (kb_Data[6] & kb_Clear))
+        switch(selectorY + (KEY_CLEAR))
         {
             case 40: break; //shop
 
             case 75: break; //settings
 
             case 110: //about page
+
+                //where to start my rambling monologue about coding and friends and motivation and crap:
+                ;uint8_t txt_start = 0;
+                //the compiler wants me to put a semicolon before the uint, I know not why.
+
                 do{
                     kb_Scan();
 
-                    gfx_TransparentSprite_NoClip(menusprite, 33, 33);
+                    gfx_TransparentSprite_NoClip(window, 33, 33);
 
+                    //copies the right side of the window across the screen:
                     gfx_CopyRectangle(gfx_buffer, gfx_buffer, 40, 33, 41, 33, 238, 162);
 
-                    gfx_TransparentSprite_NoClip(gfx_FlipSpriteY(menusprite, flipped_menusprite), 279, 33);
+                    gfx_TransparentSprite_NoClip(gfx_FlipSpriteY(window, flipped_window), 279, 33);
 
                     //adjust which twelve lines of text show up based on up and down inputs:
-                    if((kb_Data[7] & kb_Down) && !(kb_Data[7] & kb_Up) && (txt_start < ((sizeof(about_txt) / 3) - 12)))
+                    if((KEY_DOWN) && !KEY_UP && (txt_start < ((sizeof(about_txt) / 3) - 12)))
                     {
                         txt_start += 2;
                     }
-                    if((kb_Data[7] & kb_Up) && !(kb_Data[7] & kb_Down) && (txt_start > 0))
+                    if((KEY_UP) && !KEY_DOWN && (txt_start > 0))
                     {
                         txt_start -= 2;
                     }
@@ -283,66 +326,160 @@ void title_menu(gfx_sprite_t *ceiling[], gfx_sprite_t *background[], gfx_sprite_
                     gfx_BlitBuffer();
 
                     //make sure those keys are released:
-                    while(((kb_Data[7] & kb_Down) || (kb_Data[7] & kb_Up)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+                    while(((KEY_DOWN) || (KEY_UP)) && !KEY_CLEAR) kb_Scan();
                 }
-                while(!((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter)) && !(kb_Data[6] & kb_Clear));
+                while(!(KEY_2ND || (KEY_ENTER)) && !KEY_CLEAR);
 
-                while( ((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+                while( (KEY_2ND || (KEY_ENTER)) && !KEY_CLEAR) kb_Scan();
             break;
         }
     }
-    while(!(kb_Data[6] & kb_Clear) && (selectorY != 5));
+    while(!KEY_CLEAR && (selectorY != 5));
 
     //almost forgot this part, that would've been bad:
-    free(flipped_menusprite);
+    free(flipped_window);
 }
 
 //stuff for the death screen:
-void ded_menu(const gfx_sprite_t *menusprite)
+uint8_t ded_menu(void)
 {
     //make sure that whatever's on the screen is the same as what's in the buffer:
     gfx_BlitScreen();
 
     //temporary flipped menu sprite with hardcoded numbers to annoy people:
-    gfx_sprite_t *flipped_menusprite = gfx_MallocSprite(8, 167);
+    gfx_sprite_t *flipped_window = gfx_MallocSprite(8, 167);
 
-    gfx_TransparentSprite_NoClip(menusprite, 160, 10);
+    gfx_SetTextScale(1, 1);
 
-    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 167, 10, 168, 10, 132, 167);
+    //there isn't any way to measure the pixel width of a integer with the gfx libs and sprintf is really bad,
+    //but we can measure the pixel displacement so I can just draw it out and then cover it up with the menu:
+    gfx_SetTextXY(146, 30);
+    gfx_PrintUInt(save_data.distance / 15, 1);
 
-    //this hearkens back to the early days of this project when I thought this actually worked and looked good...
-    //I know know it only kinda works, and it looks cramped.
-    gfx_TransparentSprite_NoClip(gfx_FlipSpriteY(menusprite, flipped_menusprite), 300, 10);
+    //store the length of the distance number-string (with 3x scale) plus the length of the M minus three transparent pixels:
+    uint16_t distance_width = 3 * (gfx_GetTextX() - 146) + 16 - 3;
+
+    gfx_SetTextXY(146, 30);
+    gfx_PrintUInt(save_data.monies, 1);
+
+    //store the lengths of the money number-string (at 2x scale) minus two transparent pixels:
+    uint16_t money_width = 2 * (gfx_GetTextX() - 146) - 2;
+
+    //Why no, this code is beautiful and not janky at all.
+
+    gfx_TransparentSprite_NoClip(window, 146, 10);
+
+    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 153, 10, 154, 10, 132, 167);
+
+    //this hearkens back to the early days of this project when I thought this actually worked and functioned well...
+    //I know know it only kinda works, and it literally cramps my style.
+    gfx_TransparentSprite_NoClip(gfx_FlipSpriteY(window, flipped_window), 286, 10);
 
     gfx_SetTextFGColor(2); //white
     gfx_SetTextScale(1, 1);
 
-    gfx_PrintStringXY("YOU FLEW", 200, 40);
-    gfx_PrintStringXY("AND COLLECTED", 190, 100);
-    gfx_PrintStringXY("COINS:", 170, 140);
+    gfx_PrintStringXY("YOU FLEW", 191, 40);
+    gfx_PrintStringXY("AND COLLECTED", 173, 100);
+    gfx_PrintStringXY("COINS:", 154, 134);
 
     gfx_SetTextFGColor(4); //gold
     gfx_SetTextScale(3, 3);
 
-    //draw coin count:
-    gfx_SetTextXY(210, 130);
-    gfx_PrintUInt(save_data.monies, 1);
-
-    //draw distance:
-    gfx_SetTextXY(190, 60);
+    //draw distance centered on the menu box:
+    gfx_SetTextXY(217 - distance_width/2, 60);
     gfx_PrintUInt(save_data.distance / 15, 1);
 
     //add the meters symbol:
     gfx_SetTextScale(2, 2);
     gfx_PrintStringXY("m", gfx_GetTextX(), 68);
 
-    gfx_SwapDraw();
+    //draw coin count:
+    gfx_SetTextXY(218 - money_width/2, 130);
+    gfx_PrintUInt(save_data.monies, 1);
 
-    while (kb_AnyKey()) kb_Scan();
-    while (!(kb_Data[1] & kb_2nd) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+    gfx_SetTextScale(2, 2);
+    gfx_SetTextFGColor(2); //white
 
-    free(flipped_menusprite);
+    //draw the retry and quit buttons:
+    draw_button(button_on_tiles[2], button_on_tiles[3], 130, 180, 60);
+    gfx_PrintStringXY("RETRY", 144, 197);
 
-    //reset distance to flag that a game is no longer in progress:
-    save_data.distance = 0;
+    draw_button(button_on_tiles[0], button_on_tiles[3], 222, 180, 60);
+    gfx_PrintStringXY("QUIT", 243, 197);
+
+    //draw the initial selector rectangle:
+    gfx_SetColor(2); //white
+    gfx_Rectangle_NoClip(130, 180, 88, 50);
+
+    gfx_BlitBuffer();
+
+    while(kb_AnyKey()) kb_Scan();
+
+    //oh joy, I get to do debouncing checks again:
+    uint8_t selector_x           = 130;
+    bool    previous_2nd_state   = false;
+    bool    previous_arrow_state = false;
+
+    //run until [2nd] is pressed and not the arrow keys or until [clear] is pressed:
+    do
+    {
+        kb_Scan();
+
+        //update the previous button states for debouncing:
+        if(KEY_2ND) previous_2nd_state = true;
+
+        if(kb_Data[7])
+        {
+            previous_2nd_state = false;
+        }
+
+        //hitting any of the arrow keys will toggle the selector, but it has to be released to do it again:
+        if(kb_Data[7] && !previous_arrow_state)
+        {
+            draw_button(button_on_tiles[(222 - selector_x) / 42], button_on_tiles[3], selector_x, 180, 60);
+
+            if(selector_x == 130)
+            {
+                selector_x = 222;
+            } else {
+                selector_x = 130;
+            }
+
+            previous_arrow_state = true;
+        }
+        else if(!kb_Data[7])
+        {
+            previous_arrow_state = false;
+        }
+        
+        if(previous_2nd_state)
+        {
+            draw_button(button_off_tiles[(222 - selector_x) / 42], button_off_tiles[3], selector_x + 2, 182, 56);
+            gfx_Rectangle_NoClip(selector_x + 1, 181, 86, 48);
+        }
+        else
+        {
+            draw_button(button_on_tiles[(222 - selector_x) / 42],  button_on_tiles[3],  selector_x,     180, 60);
+            gfx_Rectangle_NoClip(selector_x, 180, 88, 50);
+        }
+
+        gfx_PrintStringXY("RETRY", 144, 197);
+        gfx_PrintStringXY("QUIT", 243, 197);
+
+        gfx_BlitBuffer();
+    }
+    while(!(previous_2nd_state && !KEY_2ND && !kb_Data[7]) && !KEY_CLEAR);
+
+    free(flipped_window);
+
+    if(KEY_CLEAR)
+    {
+        //exit game
+        return 2;
+    }
+    else
+    {
+        //go to menu or 
+        return ((selector_x - 130) / 92);
+    }
 }

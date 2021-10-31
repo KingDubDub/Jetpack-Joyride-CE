@@ -10,6 +10,8 @@ to mod this or something then get ready for some over-commented trash!
 In case it wasn't clear, modding this should have my permission and credit to me,
 but other than that you are obliged to have as much fun as will kill you!
 
+NOTE TO SELF: Sprites are scaled down by 1:0.720720720
+
 */
 
 #include <stddef.h>
@@ -64,11 +66,6 @@ int main(void)
 
     //Wow I hate how that looks.
 
-    //pointers to the background sprites:
-    gfx_sprite_t *ceiling_tiles[14];
-    gfx_sprite_t *background_tiles[18];
-    gfx_sprite_t *floor_tiles[14];
-
     //the start menu is also a part of the actual hallway, which is just me being lazy really:
     for(uint8_t i = 0; i < 8; ++i)
     {
@@ -104,11 +101,6 @@ int main(void)
     //used to save which offset in the obstacles appvar's LUT entries we need to use:
     uint8_t offsets_offset = 0;
 
-    //sprites for menus and stuff:
-    gfx_sprite_t *button_on_tiles[4];
-    gfx_sprite_t *button_off_tiles[4];
-    gfx_sprite_t *window;
-
     //now we get the sprites for the menus, here's the unpressed pause buttons:
     for(uint8_t i = 0; i < (sizeof(button_on_tiles) / 3); ++i)
     {
@@ -122,7 +114,8 @@ int main(void)
         button_off_tiles[i] = get_sprite_ptr(menu_ptr, offsets_offset++);
     }
 
-    window = get_sprite_ptr(menu_ptr, offsets_offset);
+    window = get_sprite_ptr(menu_ptr, offsets_offset++);
+    title  = get_sprite_ptr(menu_ptr, offsets_offset++);
 
     offsets_offset = 0;
 
@@ -362,7 +355,7 @@ int main(void)
     else //make a fresh start and show the game menu:
     {
         //reset variables for when a game starts:
-        scroll_speed    = 6;
+        scroll_speed    = START_SPEED;
         bg_scroll      = 0;
         increment_delay = 0;
         spawn_delay     = 512;
@@ -372,7 +365,7 @@ int main(void)
         save_data.monies   = 0;
 
         avatar.x                     = 24;
-        avatar.y                     = 185;
+        avatar.y                     = FLOOR;
         avatar.theta                 = 0;
         avatar.input_duration         = 0;
         avatar.player_animation_toggle = 1;
@@ -403,29 +396,20 @@ int main(void)
         //set the backgrounds up for the opening scene:
         set_background(0);
 
-        //if the opening delay isn't zero, AKA none, then we do the scrolling intro:
+        //if the opening delay isn't zero, run the menu:
         if(opening_delay)
         {
-            //quickly (lazily) draw the opening hallway tiles:
-            for(uint8_t i = 0; i < 7; ++i)
-            {
-                gfx_Sprite(ceiling_tiles[secondary_bg_list[i]], i * 46, 0);
-                gfx_Sprite(background_tiles[bg_list[i]],        i * 46, 40);
-                gfx_Sprite(floor_tiles[secondary_bg_list[i]],   i * 46, 200);
-            }
-
-            //blit the fresh background:
-            gfx_BlitBuffer();
-
             //opening menu function to make this mess more readable:
-            title_menu(ceiling_tiles, background_tiles, floor_tiles, window);
+            title_menu();
 
-            while(!(kb_Data[6] & kb_Clear) && opening_delay)
+            int8_t title_pos = 50;
+
+            while(!KEY_CLEAR && opening_delay)
             {
                 kb_Scan();
 
                 //ceil() doesn't work with ints so here's some numbers I made up and some funky math:
-                uint8_t deincrement = opening_delay/12 + (opening_delay % 12 != 0);
+                uint8_t deincrement = opening_delay/10 + (opening_delay % 10 != 0);
 
                 if((opening_delay - deincrement) > 0)
                 {
@@ -437,7 +421,8 @@ int main(void)
                     }
                     else
                     {
-                        bg_scroll = 0;
+                        //figure out what the scroll would be if it overflowed above 46:
+                        bg_scroll = bg_scroll + deincrement - 46;
 
                         //a neat way to shift the opening tiles since they appear in order:
                         for(uint8_t i = 0; i < sizeof(bg_list); ++i)
@@ -455,19 +440,51 @@ int main(void)
                     break;
                 }
 
-                //what is this magical witchcraft and why didn't I use it earlier?!
-                gfx_ShiftLeft(deincrement);
+                draw_background();
 
-                gfx_Sprite(ceiling_tiles[secondary_bg_list[7]], (7 * 46) - bg_scroll, 0);
-                gfx_Sprite(background_tiles[bg_list[7]],        (7 * 46) - bg_scroll, 40);
-                gfx_Sprite(floor_tiles[secondary_bg_list[7]],   (7 * 46) - bg_scroll, 200);
+                //draw the title scrawl as it ascends into the heavens:
+                gfx_RLETSprite(title, 160, title_pos -= deincrement);
 
                 gfx_BlitBuffer();
             }
         }
-        //make absolutely sure all the background tiles are set correctly:
-        set_background(3);
+
+        if(!KEY_CLEAR)
+        {
+            //make absolutely sure all the background tiles are set correctly:
+            set_background(3);
+
+            //make sure the first frame gets drawn when the game is retry'd rather than started from the menu:
+            draw_background();
+            gfx_BlitBuffer();
+        }
+
+        //I wonder what the opening salaries are for programmers who make up numbers for projects...
+        opening_delay = 200;
+
+        //wait for little bit after the screen has settled for that wonderful build-up, then KABOOM:
+        while(opening_delay && !KEY_CLEAR)
+        {
+            kb_Scan();
+            delay(1);
+
+            --opening_delay;
+        }
+
+        //I would combine everything under one [clear] check, but then stuff gets weird when exitting the cutscene
+        if(!KEY_CLEAR)
+        {
+            //draw the white flash for when the explosion happens:
+            gfx_FillScreen(2);
+
+            gfx_SwapDraw();
+            delay(80);
+            gfx_SwapDraw();
+        }
     }
+
+    //rotating Barry and the jetpack is way too slow, so I alternate between them every frame instead:
+    bool barry_spin = true;
 
     //color to flash when hit by obstacles, it's a really cool effect and I'm surprised I thought of a way to do it:
     uint8_t death_color;
@@ -477,15 +494,15 @@ int main(void)
     uint8_t FPS;
 
     //start up a timer for FPS monitoring, do not move:
-    timer_Control = TIMER1_ENABLE | TIMER1_32K | TIMER1_UP;
+    timer_Control = TIMER2_ENABLE | TIMER2_32K | TIMER2_UP;
 
     //Loop until clear is pressed or Barry has been dead for a little while:
-    while(!(kb_Data[6] & kb_Clear) && (avatar.death_delay != 50))
+    while(!KEY_CLEAR && (avatar.death_delay != 50))
     {
         //update keys, fixes bugs with update errors that can lead to softlocks:
         kb_Scan();
 
-        //if missile delay isn't zero, keep counting down:
+        //missiles need an extra delay because they're just special like that:
         if(missile_delay > 0)
         {
             missile_delay -= scroll_speed + 8;
@@ -515,7 +532,7 @@ int main(void)
 
                 spawn_delay = scroll_speed * 40;
             }
-            else if((random_object < 3) && (missile_delay <= 0))
+            else if((random_object < 4) && (missile_delay <= 0))
             {
                 //sets coin coordinates from coordinate lists:
                 uint8_t rand_var = randInt(30, 150);
@@ -604,16 +621,18 @@ int main(void)
         if(save_data.health > 0)
         {
             //very small bit of code to increase speed with a decreasing frequency over time, max of 12:
-            if((increment_delay >= ((scroll_speed - 5) * 250)) && (scroll_speed < 12))
+            if((increment_delay >= ((scroll_speed - 5) * 250)) && (scroll_speed < MAX_SPEED))
             {
                 ++scroll_speed;
                 increment_delay = 0;
-            } else {
+            }
+            else
+            {
                 ++increment_delay;
             }
 
             //when flying:
-            if(kb_Data[1] & kb_2nd)
+            if(KEY_2ND)
             {
                 //add to avatar.input_duration, which is added to avatar.y:
                 if(avatar.input_duration < 12)
@@ -632,7 +651,7 @@ int main(void)
             //when falling (2nd isn't pressed):
             } else {
                 //subtract from avatar.input_duration, added to avatar.y (it can be a negative number):
-                if((avatar.y < (185)) && (avatar.input_duration > -12))
+                if((avatar.y < (FLOOR)) && (avatar.input_duration > -12))
                 {
                     avatar.input_duration -= 1;
                 }
@@ -652,15 +671,15 @@ int main(void)
                 }
             }
 
-            //sees if Y-value rolled past 20 or 185, figures out if it was going up
+            //sees if Y-value rolled past the ceiling or floor values, figures out if it was going up
             //or down, and auto-corrects accordingly (FUTURE ME: IT'S OPTIMIZED ENOUGH PLEASE DON'T WASTE ANY MORE TIME):
-            if(((avatar.y - avatar.input_duration) > 185) || ((avatar.y - avatar.input_duration) < 20))
+            if(((avatar.y - avatar.input_duration) > FLOOR) || ((avatar.y - avatar.input_duration) < CEILING))
             {
                 if(avatar.input_duration > 0)
                 {
-                    avatar.y = 20;
+                    avatar.y = CEILING;
                 } else {
-                    avatar.y = 185;
+                    avatar.y = FLOOR;
                 }
                 avatar.input_duration = 0;
             }
@@ -672,7 +691,7 @@ int main(void)
             }
 
             //bit that runs avatar animations:
-            if(avatar.y < 185)
+            if(avatar.y < FLOOR)
             {
                 //flying animation:
                 avatar.player_animation = 6;
@@ -698,11 +717,11 @@ int main(void)
             }
         }
         else //if "THE HEAVY IS DEAD!", calculate an inelastic collision on his corpse:
-        {
+        {   
             //when the crap hits the fan, or the Barry hits the floor I dunno I didn't read the manga:
-            if((avatar.y - avatar.input_duration) >= 185)
+            if((avatar.y - avatar.input_duration) >= FLOOR)
             {
-                avatar.y = 185;
+                avatar.y = FLOOR;
 
                 //if scroll_speed isn't zero:
                 if(scroll_speed)
@@ -734,15 +753,15 @@ int main(void)
                 }
                 
             }
-            else if((avatar.y - avatar.input_duration) < 20) //if Barry hits the ceiling, flip his acceleration:
+            else if((avatar.y - avatar.input_duration) < CEILING) //if Barry hits the ceiling, flip his acceleration:
             {
-                avatar.y = 20;
+                avatar.y = CEILING;
                 avatar.input_duration *= -1;
             }
             else
             {
                 avatar.y -= avatar.input_duration;
-                avatar.theta += scroll_speed;
+                avatar.theta += BARRY_DEFLECTION;
 
                 //downwards acceleration increase and cap, slightly faster than normal:
                 if(avatar.input_duration > -14)
@@ -755,16 +774,16 @@ int main(void)
                 {
                     avatar.input_duration = 0;
                     //this doesn't reset sometimes, still not sure why:
-                    avatar.y = 185;
+                    avatar.y = FLOOR;
                 }
             }
 
             //I'm keeping the jetpack rotation and control code seperate until I'm ready to hybridize the old code with it.
 
             //if it hits the floor, which is slighty lower for the jetpack in order to give a more 3D look:
-            if((jetpack_entity.y - jetpack_entity.v_accel) >= 210)
+            if((jetpack_entity.y - jetpack_entity.v_accel) >= (FLOOR + 20))
             {
-                jetpack_entity.y = 210;
+                jetpack_entity.y = FLOOR + 20;
 
                 if(jetpack_entity.bounce < 3)
                 {
@@ -794,9 +813,9 @@ int main(void)
                     jetpack_entity.theta = 192;
                 }
             }
-            else if((jetpack_entity.y - jetpack_entity.v_accel) < 20) //if it hits the ceiling:
+            else if((jetpack_entity.y - jetpack_entity.v_accel) < CEILING) //if it hits the ceiling:
             {
-                jetpack_entity.y = 20;
+                jetpack_entity.y = CEILING;
                 jetpack_entity.v_accel *= -1;
             }
             else
@@ -805,7 +824,7 @@ int main(void)
                 jetpack_entity.y -= jetpack_entity.v_accel;
 
                 //the jetpack rotates faster than Barry because I feel like it:
-                jetpack_entity.theta += (scroll_speed * 2) + jetpack_entity.h_accel;
+                jetpack_entity.theta += JETPACK_DEFLECTION;
 
                 if(jetpack_entity.v_accel > -12)
                 {
@@ -814,8 +833,16 @@ int main(void)
             }
 
             //since rotating sprites is so slow, I'm doing it between drawing and buffer updates to increase speed:
-            gfx_RotateSprite(barryHit_resized, barryHit_rotated, avatar.theta);
-            gfx_RotateSprite(jetpack_resized, jetpack_rotated, jetpack_entity.theta);
+            if(barry_spin)
+            {
+                gfx_RotateSprite(barryHit_resized, barryHit_rotated, avatar.theta);
+                barry_spin = false;
+            }
+            else
+            {
+                gfx_RotateSprite(jetpack_resized, jetpack_rotated, jetpack_entity.theta);
+                barry_spin = true;
+            }
 
             //An inelastic collision is when something bounces off something and loses some speed, which means the objects
             //stick together. Barry's corpse sticks to the floor a little bit (there's technically air friction and gravity
@@ -874,27 +901,8 @@ int main(void)
             lasers.animation = 0;
         }
 
-        //draw the first and last background tiles with clipping since they go offscreen:
-        gfx_Sprite(ceiling_tiles[secondary_bg_list[0]],   0 - bg_scroll, 0);
-        gfx_Sprite(ceiling_tiles[secondary_bg_list[6]], 276 - bg_scroll, 0);
-        gfx_Sprite(ceiling_tiles[secondary_bg_list[7]], 322 - bg_scroll, 0);
-
-        gfx_Sprite(background_tiles[bg_list[0]],   0 - bg_scroll, 40);
-        gfx_Sprite(background_tiles[bg_list[6]], 276 - bg_scroll, 40);
-        gfx_Sprite(background_tiles[bg_list[7]], 322 - bg_scroll, 40);
-
-        gfx_Sprite(floor_tiles[secondary_bg_list[0]],   0 - bg_scroll, 200);
-        gfx_Sprite(floor_tiles[secondary_bg_list[6]], 276 - bg_scroll, 200);
-        gfx_Sprite(floor_tiles[secondary_bg_list[7]], 322 - bg_scroll, 200);
-
-        //this is the best way I've found to draw the backgrounds, smaller and faster than a smart system:
-        for(uint8_t i = 1; i < 6; ++i)
-        {
-            //but all these are drawn all speedy-like without clipping:
-            gfx_Sprite_NoClip(ceiling_tiles[secondary_bg_list[i]], (i * 46) - bg_scroll, 0);
-            gfx_Sprite_NoClip(background_tiles[bg_list[i]], (i * 46) - bg_scroll, 40);
-            gfx_Sprite_NoClip(floor_tiles[secondary_bg_list[i]], (i * 46) - bg_scroll, 200);
-        }
+        //I should've made this function many commits ago...
+        draw_background();
 
         //draws avatar depending on health 'n stuff:
         if(save_data.health > 0)
@@ -1250,7 +1258,7 @@ int main(void)
         }
 
         //FPS counter data collection, time "stops" (being relevant) after this point:
-        FPS = (32768 / timer_GetSafe(1, TIMER_UP));
+        FPS = (32768 / timer_GetSafe(2, TIMER_UP));
         //the GetSafe() is to make Tari stop bothering me
 
         //time is frozen for a delay, and I wanna make a Jo-Jo reference but I don't speak Japanese
@@ -1260,21 +1268,21 @@ int main(void)
         }
 
         //pause menu controls and drawing, can be accessed as long as in main loop:
-        if(kb_Data[1] & kb_Del)
+        if(KEY_DEL)
         {
-            //button debouncing for menu:
+            //button debouncing is the most painful thing I've ever had to plan out::
             bool debounced;
 
             //strings used in pause menu:
             char pause_options[3][7] = {"QUIT", "RETRY", "RESUME"};
 
             //drawing the base color for all the menu stuff:
-            gfx_FillScreen(6);
+            gfx_FillScreen(6); //kinda-grey blue
 
-            //using that draw_button() function to write out the 3 menu options:
-            draw_button(button_on_tiles, pause_options[0], 0);
-            draw_button(button_on_tiles, pause_options[1], 1);
-            draw_button(button_on_tiles, pause_options[2], 2);
+            //using that draw_pause_buttons() function to write out the 3 options:
+            draw_pause_buttons(button_on_tiles, pause_options[0], 0);
+            draw_pause_buttons(button_on_tiles, pause_options[1], 1);
+            draw_pause_buttons(button_on_tiles, pause_options[2], 2);
 
             gfx_SetColor(2);
 
@@ -1286,11 +1294,11 @@ int main(void)
             int8_t menu_select = 0;
 
             //menu control loop:
-            while (!(kb_Data[6] & kb_Clear))
+            while (!KEY_CLEAR)
             {
                 kb_Scan();
 
-                if((kb_Data[7] & kb_Down) || (kb_Data[7] & kb_Up))
+                if((KEY_DOWN) || (KEY_UP))
                 {
                     debounced = false;
 
@@ -1299,10 +1307,10 @@ int main(void)
                     gfx_Rectangle(69, 32 + (menu_select * 60), 182, 52);
 
                     //re-draw the unpressed form of whatever button is being moved on from:
-                    draw_button(button_on_tiles, pause_options[menu_select], menu_select);
+                    draw_pause_buttons(button_on_tiles, pause_options[menu_select], menu_select);
 
                     //if down is pressed, add to menu select and correct overflow when necessary:
-                    if(kb_Data[7] & kb_Down)
+                    if(KEY_DOWN)
                     {
                         if(menu_select > 1)
                         {
@@ -1313,7 +1321,7 @@ int main(void)
                     }
 
                     //and if up is pressed, subtract from menu select and correct overflow:
-                    if(kb_Data[7] & kb_Up)
+                    if(KEY_UP)
                     {
                         if(menu_select < 1)
                         {
@@ -1327,7 +1335,7 @@ int main(void)
                     gfx_SetColor(2);
                     gfx_Rectangle(69, 32 + (menu_select * 60), 182, 52);
                 }
-                else if((kb_Data[1] & kb_2nd) || (kb_Data[6] & kb_Enter))
+                else if((KEY_2ND) || (KEY_ENTER))
                 {
                     debounced = true;
 
@@ -1336,12 +1344,7 @@ int main(void)
                     //edges of larger buttons need to be hidden for smaller buttons:
                     gfx_FillRectangle(69, 32 + (menu_select * 60), 182, 52);
 
-                    //draw the first and last 14 pixels of the selected button:
-                    gfx_Sprite_NoClip(button_off_tiles[menu_select], 80, 35 + (menu_select * 60));
-                    gfx_Sprite_NoClip(button_off_tiles[3], 226, 35 + (menu_select * 60));
-
-                    //abuse the gfx libs:
-                    gfx_CopyRectangle(gfx_buffer, gfx_buffer, 93, 35 + (menu_select * 60), 94, 35 + (menu_select * 60), 132, 50);
+                    draw_button(button_off_tiles[menu_select], button_off_tiles[3], 80, 35 + (menu_select * 60), 132);
 
                     //smol selector:
                     gfx_SetColor(2);
@@ -1361,11 +1364,11 @@ int main(void)
                 gfx_BlitBuffer();
 
                 //simple way to wait until none of the arrow keys are pressed:
-                while(((kb_Data[7] & kb_Down) || (kb_Data[7] & kb_Up)) && !(kb_Data[6] & kb_Clear)) kb_Scan();
+                while(((KEY_DOWN) || (KEY_UP)) && !KEY_CLEAR) kb_Scan();
             }
 
-            //imagine completing menuing checks when [clear] is pressed and leaving it in the code for 4 updates.
-            if(!(kb_Data[6] & kb_Clear))
+            //imagine completing menuing checks when [clear] is pressed and leaving it in the code for 4 commits.
+            if(!KEY_CLEAR)
             {
                 //quitting sets the opening delay to 138 along with some other values:
                 if(!menu_select)
@@ -1391,7 +1394,7 @@ int main(void)
         }
 
         //and with a timer reset "ZA WARUDO" is over (iS tHaT A jOJo rEfERenCe and also yes I looked it up):
-        timer_1_Counter = 0;
+        timer_2_Counter = 0;
 
         //controls bg_scroll, 46 is for background sprite width:
         if((bg_scroll + scroll_speed) >= 46)
@@ -1434,13 +1437,32 @@ int main(void)
     }
 
     //if we didn't quit out of the game and Barry is clearly dead, pull up the death screen:
-    if(!(kb_Data[6] & kb_Clear) && (save_data.health < 1))
+    if(!KEY_CLEAR && (save_data.health < 1))
     {
         //do all the graphical stuff and menuing until some decision is reached:
-        ded_menu(window);
+        uint8_t choice = ded_menu();
 
-        //I still can't believe I used a goto label...
-        goto GAMESTART;
+        //quitting sets the opening delay to 138 along with some other values:
+        if(!choice)
+        {
+            //reset the game without the opening bit and start it immediately:
+            opening_delay      = 0;
+            bg_scroll          = 0;
+            save_data.distance = 0;
+        }
+        else if(choice) //quitting and clearing do the same thing here since the variables need to be reset for the next game:
+        {
+            //set that menu delay variable to a positive value that I'll use for some funky math:
+            opening_delay = 138;
+
+            bg_scroll = 0;
+
+            //set this to flag that the game is over and the menu should come up:
+            save_data.distance = 0;
+        }
+
+        //only go to the start if clear wasn't pressed:
+        if(choice != 2) goto GAMESTART;        
     }
     
     //we only need distance and a few other vars to be saved, but I made this function AND I'M GONNA USE THE WHOLE FUNCTION.

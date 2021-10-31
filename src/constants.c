@@ -30,32 +30,34 @@ const char txt14[] = "had and enabled my idiocy, this is all";
 const char txt15[] = "their fault:";
 
 const char txt16[] = "Testing and feedback: TIny_Hacker,";
-const char txt17[] = "RoccoLox, and TheLastMillenial.";
+const char txt17[] = "RoccoLox, randomguy, and";
+const char txt18[] = "TheLastMillenial.";
 
-const char txt18[] = "Coding help: CommandBlockGuy, Mateo";
-const char txt19[] = "Con Lechuga, and KryptonicDragon.";
+const char txt19[] = "Coding help: CommandBlockGuy, Mateo";
+const char txt20[] = "Con Lechuga, Lionel Debroux and";
+const char txt21[] = "KryptonicDragon.";
 
-const char txt20[] = "Motivation: literally everyone on";
-const char txt21[] = "Cemetech, they're good folks.";
+const char txt22[] = "Motivation: literally everyone on";
+const char txt23[] = "Cemetech, they're good folks.";
 
-const char txt22[] = "I hope you enjoy this hackneyed mess";
-const char txt23[] = "I've made, poke me on Cemetech.net";
-const char txt24[] = "or submit an issue on GitHub if you";
-const char txt25[] = "find any bugs or grammar mistakes!";
+const char txt24[] = "I hope you enjoy this hackneyed mess";
+const char txt25[] = "I've made, poke me on Cemetech.net";
+const char txt26[] = "or submit an issue on GitHub if you";
+const char txt27[] = "find any bugs or grammar mistakes!";
 
 //The shortlink sends you through 8+ redirects to a catgirl gacha game page if typed in caps, so I can't use it with the font.
 //That was such a sentence I had to keep it; If I were a chaotic evil, I would've left the link in the game until someone noticed.
-const char txt26[] = "https://git.io/JRhEp";
+//const char txt28[] = "https://git.io/JRhEp";
 
-const char txt27[] = "https://cemetech.net/forum/";
-const char txt28[] = "viewtopic.php?t=16984";
+const char txt28[] = "https://cemetech.net/forum/";
+const char txt29[] = "viewtopic.php?t=16984";
 
 //const char txt17[] = "All your RAM is belong to us!";
 
 //I'm surprised that NULL or 0 don't work for line breaks, but as the purple man once said: "Fine, I'll do it myself"
 const char blank[] = {0};
 
-const char *about_txt[34] =
+const char *about_txt[36] =
 {
     txt0,
     txt1,
@@ -76,21 +78,23 @@ const char *about_txt[34] =
         blank,
     txt16,
     txt17,
-        blank,
     txt18,
-    txt19,
         blank,
+    txt19,
     txt20,
     txt21,
         blank,
     txt22,
     txt23,
+        blank,
     txt24,
     txt25,
-        blank,
     txt27,
-    txt28,
         blank,
+    txt28,
+    txt29,
+        blank,
+        blank
 };
 
 //the max number of coins in each shape, used so the coin-calculation runs through the minimum
