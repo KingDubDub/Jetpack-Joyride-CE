@@ -61,13 +61,18 @@ int main(void)
         (!background_extras_ptr) ||
         (!menu_ptr)              ||
         (!obstacles_ptr)         ||
-        (!avatar_ptr)
-    ) return 1;
+        (!avatar_ptr)            ) //Wow, I hate how this looks.
+    {
+        gfx_End();
+        
+        os_PutStrLine("Missing graphics appvars!");
+        delay(2000);
 
-    //Wow I hate how that looks.
+        return 0;
+    }
 
     //the start menu is also a part of the actual hallway, which is just me being lazy really:
-    for(uint8_t i = 0; i < 8; ++i)
+    for(uint8_t i = 0; i < 5; ++i)
     {
         //we add one to the second input because all these appvar pointers go to single tilesets:
         background_tiles[i] = get_tile_ptr(start_1_ptr, i + 1);
@@ -76,15 +81,24 @@ int main(void)
     //set the pointers for the opening background where we bust through the wall:
     for(uint8_t i = 0; i < 4; ++i)
     {
-        background_tiles[8 + i] = get_tile_ptr(start_2_ptr, i + 1);
+        background_tiles[5 + i] = get_tile_ptr(start_2_ptr, i + 1);
     }
 
-    //move the background sprites directly into the RAM:
-    for(uint8_t i = 0; i < 6; ++i)
+    //allocate precious RAM for the decompressed tile output:
+    for(uint8_t i = 0; i < 4; ++i)
     {
-        background_tiles[12 + i] = gfx_MallocSprite(46, 160);
-        zx7_Decompress(background_tiles[12 + i], get_tile_ptr(background_ptr, i + 1));
+        background_tiles[9 + i] = gfx_MallocSprite(46, 160);
     }
+
+    //decompress the background sprites directly into the RAM:
+    for(uint8_t i = 0; i < 4; ++i)
+    {
+        zx7_Decompress(background_tiles[9 + i], get_tile_ptr(background_ptr, i + 1));
+    }
+
+    //oh boy now everything's out of order, but at least the code doesn't need to be completely overhauled:
+    background_tiles[13] = get_tile_ptr(start_2_ptr, 5);
+    //still might do it for peace of mind though, but I'll need to weigh the optimization benefits for sure...
 
     //set the pointers for the ceiling sprites, some are reused with different backgrounds:
     for(uint8_t i = 0; i < 14; ++i)
@@ -93,7 +107,7 @@ int main(void)
     }
 
     //and get the floor bits too:
-    for(uint8_t i = 14; i < 28; ++i)
+    for(uint8_t i = 14; i < 29; ++i)
     {
         floor_tiles[i - 14] = get_tile_ptr(background_extras_ptr, i + 1);
     }
@@ -127,8 +141,8 @@ int main(void)
     gfx_rletsprite_t *missile_incoming_tiles[2];
     gfx_rletsprite_t *missile_tiles[7];
     gfx_sprite_t     *powering_tiles[4];
-    gfx_sprite_t     *firing_tiles[3];
-    gfx_rletsprite_t *shutdown_tiles[6];
+    gfx_rletsprite_t *firing_tiles[3];
+    gfx_rletsprite_t *shutdown_tiles[3];
     gfx_sprite_t     *laser_tiles[4];
 
     //locate coin sprite pointers:
@@ -168,7 +182,7 @@ int main(void)
         powering_tiles[i] = get_sprite_ptr(obstacles_ptr, offsets_offset++);
     }
 
-    //pew pew pew
+    //pew pew pew!
     for(uint8_t i = 0; i < (sizeof(firing_tiles) / 3); ++i)
     {
         firing_tiles[i] = get_sprite_ptr(obstacles_ptr, offsets_offset++);
@@ -226,15 +240,20 @@ int main(void)
     }
 
     //and here's all the flipped sprites we'll put in the RAM:
-    gfx_sprite_t *zapper_tiles_flipped[4];
-    gfx_sprite_t *horizontal_zapper[4];
-    gfx_sprite_t *horizontal_zapper_flipped[4];
-    gfx_sprite_t *powering_tiles_flipped[4];
-    gfx_sprite_t *firing_tiles_flipped[3];
-    gfx_sprite_t *barryHit_resized;
-    gfx_sprite_t *barryHit_rotated;
-    gfx_sprite_t *jetpack_resized;
-    gfx_sprite_t *jetpack_rotated;
+    gfx_sprite_t     *zapper_tiles_flipped[4];
+    gfx_sprite_t     *horizontal_zapper[4];
+    gfx_sprite_t     *horizontal_zapper_flipped[4];
+    gfx_sprite_t     *powering_tiles_flipped[4];
+    gfx_rletsprite_t *firing_tiles_flipped[3];
+    gfx_rletsprite_t *shutdown_tiles_flipped[3];
+
+    //make space for the buffers, they need to be 36 pixels but the rotation functions tend to round up 1 pixel:
+    gfx_sprite_t *barryHit_resized = gfx_MallocSprite(37, 37);
+    gfx_sprite_t *barryHit_rotated = gfx_MallocSprite(37, 37);
+
+    //the jetpack sprite needs buffers as well, square 24x24 with extra pixels:
+    gfx_sprite_t *jetpack_resized = gfx_MallocSprite(25, 25);
+    gfx_sprite_t *jetpack_rotated = gfx_MallocSprite(25, 25);
 
     //flipped zapper sprites:
     for(uint8_t i = 0; i < 4; ++i)
@@ -266,20 +285,18 @@ int main(void)
     //flipping laser sprites:
     for(uint8_t i = 0; i < 3; ++i)
     {
-        firing_tiles_flipped[i] = gfx_MallocSprite(30, 37);
-        gfx_FlipSpriteY(firing_tiles[i], firing_tiles_flipped[i]);
+        firing_tiles_flipped[i] = gfx_MallocRLETSprite(Get_Vertical_RLET_Size(firing_tiles[i]));
+        Flip_RLETSpriteY(firing_tiles[i], firing_tiles_flipped[i]);
     }
 
-    //make space for the buffer, they need to be 36 pixels but the rotation functions tend to round up 1 pixel:
-    barryHit_resized = gfx_MallocSprite(37, 37);
-    barryHit_rotated = gfx_MallocSprite(37, 37);
+    for(uint8_t i = 0; i < 3; ++i)
+    {
+        shutdown_tiles_flipped[i] = gfx_MallocRLETSprite(Get_Vertical_RLET_Size(shutdown_tiles[i]));
+        Flip_RLETSpriteY(shutdown_tiles[i], shutdown_tiles_flipped[i]);
+    }
 
-    //clear the resizing buffer data, since malloc() just expands it; the size of the data is (37*37)-1:
+    //clear the resizing buffer data since it isn't zero'd; the size of the data is (37*37)-1:
     Fill_Array(barryHit_resized->data, 1368, 0);
-
-    //jetpack sprite needs to be resized as well, square 24x24 with extra pixels:
-    jetpack_resized = gfx_MallocSprite(25, 25);
-    jetpack_rotated = gfx_MallocSprite(25, 25);
 
     //clear the jetpack sprite data too, (25 * 25) - 1 = 624:
     Fill_Array(jetpack_resized->data, 624, 0);
@@ -354,9 +371,15 @@ int main(void)
     }
     else //make a fresh start and show the game menu:
     {
+        //decompress the title sprites to the special RAM pointers:
+        for(uint8_t i = 0; i < 3; ++i)
+        {
+            zx7_Decompress(background_tiles[9 + i], get_tile_ptr(background_ptr, i + 4 + 1));
+        }
+
         //reset variables for when a game starts:
         scroll_speed    = START_SPEED;
-        bg_scroll      = 0;
+        bg_scroll       = 0;
         increment_delay = 0;
         spawn_delay     = 512;
         
@@ -364,15 +387,15 @@ int main(void)
         save_data.health   = 1;
         save_data.monies   = 0;
 
-        avatar.x                     = 24;
-        avatar.y                     = FLOOR;
-        avatar.theta                 = 0;
-        avatar.input_duration         = 0;
+        avatar.x                       = 24;
+        avatar.y                       = FLOOR;
+        avatar.theta                   = 0;
+        avatar.input_duration          = 0;
         avatar.player_animation_toggle = 1;
-        avatar.player_animation       = 3;
-        avatar.exhaust_animation      = 18;
-        avatar.corpse_bounce          = 0;
-        avatar.death_delay            = 0;
+        avatar.player_animation        = 3;
+        avatar.exhaust_animation       = 18;
+        avatar.corpse_bounce           = 0;
+        avatar.death_delay             = 0;
 
         //if there's a bug, it's always because the animation values are funky:
         missiles.icon_animate     = 0;
@@ -396,7 +419,10 @@ int main(void)
         //set the backgrounds up for the opening scene:
         set_background(0);
 
-        //if the opening delay isn't zero, run the menu:
+        //set the first floor tile to a normal wall in case it's been set to the broken tile:
+        floor_tiles[3] = get_tile_ptr(background_extras_ptr, 17 + 1);
+
+        //if the opening delay isn't zero, run the menu. Retrying skips this part:
         if(opening_delay)
         {
             //opening menu function to make this mess more readable:
@@ -440,7 +466,17 @@ int main(void)
                     break;
                 }
 
-                draw_background();
+                //scroll the title menu tiles out of the way since they're static:
+                gfx_CopyRectangle(gfx_buffer, gfx_buffer, deincrement, 0, 0, 0, 138, 240);
+
+                //we have to redraw the tiles under the menu though:
+                for(uint8_t i = 3; i < 8; ++i)
+                {
+                    //these are drawn all speedy-like without clipping calculations:
+                    gfx_Sprite(ceiling_tiles[secondary_bg_list[i]], (i * 46) - bg_scroll, 0);
+                    gfx_Sprite(background_tiles[bg_list[i]], (i * 46) - bg_scroll, 40);
+                    gfx_Sprite(floor_tiles[secondary_bg_list[i]], (i * 46) - bg_scroll, 200);
+                }
 
                 //draw the title scrawl as it ascends into the heavens:
                 gfx_RLETSprite(title, 160, title_pos -= deincrement);
@@ -451,8 +487,14 @@ int main(void)
 
         if(!KEY_CLEAR)
         {
-            //make absolutely sure all the background tiles are set correctly:
-            set_background(3);
+            //make absolutely sure all the background tiles are set correctly without the menu:
+            set_background(0);
+
+            //overwrite the bg_list entries for the non-existent title sprites with the opening hall ones:
+            for (uint8_t i = 0; i < sizeof(bg_list); ++i)
+            {
+                secondary_bg_list[i] = i + 3;
+            }
 
             //make sure the first frame gets drawn when the game is retry'd rather than started from the menu:
             draw_background();
@@ -471,19 +513,36 @@ int main(void)
             --opening_delay;
         }
 
-        //I would combine everything under one [clear] check, but then stuff gets weird when exitting the cutscene
+        //I would combine everything under one [clear] check, but then stuff gets weird when exitting the cutscene:
         if(!KEY_CLEAR)
         {
             //draw the white flash for when the explosion happens:
             gfx_FillScreen(2);
 
             gfx_SwapDraw();
-            delay(80);
-            gfx_SwapDraw();
+
+            delay(50);
+
+            //set the first tile to the broken wall
+            bg_list[0] = 13;
+
+            //set the lower wall tile sprite to the broken one:
+            floor_tiles[3] = floor_tiles[14];
+
+            //normally there'd be a SwapDraw() here, but I let the main program loop do it instead here.
+
+            //in fact, it adds a little delay to the flash, meaning that I'm using the... natural lag. (LAUGH AT THE MATH PUN)
         }
     }
 
-    //rotating Barry and the jetpack is way too slow, so I alternate between them every frame instead:
+    //decompress the normal hall sprites and overwrite the menu tiles:
+    for(uint8_t i = 0; i < 3; ++i)
+    {
+        zx7_Decompress(background_tiles[9 + i], get_tile_ptr(background_ptr, i + 1));
+    }
+
+    //rotating Barry and the jetpack is way too slow, so I alternate between them every frame instead and keep track with
+    //this little bool value:
     bool barry_spin = true;
 
     //color to flash when hit by obstacles, it's a really cool effect and I'm surprised I thought of a way to do it:
@@ -1102,7 +1161,7 @@ int main(void)
                         {
                             //lasers running out of juice:
                             gfx_RLETSprite_NoClip(shutdown_tiles[animation_index], 5, lasers.y[i] - 16);
-                            gfx_RLETSprite_NoClip(shutdown_tiles[3 + animation_index], 285, lasers.y[i] - 16);
+                            gfx_RLETSprite_NoClip(shutdown_tiles_flipped[animation_index], 285, lasers.y[i] - 16);
 
                             //drawing the laser beam line by line since that's faster and smaller than using a sprite:
                             for(uint8_t j = 0; j < 15; ++j)
@@ -1113,14 +1172,12 @@ int main(void)
                                     gfx_HorizLine_NoClip(35, lasers.y[i] + j, 250);
                                 }
                             }
-
-                            gfx_Sprite_NoClip(laser_tiles[animation_index], 35, lasers.y[i]);
                         }
                         else if(lasers.lifetime[i] < 64)
                         {
                             //firing lasers:
-                            gfx_TransparentSprite_NoClip(firing_tiles[animation_index], 5, lasers.y[i] - 11);
-                            gfx_TransparentSprite_NoClip(firing_tiles_flipped[animation_index], 285, lasers.y[i] - 11);
+                            gfx_RLETSprite_NoClip(firing_tiles[animation_index], 5, lasers.y[i] - 11);
+                            gfx_RLETSprite_NoClip(firing_tiles_flipped[animation_index], 285, lasers.y[i] - 11);
 
                             for(uint8_t j = 0; j < 15; ++j)
                             {
@@ -1157,7 +1214,7 @@ int main(void)
                             //gfx_Circle_NoClip(308, lasers.y[i]+7, 8 + ((lasers.lifetime[i]-50)/4));
                         }
 
-                        //I thought it was an issue with how I deactivated lasers, but it was really an int24 overflow:
+                        //I thought there was an issue with how I deactivated lasers, but it was really an int24 overflow:
                         if(lasers.lifetime[i] != 16777215) --lasers.lifetime[i];
                     }
                 }
@@ -1190,7 +1247,7 @@ int main(void)
             gfx_SetTextScale(2, 2);
             gfx_SetTextXY(10, 10);
             //I pulled that number out of my butt and it gives good results, distance in pixels divided by 15:
-            gfx_PrintInt(save_data.distance / 15, 4);
+            gfx_PrintUInt(save_data.distance / 15, 4);
 
             gfx_SetTextScale(1, 1);
 
@@ -1200,19 +1257,19 @@ int main(void)
             gfx_PrintStringXY("BEST:", 10, 29); gfx_PrintInt(save_data.highscore, 1);
 
             gfx_SetTextXY(280, 10);
-            gfx_PrintInt(FPS, 1);
+            gfx_PrintUInt(FPS, 1);
 
-            /*for(uint8_t i = 0; i < 7; ++i)
+            /*for(uint8_t i = 0; i < 3; ++i)
             {
                 gfx_SetTextXY(260, 30 + (10 * i));
-                gfx_PrintUInt(lasers.lifetime[i], 1);
+                gfx_PrintUInt(Get_RLET_Size(shutdown_tiles[i]), 1);
             }*/
 
             //gold coin color for money counter:
             gfx_SetTextFGColor(4);
 
             gfx_SetTextXY(10, 41);
-            gfx_PrintInt(save_data.monies, 3);
+            gfx_PrintUInt(save_data.monies, 3);
         }
 
         //speedy blitting, but works best when used a lot of cycles BEFORE any new drawing functions:
@@ -1413,7 +1470,7 @@ int main(void)
             //note that I only check the background tiles since the timings are the same for all tile insertions:
             if(bg_list[7] == bg_list[8])
             {
-                if(bg_list[8] < 11)
+                if(bg_list[8] < 8)
                 {
                     //this just makes sure that we've done the opening 12 tiles before we start spawning the 16:
                     ++bg_list[8];
@@ -1421,14 +1478,14 @@ int main(void)
                 }
                 else if(bg_list[6] == bg_list[8])
                 {
-                    bg_list[7] = 12 + randInt(0, 2) * 2;
+                    bg_list[7] = 9 + randInt(0, 1) * 2;
                     bg_list[8] = bg_list[7] + 1;
 
                     secondary_bg_list[7] =  12;
                     secondary_bg_list[8] = 13;
                 }
             }
-            //the problem is that all the tiles are only half of a single hallway "chunk" of 92 pixels.
+            //the problem is that all the tiles are only half (46 px) of a single hallway "chunk" of 92 pixels.
         }
         else
         {

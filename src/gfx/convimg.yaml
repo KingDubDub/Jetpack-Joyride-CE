@@ -1,6 +1,8 @@
 palettes:
   - name: jetpack_palette
     images: automatic
+    speed: 1
+    max-entries: 255
     fixed-entries:
       - color: {index: 0, r: 255, g:   0, b: 128}    #transparent color (hot pink)
       - color: {index: 1, r:   0, g:   0, b:   0}    #black
@@ -225,6 +227,8 @@ converts:
 
   - name: laser_firing
     palette: jetpack_palette
+    style: rlet
+    transparent-color-index: 0
     images:
       - lasers/firing0.png
       - lasers/firing1.png
@@ -238,9 +242,6 @@ converts:
       - lasers/shutdown0.png
       - lasers/shutdown1.png
       - lasers/shutdown2.png
-      - lasers/shutdown3.png
-      - lasers/shutdown4.png
-      - lasers/shutdown5.png
 
   - name: laser_beam
     palette: jetpack_palette

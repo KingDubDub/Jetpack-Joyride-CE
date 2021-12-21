@@ -185,8 +185,8 @@ extern "C" {
 
     //pointers to the background sprites:
     extern gfx_sprite_t *ceiling_tiles[14];
-    extern gfx_sprite_t *background_tiles[18];
-    extern gfx_sprite_t *floor_tiles[14];
+    extern gfx_sprite_t *background_tiles[14];
+    extern gfx_sprite_t *floor_tiles[15];
 
     //globalizing these saves about ~200 bytes, so there is a good reason for this:
     extern gfx_sprite_t     *button_on_tiles[4];
@@ -209,7 +209,7 @@ extern "C" {
     } while (0);
     //NOTE: initial tests saw smaller size than memset and equivalent speed. Further testing will be done when I feel like it.
 
-    void  copy_pasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, uint24_t x, uint8_t y);
+    void  copy_pasta(const gfx_sprite_t *spriteIn, gfx_sprite_t *spriteOut, const uint24_t x, const uint8_t y);
 
     void  draw_background(void);
 
@@ -217,7 +217,7 @@ extern "C" {
 
     void  draw_pause_buttons(gfx_sprite_t *sprites[], const char *text, uint8_t buttonSelect);
 
-    void  set_background(const uint8_t start);
+    void  set_background(const int8_t start);
 
     void  save_state(void);
 
@@ -226,6 +226,14 @@ extern "C" {
     void* get_tile_ptr(const void *ptr, const uint8_t tile);
 
     void* get_sprite_ptr(const void *ptr, uint8_t tile);
+
+    uint24_t Get_RLET_Size(const gfx_rletsprite_t *src);
+
+    uint24_t Get_Vertical_RLET_Size(gfx_rletsprite_t *src);
+
+    void Flip_RLETSpriteX(const gfx_rletsprite_t *src, gfx_rletsprite_t *dest, const uint24_t size);
+
+    void Flip_RLETSpriteY(const gfx_rletsprite_t *src, gfx_rletsprite_t *dest);
 
     void  title_menu(void);
 

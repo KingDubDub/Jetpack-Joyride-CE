@@ -40,7 +40,7 @@ uint8_t secondary_bg_list[9];
 game_data_t save_data;
 
 //the Jetpack Joyride guy's name is Barry Steakfries, which is what I would name my child if I had the desire to marry
-//and have children.
+//and have children. I'll call him avatar internally so the code is easier to steal :)
 avatar_t avatar;
 
 //everything needed to keep track of the points and speed of the seperate jetpack when Barry dies:
@@ -57,15 +57,15 @@ uint8_t opening_delay = 138;
 
 //globalized sprite pointers, uses less RAM than managing a bunch of function parameters:
 gfx_sprite_t     *ceiling_tiles[14];
-gfx_sprite_t     *background_tiles[18];
-gfx_sprite_t     *floor_tiles[14];
+gfx_sprite_t     *background_tiles[14];
+gfx_sprite_t     *floor_tiles[15];
 gfx_sprite_t     *button_on_tiles[4];
 gfx_sprite_t     *button_off_tiles[4];
 gfx_sprite_t     *window;
 gfx_rletsprite_t *title;
 
 //takes an input sprite and pastes it into another sprite at given coordinates:
-void copy_pasta(const gfx_sprite_t *sprite_in, gfx_sprite_t *sprite_out, uint24_t x, uint8_t y)
+void copy_pasta(const gfx_sprite_t *sprite_in, gfx_sprite_t *sprite_out, const uint24_t x, const uint8_t y)
 {
     const uint24_t width_in = sprite_in->width;
     const uint24_t sprite_in_size = sprite_in->height * width_in;
@@ -138,12 +138,12 @@ void draw_pause_buttons(gfx_sprite_t *sprites[], const char *text, uint8_t butto
 }
 
 //set the background tiles starting at a given point:
-void set_background(const uint8_t start)
+void set_background(const int8_t start)
 {
     for(uint8_t i = 0; i < + 9; ++i)
     {
         bg_list[i] = start + i;
-        secondary_bg_list[i] = bg_list[i];
+        secondary_bg_list[i] = start + i;
     }
 }
 
@@ -225,6 +225,257 @@ void* get_sprite_ptr(const void *ptr, uint8_t tile)
     return (void*)(ptr + *((uint16_t*)ptr + tile + 1));
 }
 
+//Gets the data size of an RLET-encoded sprite, good for allocating memory for flipped copies
+uint24_t Get_RLET_Size(const gfx_rletsprite_t *src)
+{
+    //optimizing for speed here
+    uint24_t width  = src->width;
+    uint24_t height = src->height;
+
+    uint24_t data_offset = 0;
+
+    for(uint8_t y = 0; y < height; ++y)
+    {
+        //figure out the row size
+        for(uint8_t x = 0; x < width;)
+        {
+            //grab the transparent run length and increment the size afterwards
+            x += src->data[data_offset++];
+
+            //make sure the last transparent run wasn't the whole line
+            if(x < width)
+            {
+                //the next byte is number of non-transparent colors
+                x += src->data[data_offset];
+
+                //the next byte is the number of non-transparent colors, add that plus 1 for the next run
+                data_offset += (src->data[data_offset] + 1);
+            }
+        }
+    }
+
+    //add the two width and height values
+    return data_offset + 2;
+}
+
+//calculates what the size of an RLET-encoded sprite would be after flipping it across the Y-axis
+uint24_t Get_Vertical_RLET_Size(gfx_rletsprite_t *src)
+{
+    uint24_t data_offset = 0;
+
+    //the range of possible dest size differences range from -255 to 255
+    int24_t dest_difference = 0;
+
+    for(uint8_t y = 0; y < src->height; ++y)
+    {
+        uint24_t row_start = data_offset;
+
+        //figure out the row size
+        for(uint8_t x = 0; x < src->width;)
+        {
+            x += src->data[data_offset++];
+
+            //make sure the last transparent run wasn't the whole line
+            if(x < src->width)
+            {
+                //the next byte is number of non-transparent colors
+                x += src->data[data_offset];
+
+                //the next byte is the number of non-transparent colors, add that plus 1 for the next run
+                data_offset += (src->data[data_offset] + 1);
+
+                if((x >= src->width) && (src->data[row_start]))
+                {
+                    //if the line ends in a solid run but starts with a transparent run, we need to increase the ouput row size
+                    //so we can append zero to the start of the dest data
+                    ++dest_difference;
+                }
+            }
+            else if(!src->data[row_start])
+            {
+                //if the line ended with a transparent run but started without one, the dest row needs to be shrunk by one byte
+                //since the zero will be replaced with the last transparent run and the data cannot end in zero
+                --dest_difference;
+            }
+        }
+    }
+
+    //add the width and height variables size to the data size
+    return data_offset + dest_difference + 2;
+}
+
+//Takes a RLET-encoded sprite and flips it across the X-axis
+void Flip_RLETSpriteX(const gfx_rletsprite_t *src, gfx_rletsprite_t *dest, const uint24_t size)
+{
+    dest->width  = src->width;
+    dest->height = src-> height;
+
+    uint24_t data_offset = 0;
+
+    //the src size has the first 2 bytes for height and width, we only need the data
+    uint24_t data_size = size - 2;
+
+    for(uint8_t y = 0; y < src->height; ++y)
+    {
+        const uint8_t *src_ptr  = &src->data[data_offset];
+
+        //reset the line size (in bytes, not pixels)
+        uint8_t row_size = 0;
+
+        //figure out the row size
+        for(uint8_t x = 0; x < src->width;)
+        {
+            //grab the transparent run length and increment the row size afterwards
+            x += src_ptr[row_size++];
+
+            //make sure the last transparent run wasn't the whole line
+            if(x < src->width)
+            {
+                //the next byte is number of non-transparent colors
+                x += src_ptr[row_size];
+
+                //the next byte is the number of non-transparent colors, add that plus 1 for the next run
+                row_size += (src_ptr[row_size] + 1);
+            }
+        }
+
+        //copy the first row of the src to what will be the last row of the dest
+        memcpy(&dest->data[data_size - row_size - data_offset], &src->data[data_offset], row_size);
+
+        data_offset += row_size;
+    }
+}
+
+//Takes a RLET-encoded sprite and flips it across the Y-axis
+void Flip_RLETSpriteY(const gfx_rletsprite_t *src, gfx_rletsprite_t *dest)
+{
+    dest->width  = src->width;
+    dest->height = src-> height;
+
+    uint24_t src_data_offset  = 0;
+    uint24_t dest_data_offset = 0;
+
+    for(uint8_t y = 0; y < src->height; ++y)
+    {
+        uint8_t src_row_size  = 0;
+        uint8_t dest_row_size = 0;
+
+        //Why is the compiler like this? Why is this the right way? At least it saves 9 bytes...
+        uint8_t *dest_ptr = &dest->data[dest_data_offset];
+
+        //...and this one saves 48 bytes. Commandz is a wise block, I should've tried this earlier.
+        const uint8_t *src_ptr  = &src->data[src_data_offset];
+
+        //due to how the data encodes, we need to track if the ouput row size needs to be different than the src size
+        bool funky_flag = 0;
+
+        //figure out the row size
+        for(uint8_t x = 0; x < src->width;)
+        {
+            x += src_ptr[src_row_size++];
+
+            //make sure the last transparent run wasn't the whole line
+            if(x < src->width)
+            {
+                //the next byte is number of non-transparent colors
+                x += src_ptr[src_row_size];
+
+                //the next byte is the number of non-transparent colors, add that plus 1 for the next run
+                src_row_size += (src_ptr[src_row_size] + 1);
+
+                if((x >= src->width) && (src_ptr[0]))
+                {
+                    //if the line ends in a solid run but starts with a transparent run, we need to increase the ouput row size
+                    //so we can append zero to the start of the dest data
+                    dest_row_size = src_row_size + 1;
+
+                    funky_flag = true;
+                }
+            }
+            else if(!src_ptr[0])
+            {
+                //if the line ended with a transparent run but started without one, the dest row needs to be shrunk by one byte
+                //since the zero will be replaced with the last transparent run and the data cannot end in zero
+                dest_row_size = src_row_size - 1;
+
+                funky_flag = true;
+            }
+        }
+
+        if(!funky_flag)
+        {
+            dest_row_size += src_row_size;
+        }
+
+        //Oh boy, I sure do love abusing bool types!
+        for(int24_t i = 0; i < (src_row_size - funky_flag);)
+        {
+            uint8_t solid_length;
+
+            //if the first transparent run isn't zero
+            if(src_ptr[0])
+            {
+                dest_ptr[dest_row_size - 1 - i] = src_ptr[i];
+
+                ++i;
+
+                //ensure the whole line wasn't transparent
+                if(i < (src_row_size - funky_flag))
+                {
+                    solid_length = src_ptr[i];
+    
+                    //set the transparent run length
+                    dest_ptr[dest_row_size - 1 - solid_length - i] = solid_length;
+
+                    for(uint24_t j = 0; j < solid_length; ++j)
+                    {
+                        dest_ptr[dest_row_size - solid_length - i + j] = src_ptr[i + solid_length - j];
+                    }
+
+                    //add the length of the copied data to the size count
+                    i += solid_length + 1;
+
+                    //if the src row ends with a solid run, we have to tack a zero-transparent run at the start of the dest
+                    if(i >= (src_row_size - funky_flag))
+                    {
+                        dest_ptr[0] = 0;
+                    }
+                }
+            }
+            else //else things get weird because we have to read ahead of the src to skip the zero
+            {
+                solid_length = src_ptr[i + 1];
+
+                dest_ptr[dest_row_size - 1 - solid_length - i] = solid_length;
+
+                for(uint24_t j = 0; j < solid_length; ++j)
+                {
+                    dest_ptr[dest_row_size - solid_length - i + j] = src_ptr[i + solid_length + 1 - j];
+                }
+
+                i += src_ptr[i + 1] + 1;
+
+                //ensure the whole line wasn't solid
+                if(i < (src_row_size - funky_flag))
+                {
+                    dest_ptr[dest_row_size - 1 - i] = src_ptr[i + 1];
+
+                    ++i;
+
+                    //if everything is normal and it ends with a solid run, we need to apend a zero to the dest:
+                    if((!funky_flag) && (i >= src_row_size))
+                    {
+                        dest_ptr[0] = 0;
+                    }
+                }
+            }
+        }
+
+        src_data_offset  += src_row_size;
+        dest_data_offset += dest_row_size;
+    }
+}
+
 //Draws the opening tiles and the button selector for choosing what to do, handles all menus and popups at the
 //beginning, I have to have pointers to the sprites because they're local variables:
 void title_menu(void)
@@ -245,6 +496,18 @@ void title_menu(void)
         //graphics and input handling for main menu:
         do{
             kb_Scan();
+
+            //write the normal hall entries in, but skip the first three:
+            for (uint8_t i = 3; i < sizeof(bg_list); ++i)
+            {
+                bg_list[i] = i - 3;
+            }
+            
+            //go back and write the decompressed hall tile index:
+            for(uint8_t i = 0; i < 3; ++i)
+            {
+                bg_list[i] = 9 + i;
+            }
 
             draw_background();
 
