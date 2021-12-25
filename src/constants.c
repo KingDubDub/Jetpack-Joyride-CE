@@ -12,45 +12,45 @@ All variables and datatypes for Jetpack Joyride CE that are hard-coded and used 
 /* --- Strings --- */
 
 //There's got to be a better way:
-const char txt0[] = "Yes, this is a calculator. When I was";
-const char txt1[] = "smol, I saw some highschoolers trying";
-const char txt2[] = "to put Oiram on their calculators.";
-const char txt3[] = "From that time I wanted to play and";
-const char txt4[] = "make games on stuff that wasn't";
-const char txt5[] = "made for entertainment. This dumb";
-const char txt6[] = "project was going to be an exercise";
-const char txt7[] = "of my skillz that I turned into a";
-const char txt8[] = "full port of Jetpack Joyride, which";
-const char txt9[] = "is owned by Halfbrick Studios (pls no";
-const char txt10[] = "sue). Go play the original, it's more";
-const char txt11[] = "fun; this is just mildly blursed. I";
-const char txt12[] = "also wanna say thanks to everybody";
-const char txt13[] = "who taught me how to use the tools I";
-const char txt14[] = "had and enabled my idiocy, this is all";
-const char txt15[] = "their fault:";
+const char txt0[] = "YES, THIS IS A CALCULATOR. WHEN I WAS";
+const char txt1[] = "SMOL, I SAW SOME HIGHSCOLLERS TRYING";
+const char txt2[] = "TO PUT OIRAM ON THEIR CALCULATORS.";
+const char txt3[] = "FROM THAT TIME I WANTED TO PLAY AND";
+const char txt4[] = "MAKE GAMES FOR STUFF THAT WASN'T";
+const char txt5[] = "MADE FOR ENTERTAINMENT. THIS DUMB";
+const char txt6[] = "PROJECT WAS GOING TO BE AN EXCERCISE";
+const char txt7[] = "OF MY SKILLZ THAT I TURNED INTO A";
+const char txt8[] = "FULL PORT OF JETPACK JOYRIDE, WHICH";
+const char txt9[] = "IS OWNED BY HALFBRICK STUDIOS (PLS NO";
+const char txt10[] = "SUE). GO PLAY THE ORIGINAL, IT'S MORE";
+const char txt11[] = "FUN; THIS IS JUST MILDLY BLURSED. I";
+const char txt12[] = "ALSO WANNA SAY THANKS TO EVERYBODY";
+const char txt13[] = "WHO TAUGHT ME HOW TO USE THE TOOLS I";
+const char txt14[] = "HAD AND ENABLED MY IDIOCY, THIS IS ALL";
+const char txt15[] = "THEIR FAULT:";
 
-const char txt16[] = "Testing and feedback: TIny_Hacker,";
-const char txt17[] = "RoccoLox, randomguy, and";
-const char txt18[] = "TheLastMillenial.";
+const char txt16[] = "TESTING AND FEEDBACK: TINY_HACKER,";
+const char txt17[] = "ROCCOLOX, RANDOMGUY, AND";
+const char txt18[] = "THELASTMILLENIAL.";
 
-const char txt19[] = "Coding help: CommandBlockGuy, Mateo";
-const char txt20[] = "Con Lechuga, Lionel Debroux and";
-const char txt21[] = "KryptonicDragon.";
+const char txt19[] = "CODING HELP: COMMANDBLOCKGUY, MATEO";
+const char txt20[] = "CON LECHUGA, LIONEL DEBROUX, AND";
+const char txt21[] = "KRYPTONICDRAGON.";
 
-const char txt22[] = "Motivation: literally everyone on";
-const char txt23[] = "Cemetech, they're good folks.";
+const char txt22[] = "MOTIVATION: LITERALLY EVERYONE ON";
+const char txt23[] = "CEMETECH, THEY'RE GOOD FOLKS.";
 
-const char txt24[] = "I hope you enjoy this hackneyed mess";
-const char txt25[] = "I've made, poke me on Cemetech.net";
-const char txt26[] = "or submit an issue on GitHub if you";
-const char txt27[] = "find any bugs or grammar mistakes!";
+const char txt24[] = "I HOPE YOU ENJOY THIS HACKNEYED MESS";
+const char txt25[] = "I'VE MADE, POKE ME ON CEMETECH.NET";
+const char txt26[] = "OR SUBMIT AN ISSUE ON GITHUB IF YOU";
+const char txt27[] = "FIND ANY BUGS OR GRAMMAR MISTAKES!";
 
 //The shortlink sends you through 8+ redirects to a catgirl gacha game page if typed in caps, so I can't use it with the font.
 //That was such a sentence I had to keep it; If I were a chaotic evil, I would've left the link in the game until someone noticed.
 //const char txt28[] = "https://git.io/JRhEp";
 
-const char txt28[] = "https://cemetech.net/forum/";
-const char txt29[] = "viewtopic.php?t=16984";
+const char txt28[] = "HTTPS://CEMETECH.NET/FORUM/";
+const char txt29[] = "VIEWTOPIC.PHP?T=16984";
 
 //const char txt17[] = "All your RAM is belong to us!";
 
@@ -89,12 +89,12 @@ const char *about_txt[36] =
         blank,
     txt24,
     txt25,
+    txt26,
     txt27,
         blank,
     txt28,
     txt29,
         blank,
-        blank
 };
 
 //the max number of coins in each shape, used so the coin-calculation runs through the minimum

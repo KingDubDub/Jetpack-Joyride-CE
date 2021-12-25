@@ -10,7 +10,10 @@ to mod this or something then get ready for some over-commented trash!
 In case it wasn't clear, modding this should have my permission and credit to me,
 but other than that you are obliged to have as much fun as will kill you!
 
-NOTE TO SELF: Sprites are scaled down by 1:0.720720720
+NOTES TO SELF:
+    - Sprites are scaled down by 1:0.720720720
+    - All in-game text must be capitalized since the font doesn't include lowercase
+    - These chars are not implemented either: "`", "{", "|", "}", and "~"
 
 */
 

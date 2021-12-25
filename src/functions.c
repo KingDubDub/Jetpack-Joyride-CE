@@ -639,26 +639,52 @@ uint8_t ded_menu(void)
     gfx_TransparentSprite_NoClip(gfx_FlipSpriteY(window, flipped_window), 286, 10);
 
     gfx_SetTextFGColor(2); //white
-    gfx_SetTextScale(1, 1);
 
-    gfx_PrintStringXY("YOU FLEW", 191, 40);
-    gfx_PrintStringXY("AND COLLECTED", 173, 100);
-    gfx_PrintStringXY("COINS:", 154, 134);
+    //I just took the current christmas date and multiplied it's values: 25 * 12 * 2021 = 606300
+    //If there's a funny Cemetech number out there then I need to use that instead, I doubt anyone
+    //will ever find this, and if they do I doubt they'll talk about it.
+    if(randInt(0, 606300) || (save_data.distance >= (save_data.highscore * 15)))
+    {
+        gfx_SetTextScale(1, 1);
 
-    gfx_SetTextFGColor(4); //gold
-    gfx_SetTextScale(3, 3);
+        gfx_PrintStringXY("YOU FLEW", 191, 40);
+        gfx_PrintStringXY("AND COLLECTED", 173, 100);
+        gfx_PrintStringXY("COINS:", 154, 134);
 
-    //draw distance centered on the menu box:
-    gfx_SetTextXY(217 - distance_width/2, 60);
-    gfx_PrintUInt(save_data.distance / 15, 1);
+        gfx_SetTextFGColor(4); //gold
+        gfx_SetTextScale(3, 3);
 
-    //add the meters symbol:
-    gfx_SetTextScale(2, 2);
-    gfx_PrintStringXY("m", gfx_GetTextX(), 68);
+        //draw distance centered on the menu box:
+        gfx_SetTextXY(217 - distance_width/2, 60);
+        gfx_PrintUInt(save_data.distance / 15, 1);
 
-    //draw coin count:
-    gfx_SetTextXY(218 - money_width/2, 130);
-    gfx_PrintUInt(save_data.monies, 1);
+        //add the meters symbol:
+        gfx_SetTextScale(2, 2);
+        gfx_PrintStringXY("M", gfx_GetTextX(), 68);
+
+        //draw coin count:
+        gfx_SetTextXY(218 - money_width/2, 130);
+        gfx_PrintUInt(save_data.monies, 1);
+    }
+    else
+    {
+        //note that this doesn't show up if you set a new high-score, that'd be annoying
+
+        gfx_SetColor(1); //black
+        gfx_FillRectangle_NoClip(150, 34, 140, 139);
+
+        gfx_SetTextScale(2, 2);
+        gfx_PrintStringXY("U IS DED.", 168, 55);
+
+        gfx_SetTextScale(5, 5);
+        gfx_PrintStringXY("LOL.", 155, 100);
+
+        //OH LOOK ANOTHER FUNNY HAHA JOJOKE:
+        const char menacing[2] = {15, 0};
+
+        gfx_SetTextScale(1, 1);
+        gfx_PrintStringXY(menacing, 216, 153);
+    }
 
     gfx_SetTextScale(2, 2);
     gfx_SetTextFGColor(2); //white
