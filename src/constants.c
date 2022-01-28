@@ -11,7 +11,7 @@ All variables and datatypes for Jetpack Joyride CE that are hard-coded and used 
 
 /* --- Strings --- */
 
-//There's got to be a better way:
+//There's got to be a better way.
 const char txt0[] = "YES, THIS IS A CALCULATOR. WHEN I WAS";
 const char txt1[] = "SMOL, I SAW SOME HIGHSCOLLERS TRYING";
 const char txt2[] = "TO PUT OIRAM ON THEIR CALCULATORS.";
@@ -98,7 +98,7 @@ const char *about_txt[36] =
 };
 
 //the max number of coins in each shape, used so the coin-calculation runs through the minimum
-//number of coins:
+//number of coins
 const uint8_t coin_max[COIN_FORMATIONS] =
 {
     30,
@@ -109,7 +109,7 @@ const uint8_t coin_max[COIN_FORMATIONS] =
     30
 };
 
-//coin formation type arrays:
+//coin formation type arrays
 const uint24_t coin_form_x[COIN_FORMATIONS][MAX_COINS] =
 {{
     0, 12, 24, 36, 48, 60, 72, 84, 96, 108,
@@ -188,7 +188,7 @@ const uint8_t coin_form_y[COIN_FORMATIONS][MAX_COINS] =
         60,     60,     60,     60,     60
 }};
 
-//max number of lasers per formation, so only the ones used are updated:
+//max number of lasers per formation, so only the ones used are updated
 const uint8_t formation_max_lasers[LASER_FORMATIONS] =
 {
     1,
@@ -198,7 +198,7 @@ const uint8_t formation_max_lasers[LASER_FORMATIONS] =
     7
 };
 
-//Y-coords, no X's needed:
+//Y-coords, no X's needed
 const uint8_t laser_y[LASER_FORMATIONS][MAX_LASERS] =
 {{
     114
@@ -225,7 +225,7 @@ const uint8_t laser_y[LASER_FORMATIONS][MAX_LASERS] =
     204
 }};
 
-//TTL for lasers, it's the last 108 cycles that count:
+//TTL for lasers, it's the last 108 cycles that count
 const uint8_t half_life[LASER_FORMATIONS][MAX_LASERS] =
 {{
     108
