@@ -401,6 +401,7 @@ int main(void)
         avatar.player_animation        = 3;
         avatar.exhaust_animation       = 18;
         avatar.corpse_bounce           = 0;
+        avatar.death_delay             = 0;
 
         //if there's a bug, it's always because the animation values are funky
         missiles.icon_animate     = 0;
@@ -521,8 +522,8 @@ int main(void)
         //I would combine everything under one [clear] check, but then stuff gets weird when exitting the cutscene
         if(!KEY_CLEAR)
         {
-            //draw the white flash for when the explosion happens
-            Draw_DitheredMesh(2);
+            //draw the greyish flash for when the explosion happens
+            Draw_DitheredMesh(3);
 
             gfx_SwapDraw();
 
@@ -558,7 +559,8 @@ int main(void)
     uint8_t FPS;
 
     //start up a timer for FPS monitoring, do not move
-    timer_Control = TIMER2_ENABLE | TIMER2_32K | TIMER2_UP;
+
+    timer_Enable(1, TIMER_32K, TIMER_0INT, TIMER_UP);
 
     //I'm not sure how, but sometimes resuming the game kicks you out and death_delay goes over 50, which also
     //keeps the game from playing. This is a kinda-fix until I figure out what's wrong.
@@ -1325,13 +1327,10 @@ int main(void)
 
             //reset the flag, comment this out if you need to off an epileptic cheese-themed supervillian
             death_color = 0;
-
-            //make sure that the corpse bouncing timer is set correctly too since it breaks sometimes
-            avatar.death_delay = 0;
         }
 
         //FPS counter data collection, time "stops" (being relevant) after this point
-        FPS = (32768 / timer_GetSafe(2, TIMER_UP));
+        FPS = (32768 / timer_GetSafe(1, TIMER_UP));
         //the GetSafe() is to make Tari stop bothering me
 
         //time is frozen for a delay, and I wanna make a Jo-Jo reference but I don't speak Japanese
@@ -1372,7 +1371,7 @@ int main(void)
         }
 
         //and with a timer reset "ZA WARUDO" is over (iS tHaT A jOJo rEfERenCe and also yes I looked it up)
-        timer_2_Counter = 0;
+        timer_1_Counter = 0;
 
         //controls bg_scroll, 46 is for background sprite width
         if((bg_scroll + scroll_speed) >= 46)

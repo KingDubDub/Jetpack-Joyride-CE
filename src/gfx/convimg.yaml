@@ -7,7 +7,7 @@ palettes:
       - color: {index: 0, r: 255, g:   0, b: 128}    #transparent color (hot pink)
       - color: {index: 1, r:   0, g:   0, b:   0}    #black
       - color: {index: 2, r: 255, g: 255, b: 255}    #white
-      - color: {index: 3, r: 232, g: 232, b: 232}    #light grey (font color)
+      - color: {index: 3, r: 200, g: 200, b: 200}    #light grey
       - color: {index: 4, r: 255, g: 243, b: 115}    #gold (coin counter)
       - color: {index: 5, r: 249, g:   0, b:   0}    #red (laser color)
       - color: {index: 6, r:  40, g:  48, b:  73}    #grey-blue (pause background color)
