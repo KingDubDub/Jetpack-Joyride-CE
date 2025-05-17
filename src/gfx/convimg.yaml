@@ -1,16 +1,15 @@
 palettes:
-  - name: jetpack_palette
-    images: automatic
-    speed: 1
-    max-entries: 255
+  - name: global_palette
+    quality: 5
     fixed-entries:
-      - color: {index: 0, r: 255, g:   0, b: 128}    #transparent color (hot pink)
-      - color: {index: 1, r:   0, g:   0, b:   0}    #black
-      - color: {index: 2, r: 255, g: 255, b: 255}    #white
-      - color: {index: 3, r: 200, g: 200, b: 200}    #light grey
-      - color: {index: 4, r: 255, g: 243, b: 115}    #gold (coin counter)
-      - color: {index: 5, r: 249, g:   0, b:   0}    #red (laser color)
-      - color: {index: 6, r:  40, g:  48, b:  73}    #grey-blue (pause background color)
+      - color: {index: 0, r: 255, g:   0, b: 128}  # transparent color (hot pink)
+      - color: {index: 1, r:   0, g:   0, b:   0}  # black
+      - color: {index: 2, r: 255, g: 255, b: 255}  # white
+      - color: {index: 3, r: 200, g: 200, b: 200}  # light grey
+      - color: {index: 4, r: 255, g: 243, b: 115}  # gold (coin counter)
+      - color: {index: 5, r: 249, g:   0, b:   0}  # red (laser color)
+      - color: {index: 6, r:  40, g:  48, b:  73}  # navy (pause background color)
+    images: automatic
 
 outputs:
 
@@ -19,145 +18,47 @@ outputs:
   - type: appvar
     name: JPJRPAL
     palettes:
-      - jetpack_palette
-
-# Background tile appvars
+      - global_palette
 
   - type: appvar
-    name: JPJRBG1
+    name: JPJRBG
     lut-entries: true
     lut-entry-size: 2
     converts:
-      - opening
+      - background
+      - background_extra
 
   - type: appvar
-    name: JPJRBG2
+    name: JPJRGFX
     lut-entries: true
     lut-entry-size: 2
     converts:
-      - opening_2
-
-  - type: appvar
-    name: JPJRBG3
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - backgrounds
-
-  - type: appvar
-    name: JPJRBG4
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - background_extra_bits
-
-# Avatar sprites and assets
-
-  - type: appvar
-    name: BARRY
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - barry_assets
-      - barry_run_optimized
-      - barry_hit_optimized
-      - YOU_ARE_DEAD_no_big_surprise
-      - exhaust_optimized
-
-# Menu sprites
-
-  - type: appvar
-    name: JPJRGFX1
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - button_released
-      - button_pressed
-      - menu_window
       - title
-
-# Obstacle and item sprites
-
-  - type: appvar
-    name: JPJRGFX2
-    lut-entries: true
-    lut-entry-size: 2
-    converts:
-      - coins_optimized
-      - zapper
-      - missile_warning
-      - missile_incoming
-      - missile_optimized
-      - laser_powering
-      - laser_firing
-      - laser_shutdown
-      - laser_beam
+      - barry
+      - exhaust
+      - menu_assets
 
 converts:
-  - name: button_released
-    palette: jetpack_palette
-    images:
-      - menu/button_on0.png
-      - menu/button_on1.png
-      - menu/button_on2.png
-      - menu/button_on3.png
-
-  - name: button_pressed
-    palette: jetpack_palette
-    images:
-      - menu/button_off0.png
-      - menu/button_off1.png
-      - menu/button_off2.png
-      - menu/button_off3.png
-
-  - name: menu_window
-    palette: jetpack_palette
-    images:
-      - menu/window.png
-
   - name: title
-    palette: jetpack_palette
+    palette: global_palette
     style: rlet
-    transparent-color-index: 0
+    transparent-index: 0
     images:
       - menu/title.png
 
-# Everything else (self-explanatory)
-
-  - name: barry_assets
-    palette: jetpack_palette
-    images:
-      - barry/jetpack.png
-      - barry/nozzle.png
-
-  - name: barry_run_optimized
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
+  - name: barry
+    palette: global_palette
+    compress: zx0
     images:
       - barry/barry0.png
       - barry/barry1.png
       - barry/barry2.png
       - barry/barry3.png
 
-  - name: barry_hit_optimized
-    palette: jetpack_palette
-    images:
-      - barry_damaged/barry_hit0.png
-      - barry_damaged/barry_hit1.png
-      - barry_damaged/barry_hit2.png
-
-  - name: YOU_ARE_DEAD_no_big_surprise
-    palette: jetpack_palette
-    images:
-      - barry_damaged/barry_ded0.png
-      - barry_damaged/barry_ded1.png
-      - barry_damaged/barry_ded2.png
-
-  - name: exhaust_optimized
-    palette: jetpack_palette
+  - name: exhaust
+    palette: global_palette
     style: rlet
-    transparent-color-index: 0
+    transparent-index: 0
     images:
       - exhaust/exhaust0.png
       - exhaust/exhaust1.png
@@ -166,120 +67,35 @@ converts:
       - exhaust/exhaust4.png
       - exhaust/exhaust5.png
 
-  - name: coins_optimized
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
+  - name: menu_assets
+    palette: global_palette
+    compress: zx0
     images:
-      - coins/coin0.png
-      - coins/coin1.png
-      - coins/coin2.png
-      - coins/coin3.png
-      - coins/sparkle.png
+      - menu/window.png
+      - menu/button_on0.png
+      - menu/button_on1.png
+      - menu/button_on2.png
+      - menu/button_on3.png
+      - menu/button_off0.png
+      - menu/button_off1.png
+      - menu/button_off2.png
+      - menu/button_off3.png
 
-  - name: zapper
-    palette: jetpack_palette
-    images:
-      - zapper/beam.png
-      - zapper/zapper0.png
-      - zapper/zapper1.png
-      - zapper/zapper2.png
-      - zapper/zapper3.png
-
-  - name: missile_warning
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    images:
-      - missiles/missile_warning0.png
-      - missiles/missile_warning1.png
-      - missiles/missile_warning2.png
-
-  - name: missile_incoming
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    images:
-      - missiles/missile_incoming0.png
-      - missiles/missile_incoming1.png
-
-
-  - name: missile_optimized
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    images:
-      - missiles/missile0.png
-      - missiles/missile1.png
-      - missiles/missile2.png
-      - missiles/missile3.png
-      - missiles/missile4.png
-      - missiles/missile5.png
-      - missiles/missile6.png
-
-  - name: laser_powering
-    palette: jetpack_palette
-    images:
-      - lasers/powering0.png
-      - lasers/powering1.png
-      - lasers/powering2.png
-      - lasers/powering3.png
-
-  - name: laser_firing
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    images:
-      - lasers/firing0.png
-      - lasers/firing1.png
-      - lasers/firing2.png
-
-  - name: laser_shutdown
-    palette: jetpack_palette
-    style: rlet
-    transparent-color-index: 0
-    images:
-      - lasers/shutdown0.png
-      - lasers/shutdown1.png
-      - lasers/shutdown2.png
-
-  - name: laser_beam
-    palette: jetpack_palette
-    images:
-      - lasers/laser0.png
-      - lasers/laser1.png
-      - lasers/laser2.png
-      - lasers/laser3.png
-
-  - name: opening
-    palette: jetpack_palette
-    tilesets:
-      tile-width:  46
-      tile-height: 160
-      images:
-        - background/opening.png
-
-  - name: opening_2
-    palette: jetpack_palette
-    tilesets:
-      tile-width:  46
-      tile-height: 160
-      images:
-        - background/opening2.png    
-
-  - name: backgrounds
-    palette: jetpack_palette
-    compress: zx7
+  - name: background
+    palette: global_palette
+    compress: zx0
     tilesets:
       tile-width:  46
       tile-height: 160
       images:
         - background/background.png
 
-  - name: background_extra_bits
-    palette: jetpack_palette
+  - name: background_extra
+    palette: global_palette
+    compress: zx0
     tilesets:
       tile-width:  46
       tile-height: 40
       images:
-        - background/background_extra.png
+        - background/ceiling.png
+        - background/floor.png
