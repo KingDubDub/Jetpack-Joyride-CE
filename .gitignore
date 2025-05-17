@@ -1,9 +1,5 @@
 obj/
 bin/
-src/gfx/*.c
-src/gfx/*.h
 *.8xv
 .DS_Store
 convimg.yaml.lst
-autotest.json
-makespr.bat
