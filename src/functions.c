@@ -1,10 +1,12 @@
+#include <sys/timers.h>
 #include <keypadc.h>
 #include <graphx.h>
 #include <fileioc.h>
 
 #include "headers.h"
 
-
+gamedata_t savedata;
+avatar_t   player;
 
 // Get the pointer to an appvar in read mode
 void* Get_Appvar_Ptr(const char *appvar)
@@ -180,7 +182,130 @@ uint8_t Do_Pause(void)
         kb_Scan();
     }
 
+    gfx_SetTextScale(1, 1);
+
     while(KEY_DEL) kb_Scan();
 
     return action_select;
 }
+
+// Wow I wonder what this does. Pass it the pointer array and the desired object ID. It returns the
+// number of entities created by the current spawning operation.
+uint8_t Spawn_Stuff(void *entities[], uint8_t id)
+{
+    uint8_t index;
+    uint8_t new_entities = 0;
+
+    // This finds the first empty entity entry assuming we NULL it after freeing for safety's sake
+    for(index = 0; entities[index]; ++index);
+
+    switch(id)
+    {
+        case PHYSOBJ_ID:
+
+        break;
+        case COIN_ID:
+            ;uint8_t formation = randInt(0, sizeof(coin_max) - 1);
+
+            uint24_t y_offset = randInt(CEILING + 30, FLOOR - 70);
+
+            uint8_t start_frame = 2;
+
+            for(uint8_t i = 0; (i < coin_max[formation]) && (index < MAX_ENTITIES); ++i)
+            {
+                coin_t *coin = malloc(sizeof(coin_t));
+
+                coin->type  = COIN_ID;
+                coin->x     = 320 + coin_x[formation][i];
+                coin->y     = y_offset + coin_y[formation][i];
+                coin->frame = start_frame;
+
+                entities[index] = coin;
+
+                ++index;
+                
+                if(start_frame == 19)
+                {
+                    start_frame = 4;
+                } else {
+                    ++start_frame;
+                }
+            }
+
+            new_entities += coin_max[formation];
+        break;
+        case ZAPPER_ID:
+
+        break;
+        case MISSILE_ID:
+
+        break;
+        case LASER_ID:
+
+        break;
+    }
+
+    return new_entities;
+}
+
+// A dummy function for testing/error handling where we literally cast the inputs into the void.
+void Do_Nothing(void *input, uint24_t scroll)
+{
+    (void)input;
+    (void)scroll;
+}
+
+void Do_Coins(void *entity, uint24_t scroll)
+{
+    coin_t *coin = entity;
+
+    coin->x -= scroll;
+
+    if(coin->frame == 19)
+    {
+        coin->frame = 4;
+    }
+
+    ++coin->frame;
+
+    if(coin->x < -16) coin->type = NULL_ID;
+
+    if(gfx_CheckRectangleHotspot(player.x, player.y, 27, 37, coin->x, coin->y, 12, 12))
+    {
+        coin->frame = 0;
+        ++savedata.monies;
+    }
+}
+
+func_act_t Entity_Action[3] =
+{
+    Do_Nothing,
+    Do_Nothing,
+    Do_Coins
+};
+
+void Draw_Nothing(void *entity)
+{
+    (void)entity;
+}
+
+gfx_sprite_t *coin_sprite[5];
+
+void Draw_Coins(void *entity)
+{
+    coin_t *coin = entity;
+
+    gfx_TransparentSprite(coin_sprite[coin->frame / 4], coin->x, coin->y);
+
+    if(coin->frame == 0)
+    {
+        coin->type = NULL_ID;
+    }
+}
+
+func_draw_t Entity_Drawing[3] =
+{
+    Draw_Nothing,
+    Draw_Nothing,
+    Draw_Coins
+};

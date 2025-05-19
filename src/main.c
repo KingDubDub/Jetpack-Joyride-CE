@@ -75,20 +75,23 @@ int main(void)
         return 0;
     }
 
-    avatar_t player = {
-        .id            = BARRY_ID,
-        .x             = 20,
-        .y             = FLOOR - BARRY_HEIGHT,
-        .dy            = 0,
-        .theta         = 0,
-        .frame         = 3,
-        .frame_toggle  = 1,
-        .exhaust_frame = 0,
-        .bounces       = 2
-    };
+    player.x             = 20;
+    player.y             = FLOOR - BARRY_HEIGHT;
+    player.dy            = 0;
+    player.theta         = 0;
+    player.frame         = 3;
+    player.frame_toggle  = 1;
+    player.exhaust_frame = 0;
+    player.bounces       = 2;
 
     gfx_sprite_t *barry[4];
     gfx_rletsprite_t *exhaust[6];
+
+    // This is an array of pointers to various objects with an ID byte that determines what
+    // graphics and operations need to be done. Each entity has their own type but all have the
+    // same first byte for ID, so I can pass a mix of them to functions for pointer witchcraft.
+    void    *entities[MAX_ENTITIES] = {0};
+    uint8_t  entity_count = 0;
 
     // Allocate RAM for player sprites and decompress immediately
     for(uint8_t i = 0; i < sizeof(barry) / sizeof(barry[0]); ++i)
@@ -104,13 +107,14 @@ int main(void)
     }
 
     // The vertical edges of the popup menu screen
-    window = gfx_MallocSprite(8, 167);
+    window         = gfx_MallocSprite(8, 167);
     window_flipped = gfx_MallocSprite(8, 167);
 
     zx0_Decompress(window, Get_Tile_Ptr(graphics_ptr, 11));
     gfx_FlipSpriteY(window, window_flipped);
 
-    // I've declared these externally for function reasons, and here we assign their temp sprites
+    // I've declared these externally for function reasons, and here we assign their temp sprites.
+    // It looks bad, but this is a C limitation and I can't find a better way to shrink/clean it up.
     button[0] = button0; button[1] = button1; button[2] = button2; button[3] = button3;
     select_button[0] = select_button0; select_button[1] = select_button1; select_button[2] = select_button2; select_button[3] = select_button3;
 
@@ -118,6 +122,14 @@ int main(void)
     {
         zx0_Decompress(button[i],        Get_Tile_Ptr(graphics_ptr, 12 + i));
         zx0_Decompress(select_button[i], Get_Tile_Ptr(graphics_ptr, 16 + i));
+    }
+
+    // Get the coin sparkle/pickup effect and animation sprites
+    for(uint8_t i = 0; i < sizeof(coin_sprite) / sizeof(coin_sprite[0]); ++i)
+    {
+        coin_sprite[i] = gfx_MallocSprite(16, 15);
+
+        zx0_Decompress(coin_sprite[i], Get_Tile_Ptr(graphics_ptr, 20 + i));
     }
 
     // Speeds up kb_Scan() updates but uses interrupts to poll constantly
@@ -135,6 +147,8 @@ int main(void)
     uint8_t scroll;
     uint8_t pause_action = 0;
 
+    int24_t spawn_delay;
+
     while(!KEY_CLEAR && pause_action != 2)
     {
         pause_action = 0;
@@ -144,9 +158,9 @@ int main(void)
         // are on screen at once, and when one goes offscreen I decompress a new sprite to it and
         // shuffle the address to entry of the normal tileset. If I decompressed everything at once
         // I'd fill the RAM 2x over.
-        gfx_sprite_t *background[16] = {0, 0, 0, 0, bg_tile_4, bg_tile_5, bg_tile_6, bg_tile_7, 0, 0, 0, 0, 0, 0, 0, 0};
-        gfx_sprite_t *ceiling[14]    = {0, 0, 0, 0, ceiling_tile_4, ceiling_tile_5, 0, 0, 0, 0, 0, 0, 0, 0};
-        gfx_sprite_t *floor[14]      = {0, 0, 0, 0, floor_tile_4,   floor_tile_5,   0, 0, 0, 0, 0, 0, 0, 0};
+        gfx_sprite_t *background[16] = {0, 0, 0, 0, bg_tile_4,      bg_tile_5,      bg_tile_6, bg_tile_7, 0, 0, 0, 0, 0, 0, 0, 0};
+        gfx_sprite_t *ceiling[14]    = {0, 0, 0, 0, ceiling_tile_4, ceiling_tile_5, 0,         0,         0, 0, 0, 0, 0, 0};
+        gfx_sprite_t *floor[14]      = {0, 0, 0, 0, floor_tile_4,   floor_tile_5,   0,         0,         0, 0, 0, 0, 0, 0};
         // Note that only some sprites get heap-allocated tiles, these will always be used and will
         // become the sprites for the main hallway once the "leapfrogging" stops after the starting
         // area is unloaded. It looks gross, but this is what's required of me to save memory.
@@ -178,6 +192,10 @@ int main(void)
             zx0_Decompress(floor[i], Get_Tileset_Tile_Ptr(background_ptr, 2, i));
         }
 
+        savedata.monies   = 0;
+        savedata.distance = 0;
+        savedata.health   = 1;
+        
         // Opening menu section, only loads if a valid save isn't found
         if(true)
         {
@@ -185,6 +203,8 @@ int main(void)
 
             scroll = 0;
             tile_offset = 0;
+
+            spawn_delay = 300;
 
             // The title sprite is too big and would prevent me from loading stuff so I read it
             // directly from the appvar in the flash memory. It's slower than RAM but not a big
@@ -412,11 +432,13 @@ int main(void)
 
             tile_offset += scroll;
 
+            savedata.distance += scroll;
+
             // Scroll the tiles to the left and shift each one in the tile list when they've
             // traveled their width.
             if(tile_offset >= 46)
             {
-                tile_offset = 0;
+                tile_offset = tile_offset - 46;
 
                 // If the sprite that's going offscreen is one of the malloc'd ones then free and
                 // mark as null.
@@ -478,6 +500,11 @@ int main(void)
             // Draw the player sprite
             gfx_TransparentSprite(barry[player.frame / 2], player.x, player.y);
 
+            for(uint8_t i = 0; i < entity_count; ++i)
+            {
+                Entity_Drawing[ *(uint8_t*)entities[i] ](entities[i]);
+            }
+
             player.frame += player.frame_toggle;
 
             if((player.frame == 0) || (player.frame == 5))
@@ -510,14 +537,35 @@ int main(void)
                 }
             }
 
+            if(savedata.health)
+            {
+                gfx_SetTextFGColor(WHITE);
+    
+                gfx_SetTextScale(2, 2);
+                gfx_SetTextXY(5, 5);
+                
+                gfx_PrintUInt(savedata.distance / 16, 4);
+    
+                gfx_SetTextScale(1, 1);
+
+                gfx_PrintStringXY("M", gfx_GetTextX() + 1, 13);
+    
+                gfx_PrintStringXY("BEST:", 5, 24); gfx_PrintInt(savedata.highscore, 1);
+    
+                gfx_SetTextFGColor(GOLD);
+    
+                gfx_SetTextXY(5, 36);
+                gfx_PrintUInt(savedata.monies, 3);
+            }
+
             gfx_SetTextXY(290, 10);
             gfx_PrintUInt(FPS, 1);
 
             /*
-            for(uint8_t i = 0; i < 8; ++i) // le funni debug printer
+            for(uint8_t i = 0; i < 18; ++i) // le funni debug printer
             {
-                gfx_SetTextXY(300, 20 + i*10);
-                gfx_PrintUInt(bg_tiles[i], 1);
+                gfx_SetTextXY(290, 20 + i*10);
+                gfx_PrintUInt(entities[i], 1);
             } */
 
             // Swap the screen and buffer memory regions, faster than copying from buffer -> screen
@@ -556,16 +604,48 @@ int main(void)
                 player.dy = 0;
             }
 
+            if(spawn_delay < 0)
+            {
+                entity_count += Spawn_Stuff(entities, COIN_ID);
+
+                spawn_delay = 600;
+            }
+
+            spawn_delay -= scroll;
+
+            // This runs through all entities and does the math for them based on their respective
+            // types, which is used as the index for their function in the array.
+            for(int8_t i = 0; i < entity_count; ++i)
+            {
+                if(*(uint8_t*)entities[i] == 0)
+                {
+                    free(entities[i]);
+
+                    --entity_count;
+
+                    for(uint8_t j = i; j < 30 - 1; ++j)
+                    {
+                        entities[j] = entities[j + 1];
+                    }
+
+                    entities[29] = 0;
+
+                    --i;
+                } else {
+                    Entity_Action[ *(uint8_t*)entities[i] ](entities[i], scroll);
+                }
+            }
+
             // Update the FPS counter, has to use GetSafe since the value changes during reading
             FPS = (CLOCKS_PER_SEC / timer_GetSafe(1, TIMER_UP)); 
 
             // Delay the game loop to keep it capped it to 24 FPS
             while(timer_GetSafe(1, TIMER_UP) < (CLOCKS_PER_SEC / MAX_FPS))
             {
-                // Some kind of memory/entity garbage collecting would work well here
-                // or maybe a preemptive decompression system to make sure things are ready in
-                // time? zx0 makes so many unattainable goals possible that I'll have to rethink
-                // everything. Then again, that's why I'm rewriting from scratch... ah well.
+                // Some kind of memory/entity garbage collecting would work well here or maybe a
+                // preemptive decompression system to make sure things are ready in time? zx0 makes
+                // so many unattainable goals possible that I'll have to rethink everything. Then
+                // again, that's why I'm rewriting from scratch... ah well.
             }
 
             // Pause menu stuff needs to be done between the FPS calculations
@@ -577,6 +657,13 @@ int main(void)
             // Reset the clock safely by shutting it down before zeroing
             timer_Set(1, 0);
         }
+
+        // Update the highscores and monies, would be annoying to lose a primo run after all
+        if(savedata.highscore < (savedata.distance / 16))
+        {
+            savedata.highscore = savedata.distance / 16;
+        }
+        savedata.college_fund += savedata.monies;
 
         // This runs through and frees the background sprites in case the game was quit/restarted
         // during the opening. I need to look into optimizing this since it's quite large.
@@ -613,6 +700,26 @@ int main(void)
                 ceiling[bg_extra_tiles[sizeof(bg_extra_tiles) - 1]] = ceiling[bg_extra_tiles[sizeof(bg_extra_tiles) - 1] - 8];
 
                 floor[bg_extra_tiles[sizeof(bg_extra_tiles) - 1]] = floor[bg_extra_tiles[sizeof(bg_extra_tiles) - 1] - 8];
+            }
+        }
+
+        // Free and wipe any entities left on screen
+        for(int8_t i = 0; i < entity_count; ++i)
+        {
+            if(entities[i])
+            {
+                free(entities[i]);
+
+                --entity_count;
+
+                for(uint8_t j = i; j < 30 - 1; ++j)
+                {
+                    entities[j] = entities[j + 1];
+                }
+
+                entities[29] = 0;
+
+                --i;
             }
         }
     }

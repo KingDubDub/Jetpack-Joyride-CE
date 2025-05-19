@@ -37,6 +37,7 @@ outputs:
       - barry
       - exhaust
       - menu_assets
+      - coin
 
 converts:
   - name: title
@@ -80,6 +81,16 @@ converts:
       - menu/button_off1.png
       - menu/button_off2.png
       - menu/button_off3.png
+
+  - name: coin
+    palette: global_palette
+    compress: zx0
+    images:
+      - coin/sparkle.png
+      - coin/coin0.png
+      - coin/coin1.png
+      - coin/coin2.png
+      - coin/coin3.png
 
   - name: background
     palette: global_palette
