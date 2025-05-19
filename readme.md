@@ -5,7 +5,7 @@ This is a port of the popular mobile game Jetpack Joyride by Halfbrick Studios f
 You will need the latest version of the clibs on your calculator in order to play, please get them from here: https://tiny.cc/clibs
 
 The controls are as follows:
-[2nd]   - Select / Use jetpack
-Arrows  - Choose options in menus
-[Del]   - Pause the game
-[Clear] - Exit the game
+* [2nd]   - Select / Use jetpack
+* Arrows  - Choose options in menus
+* [Del]   - Pause the game
+* [Clear] - Exit the game
